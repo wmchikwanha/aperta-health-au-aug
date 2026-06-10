@@ -8,9 +8,9 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
 
-  const fallbackProjectId = "pmfbhmaeysgcmbapghby";
+  const fallbackProjectId = "pytvadhrygzyvjvgjqob";
   const fallbackPublishableKey =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZmJobWFleXNnY21iYXBnaGJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2MTIyMDAsImV4cCI6MjA3OTE4ODIwMH0.HTzl10QXTipfFwn8ZqdrF5tuutA79NPjZJuO4Fg5rEQ";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHZhZGhyeWd6eXZqdmdqcW9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwOTQ4MzgsImV4cCI6MjA5NjY3MDgzOH0.oIwZu5XvwDXjvNv5hUT9Wwx_surPtqtfLfr0Uo3E3a4";
 
   const supabaseUrl =
     env.VITE_SUPABASE_URL ||
