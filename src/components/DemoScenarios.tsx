@@ -5,69 +5,83 @@ interface DemoScenariosProps {
   onLoadDemo: (narrative: string) => void;
 }
 
+/**
+ * Australian CALD / refugee demonstration cases.
+ *
+ * Each scenario is composite and de-identified — designed to exercise the
+ * Aperta Health MSE generation, cultural idiom decoding, ATS triage, and
+ * MBS-aligned treatment-plan logic across priority refugee populations.
+ *
+ * All cases include resettlement context (visa pathway, family separation,
+ * pre-migration trauma) and an Australian crisis pathway where relevant.
+ */
 const demoScenarios = [
   {
-    title: "Shona: Rural Woman - Mhepo",
-    description: "Traditional beliefs and spiritual attribution",
-    narrative: `Elderly woman from rural Masvingo. Speaking in Shona:
+    title: "Arabic (Syrian): Mother — ḍayqa ṣadr",
+    description: "Somatic depression with PTSD overlay; partner permanent humanitarian (subclass 202).",
+    narrative: `38-year-old Syrian-born woman, in Australia 18 months on a 202 (Global Special Humanitarian) visa. Interview conducted in Arabic via TIS National.
 
-"Ndinofunga kuti ndine mhepo. Shiri dzinondibvunza husiku. Dzinotaura nezvangu, dzinondishora. Vavakidzani vangu vanoshandisa juju pamusoro pangu. Vanondivenga nokuti ndakafa nemurume wangu gore rapfuura. Handigone kurara. Moyo unorwadza. Ndakafa kufunga."
+"عندي ضيقة صدر طول الوقت. أعصابي تعبانة. ما بقدر أنام، لما أنام بحلم بالقصف. ولادي ما زالوا بسوريا، ما شفتهم من سنتين. قلبي محروق."
+(Translation: "I have tightness in my chest all the time. My nerves are tired. I can't sleep, and when I do I dream of the bombing. My children are still in Syria, I haven't seen them for two years. My heart is burning.")
 
-She gestures towards her head frequently, looks around nervously, and speaks in a low, fearful tone. Reports not sleeping for days. Neighbours allegedly spreading rumours about her.`,
+Reports daily chest tightness, intrusive memories of shelling, hypervigilance to sudden noise, early-morning waking. Cardiac workup at the local ED was unremarkable. Currently engaged with a settlement caseworker. No prior mental-health contact.`,
   },
   {
-    title: "Zulu: Young Man - Ukuthwasa",
-    description: "Ancestral calling with dissociative features",
-    narrative: `28-year-old man from KwaZulu-Natal. Speaking in Zulu:
+    title: "Dari (Hazara Afghan): Young man — delam gerefte / jigaram khun",
+    description: "Profound grief, family separation, possible passive SI. Bridging Visa E.",
+    narrative: `24-year-old Hazara man from Afghanistan, arrived by boat in 2023, currently on a Bridging Visa E. Interview in Dari via TIS National (interpreter-assisted; ASR draft only).
 
-"Ngicabanga ukuthi ngiyathwasa. Amadlozi ayakhuluma nami ebusuku. Ngibona izinto ezingekho. Inhliziyo yami iyabuhlungu. Umndeni wami uthi kumele ngihambe ngiye esangomeni kodwa bengiyesaba. Ngizizwa ngingenammoya, angikwazi ukusebenza. Amabhayi ami ayangibiza."
+"دلم گرفته. شب‌ها نمی‌توانم بخوابم. خواهرم در کابل توسط طالبان کشته شد. جگرم خون است. گاهی فکر می‌کنم چرا زنده هستم. خانواده‌ام بدون من بهتر هستند."
+(Translation: "My heart is heavy. I cannot sleep at night. My sister was killed in Kabul by the Taliban. My liver is bleeding. Sometimes I think why am I alive. My family would be better off without me.")
 
-Patient appears distressed, reports hearing voices instructing him to become a traditional healer. Describes vivid dreams and seeing deceased relatives. Conflicted between modern medicine and cultural expectations.`,
+Passive suicidal ideation expressed via burden narrative. No active plan. Lives alone in shared accommodation. No Medicare under BVE — currently linked to ASRC clinic. Caseworker concerned about visa-precarity stress.`,
   },
   {
-    title: "Xhosa: Middle-aged Woman - Amafufunyana",
-    description: "Spirit possession and dissociation",
-    narrative: `42-year-old woman from Eastern Cape. Speaking in Xhosa:
+    title: "Urdu (Rohingya): Older woman — dil tang hai",
+    description: "Late-life depression with isolation. Permanent protection (866).",
+    narrative: `62-year-old Rohingya woman, granted subclass 866 after years on a TPV. Speaks Urdu and Rohingya; daughter-in-law interpreting.
 
-"Ndinomqondo ophazamisekileyo. Ndiziva ndinezinto ezingamandla kum. Kuthiwa ndinamafufunyana. Intliziyo yam ibuhlungu kakhulu. Ndikhathazeka ngokugula kwam. Ngamanye amaxesha andiqondi into endiyenzayo. Usapho lwam luthi isigulo sokoyika."
+"دل تنگ ہے۔ سارا دن گھر میں اکیلی بیٹھتی ہوں۔ پوتے پوتیاں سکول جاتے ہیں۔ بیٹا کام پر۔ کسی سے بات نہیں کر سکتی۔ نیند نہیں آتی۔ کھانا اچھا نہیں لگتا۔"
+(Translation: "My heart is constricted. I sit alone in the house all day. The grandchildren go to school, my son to work. I cannot talk to anyone. I cannot sleep. Food has no taste.")
 
-Patient reports episodes where she feels controlled by external forces. Describes periods of amnesia and altered consciousness. Family seeking both medical and traditional treatment simultaneously. Appears anxious and fearful.`,
+Reports 3 months of low mood, anhedonia, weight loss 4 kg, early-morning waking. No SI. GDS-15 indicated. Previously witnessed violence in Myanmar. Currently isolated socially; limited English literacy.`,
   },
   {
-    title: "Sotho: Elderly Man - Bolwetse ba Kelello",
-    description: "Mental illness with spiritual pollution concerns",
-    narrative: `65-year-old man from Free State. Speaking in Sesotho:
+    title: "Dinka (South Sudanese): Young father — puou diit",
+    description: "Trauma-laden anger, family-violence concern. Citizen (resettled as child).",
+    narrative: `29-year-old South Sudanese-Australian man, citizen, resettled as a child via a 204 (Woman at Risk) family. Speaks English and Dinka. Bicultural worker present.
 
-"Ke na le bolwetse ba kelello. Pelo yaka e bohloko haholo. Ke nahana haholo ka bana baka ba hlokofetseng. Seriti sa ka se silafetse. Ditlhakore di a nkgathatsa. Ke tshoha ho robala. Baheso ba re ke tshwanela ho hlatswa."
+"My heart is big all the time. Puou diit. I shout at my wife, at the kids — I don't want to but it comes. I see the soldiers again at night. I drink to sleep. The job is gone. My wife says she will leave."
 
-Patient describes severe grief following death of children. Believes his spirit is polluted and requires traditional cleansing. Reports insomnia and overwhelming sadness. Family pressure for both medical and traditional interventions. Withdrawn, poor self-care.`,
+Reports nightmares (war), explosive anger, alcohol use to sleep (6+ standard drinks/night), recent job loss. Partner concerned about escalating verbal aggression; no physical violence reported but risk increasing. Wife and 2 young children at home.`,
   },
   {
-    title: "Urban Youth: Substance Use",
-    description: "Modern context with suicidal ideation",
-    narrative: `22-year-old male from Johannesburg. Speaks English with local slang:
+    title: "Vietnamese: Older woman — suy nghĩ nhiều",
+    description: "GAD/MDD with somatic presentation in long-settled refugee.",
+    narrative: `71-year-old Vietnamese-Australian woman, in Australia since 1981. Speaks Vietnamese; daughter interpreting.
 
-"I'm just feeling numb, you know? Like nothing matters anymore. Been using broncleer (cough syrup with codeine) for months now. Started at parties, now it's daily. Can't feel happy without it. My mates say I've changed, but I don't care. Sometimes I think maybe... maybe it would be better if I wasn't here. Not that I'd do anything, but yeah, the thought crosses my mind."
+"Tôi suy nghĩ nhiều lắm. Đêm không ngủ được. Đầu đau, ngực nặng. Tôi lo cho con cháu hoài. Bác sĩ nói tim tôi không sao nhưng tôi vẫn thấy mệt."
+(Translation: "I think too much. I can't sleep at night. My head hurts, my chest feels heavy. I worry about my children and grandchildren constantly. The doctor says my heart is fine but I still feel exhausted.")
 
-Appears dishevelled, poor eye contact, flat affect. Admits to missing work frequently. Reports feeling empty and purposeless. RED ALERT: Passive suicidal ideation present.`,
+Long-standing rumination, somatic complaints, multiple cardiology workups unremarkable. Bereaved (husband died 8 months ago). MBS MHTP eligible; daughter requesting culturally matched clinician.`,
   },
   {
-    title: "Young Adult: Prodromal Psychosis",
-    description: "Attenuated symptoms - PRIME-R-5 relevant",
-    narrative: `19-year-old university student. Speaking in English:
+    title: "Aboriginal woman — SEWB framing",
+    description: "Kinship grief and dislocation; ATSI cultural safety pathway.",
+    narrative: `34-year-old Aboriginal woman (identifies as Aboriginal, no Torres Strait Islander heritage), living off-Country in regional NSW.
 
-"Something's not right with me lately. Sometimes I see things out of the corner of my eye - shadows moving, figures standing there - but when I look properly, there's nothing. Last week I could have sworn I heard someone calling my name when I was alone in my room. It's happened a few times now. My thoughts feel... strange. Like they're not quite my own sometimes, or like they're too loud in my head. I keep thinking people in my lectures are looking at me, talking about me. I know it sounds paranoid but it feels so real. And my body feels weird too - like my hands don't belong to me sometimes. I haven't told anyone because I don't want them to think I'm going crazy. My studies are suffering. I used to be top of my class."
+"I just feel disconnected, doc. Lost my Nan six months ago, then my cousin last month — sorry business one after another. I can't get back home to Country for ceremony, the kids' school, work. I'm angry all the time, then numb. The kids see me crying. I dreamed about Nan three nights running — she was calling me. I'm not crazy — that's our way — but I'm exhausted."
 
-Patient appears anxious, slightly guarded. Good grooming maintained. Speech coherent but with some tangential elements. Describes these experiences as distressing and ego-dystonic. No clear formed delusions or sustained hallucinations. Insight partially preserved - recognizes experiences are unusual. Family history of schizophrenia (uncle).`,
+Reports compounded loss, inability to attend funerals on Country, anger alternating with numbness, vivid dreams of deceased kin (culturally meaningful, not psychotic). No SI/HI. Children in care of partner. Frame within SEWB; consider AHW/AMHW involvement and 13YARN as crisis pathway if escalation.`,
   },
   {
-    title: "Ndebele: Professional - Kufungisisa",
-    description: "Anxiety and somatic symptoms with cultural framing",
-    narrative: `45-year-old teacher from Bulawayo. Bilingual narrative:
+    title: "Tigrinya (Eritrean): Young woman — early psychosis screen",
+    description: "Attenuated psychotic symptoms; recent SHEV approval.",
+    narrative: `21-year-old Eritrean woman, recently transitioned from TPV to SHEV (790). Speaks Tigrinya via TIS National (interpreter-assisted).
 
-"Ndiri kufungisisa zvakawanda. Thinking too much about everything - work, family, money. Can't concentrate on teaching. Ingqondo yami ayimi kahle (my mind is not right). I lie awake every night worrying. Moyo unorwadza. Sometimes my heart beats so fast I think I'm dying. The chest pains are real. Been to hospital three times - they say it's nothing physical, but I know something is wrong with me."
+(Translated) "Sometimes I hear my name when no one is there. Shadows in the corner of my eye. People on the bus look at me strangely — I think they know my family. My thoughts get loud, like they are not all mine. I am scared to tell anyone — they will say I am crazy. I cannot study."
 
-Well-groomed appearance but fidgety, wringing hands. Speech rapid with scattered thoughts. Describes panic attacks as "heart attacks." Cultural belief in physical cause despite medical reassurance.`,
+Attenuated positive symptoms over 4 months, increasing distress, functional decline (deferred TAFE enrolment). Insight partially preserved. No family history known (parents deceased in Eritrea). PRIME-R-5 / PSQ indicated; refer to local headspace / EPYS service.`,
   },
 ];
 
@@ -75,9 +89,10 @@ export const DemoScenarios = ({ onLoadDemo }: DemoScenariosProps) => {
   return (
     <Card className="border-border bg-card">
       <CardHeader>
-        <CardTitle className="text-clinical-green">Demo Scenarios</CardTitle>
+        <CardTitle>Demo Scenarios — Australian CALD / Refugee</CardTitle>
         <CardDescription>
-          Click to load example cases showcasing cultural understanding
+          Composite, de-identified cases exercising cultural idiom decoding, ATS triage,
+          and MBS-aligned treatment-plan logic.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -85,7 +100,7 @@ export const DemoScenarios = ({ onLoadDemo }: DemoScenariosProps) => {
           <Button
             key={index}
             variant="outline"
-            className="w-full justify-start text-left h-auto py-3 hover:bg-clinical-green-light hover:border-clinical-green"
+            className="w-full justify-start text-left h-auto py-3 hover:bg-accent"
             onClick={() => onLoadDemo(scenario.narrative)}
           >
             <div className="space-y-1">
