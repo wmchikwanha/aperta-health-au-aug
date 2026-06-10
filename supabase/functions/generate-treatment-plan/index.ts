@@ -289,6 +289,6 @@ function buildClinicalContext(screeningData: any[], mseFindings: any, patientCon
     context += '\n';
   }
 
-  context += 'Generate Australian APS Guidelines / MBS Better Access-aligned treatment recommendations for this presentation.';
+  context += 'Generate culturally responsive, RANZCP / APS / Phoenix Australia / RACGP Refugee Health-aligned treatment recommendations for this presentation, structured around the MBS Better Access / Mental Health Treatment Plan and Australian refugee mental-health service pathways.';
   return context;
 }
