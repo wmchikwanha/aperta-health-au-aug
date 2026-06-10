@@ -16,14 +16,15 @@ export default {
       screens: { "2xl": "1400px" },
     },
     extend: {
-      /* ── Typefaces ──────────────────────────────────────
-         DM Sans   — body copy
-         Fraunces  — display headings, card titles, scores
-         DM Mono   — IDs, dates, code, numeric data        */
+      /* ── Typefaces (Aperta Health — Australian clinical) ──
+         Source Sans 3 — body copy
+         Inter         — display headings, scores, UI
+         JetBrains Mono — IDs, dates, numeric data            */
       fontFamily: {
-        sans:  ['"DM Sans"',  'system-ui', 'sans-serif'],
-        serif: ['Fraunces',   'Georgia',   'serif'],
-        mono:  ['"DM Mono"',  'monospace'],
+        sans:    ['"Source Sans 3"', '"Source Sans Pro"', 'system-ui', 'sans-serif'],
+        serif:   ['Inter', 'system-ui', 'sans-serif'],
+        mono:    ['"JetBrains Mono"', '"DM Mono"', 'monospace'],
+        display: ['Inter', 'system-ui', 'sans-serif'],
       },
 
       /* ── Colours (all reference CSS vars in index.css) ── */

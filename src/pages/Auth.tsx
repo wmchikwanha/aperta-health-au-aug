@@ -139,13 +139,23 @@ const Auth = () => {
     <div className="min-h-screen flex flex-col">
       <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
         <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              Mental Health Clinical Assistant
+          <CardHeader className="space-y-2">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-medium border border-primary/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                Data Sovereign · Hosted in Australia
+              </span>
+            </div>
+            <CardTitle className="text-2xl font-bold text-center font-display">
+              Aperta Health
             </CardTitle>
             <CardDescription className="text-center">
-              Sign in to access your psychiatric assessment tool
+              Mental Health Decision Support · sign in to continue
             </CardDescription>
+            <p className="text-[11px] text-center text-muted-foreground italic px-2">
+              We acknowledge the Traditional Owners of the lands on which this tool is used and pay
+              our respects to Elders past, present and emerging.
+            </p>
             {inviteInfo && (
               <div className="flex items-center justify-center gap-2 pt-2">
                 <UserPlus className="h-4 w-4 text-primary" />

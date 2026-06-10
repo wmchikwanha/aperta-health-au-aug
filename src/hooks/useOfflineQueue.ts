@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-const QUEUE_KEY = "nzwisiso_offline_queue";
+const QUEUE_KEY = "aperta_health_offline_queue";
 
 export interface QueuedItem {
   id: string;

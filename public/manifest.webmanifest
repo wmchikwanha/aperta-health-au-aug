@@ -1,13 +1,14 @@
 {
-  "name": "Nzwisiso Clinical Bridge",
-  "short_name": "Nzwisiso",
-  "description": "Offline-first multilingual psychiatric clinical scribe for Southern Africa.",
+  "name": "Aperta Health — Mental Health Decision Support",
+  "short_name": "Aperta Health",
+  "description": "Australian clinical decision support for refugee and CALD mental health. Hosted in Australia, Privacy Act 1988 compliant.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#ffffff",
+  "theme_color": "#0071b3",
   "orientation": "portrait-primary",
+  "lang": "en-AU",
   "categories": ["health", "medical", "productivity"],
   "icons": [
     {

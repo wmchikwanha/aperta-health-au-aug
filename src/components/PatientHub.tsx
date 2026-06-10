@@ -281,7 +281,7 @@ export const PatientHub = ({
               </svg>
             }
             title="First Aid"
-            desc="Crisis intervention · WHO mhGAP protocols"
+            desc="Crisis intervention · Australian APS Guidelines / MBS Better Access protocols"
             variant="crisis"
           />
         </div>

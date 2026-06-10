@@ -1,4 +1,4 @@
-// IndexedDB-backed offline store for Nzwisiso (Dexie).
+// IndexedDB-backed offline store for Aperta Health (Dexie).
 //
 // Holds clinical work that a CHW can complete with no internet:
 // screenings, MSE drafts, crisis events, audio chunks, and an outbox
@@ -75,7 +75,7 @@ export interface CacheMetaRow {
   updatedAt: string;
 }
 
-class NzwisisoOfflineDB extends Dexie {
+class ApertaHealthOfflineDB extends Dexie {
   outbox!: Table<OutboxRow, string>;
   audio_chunks!: Table<AudioChunkRow, string>;
   encounters!: Table<EncounterDraftRow, string>;
@@ -83,7 +83,7 @@ class NzwisisoOfflineDB extends Dexie {
   cache_meta!: Table<CacheMetaRow, string>;
 
   constructor() {
-    super("nzwisiso_offline_v1");
+    super("aperta_health_offline_v1");
     this.version(1).stores({
       outbox: "id, status, kind, patientId, queuedAt",
       audio_chunks: "id, audioId, patientId, seq",
@@ -94,7 +94,7 @@ class NzwisisoOfflineDB extends Dexie {
   }
 }
 
-export const offlineDB = new NzwisisoOfflineDB();
+export const offlineDB = new ApertaHealthOfflineDB();
 
 // ---------------------------------------------------------------------------
 // Convenience helpers

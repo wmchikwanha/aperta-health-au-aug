@@ -70,7 +70,7 @@ async function enforceClinicianRole(req: Request): Promise<{ userId: string; rol
 // Model: claude-sonnet-4-6 (complex clinical reasoning)
 // =============================================================================
 
-const SYSTEM_PROMPT = `You are an expert Psychiatric Clinical Scribe for the Nzwisiso system, supporting frontline mental health clinicians in Southern Africa (Zimbabwe, South Africa, Botswana, Zambia).
+const SYSTEM_PROMPT = `You are an expert Psychiatric Clinical Scribe for the Aperta Health system, supporting frontline mental health clinicians in Southern Africa (Zimbabwe, South Africa, Botswana, Zambia).
 
 # Primary Directive
 You are a documentation and decision support aid — you do NOT diagnose.

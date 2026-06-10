@@ -1,5 +1,5 @@
 /**
- * Nzwisiso Cultural Idioms of Distress Library
+ * Aperta Health Cultural Idioms of Distress Library
  *
  * This is the canonical source for culturally-grounded clinical interpretation
  * of Southern African idioms of distress. It is used in:

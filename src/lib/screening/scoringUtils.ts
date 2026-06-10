@@ -65,7 +65,7 @@ export function toFHIRScoreObservation(
   const tool = SCREENING_INSTRUMENTS[instrument];
   const coding = tool.loincScore
     ? [{ system: LOINC_SYSTEM, code: tool.loincScore, display: `${tool.name} total score` }]
-    : [{ system: 'http://nzwisiso.app/fhir/screening', code: tool.id, display: `${tool.name} total score` }];
+    : [{ system: 'http://aperta_health.app/fhir/screening', code: tool.id, display: `${tool.name} total score` }];
 
   return {
     resourceType: 'Observation',
@@ -78,7 +78,7 @@ export function toFHIRScoreObservation(
     encounter: { reference: `Encounter/${encounterId}` },
     valueInteger: result.totalScore,
     interpretation: [{
-      coding: [{ system: 'http://nzwisiso.app/fhir/severity', code: result.severityLevel }],
+      coding: [{ system: 'http://aperta_health.app/fhir/severity', code: result.severityLevel }],
       text: result.severityLevel,
     }],
     note: [{ text: 'AI-generated suggestion requiring clinical review' }],

@@ -276,7 +276,7 @@ export default function PatientIntake() {
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Stethoscope className="h-6 w-6 text-primary" />
-            <span className="font-semibold text-foreground">Nzwisiso Pre-Registration</span>
+            <span className="font-semibold text-foreground">Aperta Health Pre-Registration</span>
           </div>
           <Badge variant="outline" className="text-xs">{session?.tier} tier</Badge>
         </div>
@@ -537,7 +537,7 @@ export default function PatientIntake() {
 
       {/* Footer */}
       <footer className="border-t mt-auto py-4 px-4 text-center text-xs text-muted-foreground">
-        <p>Nzwisiso Clinical Decision Support • AI-generated outputs require clinical review</p>
+        <p>Aperta Health Clinical Decision Support • AI-generated outputs require clinical review</p>
       </footer>
     </div>
   );

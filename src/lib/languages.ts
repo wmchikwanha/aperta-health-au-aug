@@ -1,5 +1,5 @@
 /**
- * Nzwisiso Supported Languages
+ * Aperta Health Supported Languages
  *
  * Single source of truth for all language references across the app.
  *

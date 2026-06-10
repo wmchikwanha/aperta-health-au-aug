@@ -15,15 +15,15 @@ interface TourStep {
 const TOUR_STEPS: TourStep[] = [
   {
     id: "welcome",
-    title: "Welcome to Nzwisiso",
-    description: "This guided tour will walk you through the key features of your psychiatric assessment assistant. Let's get started!",
+    title: "Welcome to Aperta Health",
+    description: "This guided tour will walk you through the key features of your clinical decision support tool. Let's get started!",
     icon: <Stethoscope className="h-8 w-8 text-primary" />,
     position: "center"
   },
   {
     id: "recording",
     title: "Voice Recording & Transcription",
-    description: "Record clinical narratives using the microphone. Voice Activity Detection (VAD) automatically pauses during silence. Supports multiple Southern African languages.",
+    description: "Record clinical narratives using the microphone. Voice Activity Detection (VAD) automatically pauses during silence. Supports multiple Australian refugee & CALD languages (Dari, Pashto, Urdu, Arabic, Swahili, Mandarin, Vietnamese, Burmese, Dinka, Nuer …).",
     icon: <Mic className="h-8 w-8 text-primary" />,
     position: "center"
   },
@@ -57,7 +57,7 @@ const TOUR_STEPS: TourStep[] = [
   }
 ];
 
-const TOUR_STORAGE_KEY = "nzwisiso_tour_completed";
+const TOUR_STORAGE_KEY = "aperta_health_tour_completed";
 
 export const OnboardingTour = () => {
   const [isOpen, setIsOpen] = useState(false);

@@ -21,122 +21,101 @@ export const AboutDialog = () => {
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            About Nzwisiso
-            <Badge variant="secondary" className="text-xs">v3.1</Badge>
+            About Aperta Health
+            <Badge variant="secondary" className="text-xs">v1.0</Badge>
           </DialogTitle>
           <DialogDescription className="text-left space-y-4 pt-4">
             <p className="text-foreground font-medium">
-              AI-Powered Clinical Decision Support for Mental Health in Southern & Sub-Saharan Africa
+              Mental Health Decision Support for refugee and CALD communities in Australia
             </p>
-            
+
             <div className="space-y-4 text-sm">
               <div>
-                <p className="font-semibold text-foreground mb-1">What It Does</p>
+                <p className="font-semibold text-foreground mb-1">What it does</p>
                 <p>
-                  Nzwisiso ("understanding" in Shona) transforms unstructured clinical narratives into 
-                  structured mental health assessments with deep cultural sensitivity for Southern and 
-                  Sub-Saharan African contexts. It supports a graduated workforce model — from Community 
-                  Health Workers recording and referring, to psychiatrists completing full diagnostic 
-                  formulations — with role-based access control ensuring clinical safety at every level.
+                  Aperta Health transforms unstructured clinical narratives into structured,
+                  culturally informed mental health assessments — purpose-built for Australian
+                  refugee health, asylum seeker clinics, PHN-funded services, and GP gateways to
+                  Medicare Better Access. A graduated workforce model spans Bicultural Workers,
+                  Refugee Health Nurses, GPs, and Psychiatrists / Clinical Psychologists, with
+                  role-based access control safeguarding clinical responsibility at every step.
                 </p>
               </div>
 
               <div>
-                <p className="font-semibold text-foreground mb-2">Key Features</p>
+                <p className="font-semibold text-foreground mb-2">Key features</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div className="space-y-1.5">
                     <p className="font-medium text-foreground text-xs uppercase tracking-wide">Assessment</p>
                     <ul className="list-disc list-inside space-y-0.5 ml-1 text-muted-foreground">
                       <li>Voice-to-text narrative capture</li>
-                      <li>Voice Activity Detection (VAD)</li>
-                      <li>Automated MSE generation</li>
-                      <li>Risk level detection & alerts</li>
+                      <li>Bicultural Interpreter Mode</li>
+                      <li>AI-assisted MSE generation</li>
+                      <li>ATS 1–5 triage &amp; risk alerts</li>
                     </ul>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="font-medium text-foreground text-xs uppercase tracking-wide">Screening Tools</p>
+                    <p className="font-medium text-foreground text-xs uppercase tracking-wide">Screening battery</p>
                     <ul className="list-disc list-inside space-y-0.5 ml-1 text-muted-foreground">
-                      <li>PHQ-9 (Depression)</li>
-                      <li>GAD-7 (Anxiety)</li>
-                      <li>PCL-5 (PTSD)</li>
-                      <li>MMSE (Cognitive)</li>
-                      <li>PSQ (Psychosis)</li>
-                      <li>PRIME-R-5 (Prodromal)</li>
+                      <li>RHS-15 (refugee health)</li>
+                      <li>PHQ-9 / PHQ-9 Refugee Modified</li>
+                      <li>GAD-7, PCL-5, MMSE, GDS-15</li>
+                      <li>HTQ Part IV (torture history)</li>
+                      <li>WHODAS 2.0 (function)</li>
                     </ul>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="font-medium text-foreground text-xs uppercase tracking-wide">Diagnosis & Treatment</p>
+                    <p className="font-medium text-foreground text-xs uppercase tracking-wide">Diagnosis &amp; care plan</p>
                     <ul className="list-disc list-inside space-y-0.5 ml-1 text-muted-foreground">
-                      <li>ICD-10/ICD-11/DSM-5 code selection</li>
-                      <li>Differential diagnosis workspace</li>
-                      <li>AI diagnostic suggestions</li>
-                      <li>WHO mhGAP treatment planning</li>
-                      <li>Case Summary PDF export</li>
+                      <li>ICD-10 / ICD-11 / DSM-5 codes</li>
+                      <li>Cultural formulation prompts</li>
+                      <li>Suggested MBS items (2710 etc.)</li>
+                      <li>Australian APS Guidelines / MBS Better Access aligned</li>
                     </ul>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="font-medium text-foreground text-xs uppercase tracking-wide">Crisis & Referral</p>
+                    <p className="font-medium text-foreground text-xs uppercase tracking-wide">Crisis &amp; referral</p>
                     <ul className="list-disc list-inside space-y-0.5 ml-1 text-muted-foreground">
-                      <li>First Aid crisis protocols</li>
-                      <li>Emergency checklists</li>
-                      <li>CHW → clinician upward referral</li>
-                      <li>Appointment scheduling & SMS</li>
+                      <li>Lifeline, 13YARN, 1800RESPECT, 000</li>
+                      <li>State trauma services (STARTTS, Foundation House, QPASTT…)</li>
+                      <li>Bicultural Worker → GP/Psychiatrist handover</li>
                     </ul>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="font-medium text-foreground text-xs uppercase tracking-wide">Role-Based Access</p>
+                    <p className="font-medium text-foreground text-xs uppercase tracking-wide">Roles</p>
                     <ul className="list-disc list-inside space-y-0.5 ml-1 text-muted-foreground">
-                      <li>Admin / Psychiatrist / Nurse / CHW tiers</li>
-                      <li>CHW exclusion from diagnostics</li>
-                      <li>CHW → Nurse → Psychiatrist referral chain</li>
-                      <li>Full audit trail (FHIR AuditEvent)</li>
+                      <li>Bicultural Worker / Refugee Health Nurse / GP / Psychiatrist</li>
+                      <li>Graduated access &amp; gating</li>
+                      <li>FHIR AuditEvent trail</li>
                     </ul>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="font-medium text-foreground text-xs uppercase tracking-wide">Cultural & Language</p>
+                    <p className="font-medium text-foreground text-xs uppercase tracking-wide">Languages</p>
                     <ul className="list-disc list-inside space-y-0.5 ml-1 text-muted-foreground">
-                      <li>Shona, Ndebele, Zulu, Xhosa, Sotho</li>
-                      <li>Afrikaans, Swahili</li>
-                      <li>French (DRC), Portuguese (Moz/Angola)</li>
-                      <li>Idioms of distress recognition</li>
-                      <li>Code-switching support</li>
+                      <li>Dari, Pashto, Urdu, Arabic</li>
+                      <li>Swahili, Kirundi, Kinyarwanda</li>
+                      <li>Mandarin, Vietnamese, Burmese</li>
+                      <li>Dinka, Nuer (interpreter mode)</li>
+                      <li>CALD idioms of distress</li>
                     </ul>
                   </div>
                 </div>
               </div>
 
               <div>
-                <p className="font-semibold text-foreground mb-1">Patient Pre-Registration</p>
+                <p className="font-semibold text-foreground mb-1">Clinical governance</p>
                 <p className="text-muted-foreground">
-                  Patients can complete validated screening instruments, provide demographic and cultural 
-                  context, and grant digital consent from home before their clinical encounter. Clinicians 
-                  receive an AI-synthesised intake brief, reducing consultation time and improving care quality.
+                  All AI-generated content follows the principle "AI suggests, clinician decides."
+                  Clinicians retain editorial control with full audit trails. FHIR R4 data
+                  architecture supports interoperability. No PII is stored. No medication dosages
+                  are prescribed.
                 </p>
               </div>
 
               <div>
-                <p className="font-semibold text-foreground mb-1">Community Health Worker Model</p>
-                <p className="text-muted-foreground">
-                  CHWs operate in a restricted "exclusion zone" — they can record narratives, administer 
-                  PHQ-9 screening, and refer patients upward to named clinicians. Diagnostic formulation, 
-                  treatment planning, crisis protocols, and AI tools are gated to qualified clinicians only.
-                </p>
-              </div>
-
-              <div>
-                <p className="font-semibold text-foreground mb-1">Clinical Governance</p>
-                <p className="text-muted-foreground">
-                  All AI-generated content follows the principle "AI suggests, clinician decides." 
-                  Clinicians maintain editorial control with full audit trails. FHIR R4 compliant 
-                  data architecture ensures interoperability. No PII is stored. No medication dosages 
-                  are prescribed. Source citations and confidence indicators support informed clinical judgment.
-                </p>
-              </div>
-
-              <div>
-                <p className="font-semibold text-foreground mb-1">Standards & Compliance</p>
+                <p className="font-semibold text-foreground mb-1">Standards &amp; compliance</p>
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                  {["FHIR R4", "ICD-10", "ICD-11", "DSM-5", "WHO mhGAP", "POPIA", "LOINC", "SaMD-aware"].map(tag => (
+                  {["FHIR R4 (AU Base)", "ICD-10", "ICD-11", "DSM-5", "MBS Better Access", "Privacy Act 1988 (APPs)", "TGA Class I CDSS", "LOINC"].map(tag => (
                     <Badge key={tag} variant="outline" className="text-xs font-normal">{tag}</Badge>
                   ))}
                 </div>
@@ -144,13 +123,14 @@ export const AboutDialog = () => {
 
               <div className="pt-2 border-t">
                 <p className="text-xs text-muted-foreground italic">
-                  <strong>Important:</strong> This tool assists clinical documentation and decision support 
-                  but does not replace professional judgment. All AI-generated content requires clinician 
-                  review before clinical action. Designed and validated in partnership with specialist 
-                  psychiatrists in Zimbabwe and Southern Africa.
+                  <strong>Important:</strong> Aperta Health is a Clinical Decision Support System (TGA Class I).
+                  Outputs assist documentation and clinical reasoning but do not replace professional
+                  judgement. All AI-generated content requires registered-practitioner review before
+                  clinical action.
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  © {new Date().getFullYear()} StratedgeAI · Developed by Walter Chikwanha
+                  © {new Date().getFullYear()} Aperta Health · Opening the space between clinical
+                  precision and cultural understanding.
                 </p>
               </div>
             </div>

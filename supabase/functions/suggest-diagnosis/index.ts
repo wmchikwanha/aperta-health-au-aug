@@ -135,7 +135,7 @@ Use DSM-5 numeric coding and specifiers. Do NOT use ICD-11 or ICD-10 codes.
 Reference DSM-5-specific features: severity specifiers, course specifiers, categorical personality disorders.
 Follow APA classification naming conventions.`;
 
-    const systemPrompt = `You are an expert psychiatric diagnostic consultant for the Nzwisiso clinical decision support system, assisting psychiatrists and mental health clinicians in Southern Africa.
+    const systemPrompt = `You are an expert psychiatric diagnostic consultant for the Aperta Health clinical decision support system, assisting psychiatrists and mental health clinicians in Southern Africa.
 
 You use ${framework} diagnostic criteria exclusively.
 ${frameworkInstructions}

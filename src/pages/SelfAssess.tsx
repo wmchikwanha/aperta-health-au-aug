@@ -347,7 +347,7 @@ export default function SelfAssess() {
               <Stethoscope className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">Nzwisiso</h1>
+              <h1 className="text-lg font-bold text-foreground">Aperta Health</h1>
               <p className="text-xs text-muted-foreground">Mental Health Self-Assessment</p>
             </div>
           </div>
@@ -873,7 +873,7 @@ export default function SelfAssess() {
               <CardContent className="pt-6 text-center space-y-3">
                 <p className="text-sm font-medium text-foreground">Are you a mental health facility?</p>
                 <p className="text-xs text-muted-foreground">
-                  Register your facility on Nzwisiso to receive self-referrals and connect with patients in your region.
+                  Register your facility on Aperta Health to receive self-referrals and connect with patients in your region.
                 </p>
                 <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => window.location.href = "/facility"}>
                   Register Your Facility

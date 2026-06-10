@@ -1,5 +1,6 @@
-// Mental Health First Aid Crisis Protocols
-// Based on WHO mhGAP and adapted for Southern African context
+// Aperta Health — Mental Health First Aid Crisis Protocols
+// Aligned with Australian APS Guidelines, Lifeline / 13YARN / 1800RESPECT pathways,
+// and MBS Better Access referral criteria.
 
 export interface CrisisProtocol {
   id: string;
@@ -89,10 +90,11 @@ export const CRISIS_PROTOCOLS: Record<string, CrisisProtocol> = {
       'Lack of social support',
     ],
     culturalConsiderations: [
-      'Understand cultural beliefs about death and suicide',
-      'Involve traditional healers if appropriate and consented',
-      'Consider family and community dynamics',
-      'Be aware of cultural idioms of distress (e.g., "kufungisisa")',
+      'Understand cultural and religious beliefs about death and suicide',
+      'Use accredited interpreters (TIS National 131 450) for non-English speakers',
+      'Consider family / cultural-elder dynamics with consent',
+      'Recognise CALD idioms of distress (e.g., Dari "jigar khun", Arabic "qabrid", Dinka "spirit not resting")',
+      'For Aboriginal and Torres Strait Islander patients prioritise 13YARN (13 92 76) and local AMS',
     ],
   },
   self_harm: {
@@ -175,10 +177,10 @@ export const CRISIS_PROTOCOLS: Record<string, CrisisProtocol> = {
       'Severe disorganization',
     ],
     culturalConsiderations: [
-      'Distinguish cultural/spiritual experiences from psychosis',
-      'Consult with cultural experts if needed',
-      'Consider traditional explanatory models',
-      'Involve family in culturally appropriate way',
+      'Distinguish culturally normative spiritual experiences from psychosis',
+      'Engage accredited interpreters and bicultural workers where possible',
+      'Consider migration trauma, detention experience, and acculturative stress',
+      'Involve family using a culturally safe explanatory model',
     ],
   },
   severe_anxiety: {
@@ -369,38 +371,66 @@ export const EMERGENCY_CHECKLISTS: EmergencyChecklist[] = [
 export const REFERRAL_PATHWAYS = [
   {
     id: 'emergency',
-    name: 'Emergency Services',
-    description: 'For life-threatening situations',
-    contact: 'Local Emergency Number',
-    criteria: ['Overdose', 'Severe self-harm', 'Immediate suicide risk', 'Violence to others'],
+    name: 'Emergency Services (000)',
+    description: 'For life-threatening situations — ambulance, police, fire',
+    contact: '000',
+    criteria: ['Overdose', 'Severe self-harm', 'Imminent suicide risk', 'Violence to others'],
+  },
+  {
+    id: 'lifeline',
+    name: 'Lifeline',
+    description: '24-hour crisis support and suicide prevention',
+    contact: '13 11 14',
+    criteria: ['Suicidal ideation', 'Acute distress', 'After-hours support'],
+  },
+  {
+    id: 'suicide_callback',
+    name: 'Suicide Call Back Service',
+    description: 'Free 24/7 counselling for people at risk of suicide and their carers',
+    contact: '1300 659 467',
+    criteria: ['Suicidal thoughts', 'Bereavement by suicide', 'Carer support'],
+  },
+  {
+    id: '13yarn',
+    name: '13YARN (Aboriginal & Torres Strait Islander crisis line)',
+    description: 'Culturally safe crisis support line, 24/7',
+    contact: '13 92 76',
+    criteria: ['Aboriginal or Torres Strait Islander patients in crisis'],
+  },
+  {
+    id: '1800respect',
+    name: '1800RESPECT',
+    description: 'National sexual assault, domestic and family violence counselling',
+    contact: '1800 737 732',
+    criteria: ['Family violence', 'Sexual assault', 'Coercive control'],
+  },
+  {
+    id: 'tis_national',
+    name: 'TIS National (interpreter service)',
+    description: 'Free 24/7 telephone interpreting for clinicians and patients',
+    contact: '131 450',
+    criteria: ['Limited English proficiency', 'Bicultural Interpreter Mode unavailable'],
   },
   {
     id: 'psychiatric_emergency',
-    name: 'Psychiatric Emergency Unit',
-    description: 'For acute psychiatric crises requiring admission',
-    contact: 'Local Psychiatric Hospital',
-    criteria: ['Psychotic episode', 'Severe suicidal ideation', 'Unable to care for self'],
+    name: 'Acute Mental Health (local Mental Health Triage)',
+    description: 'State-based mental health triage and acute care team',
+    contact: 'See local PHN / LHD directory',
+    criteria: ['Psychotic episode', 'Severe suicidal ideation', 'Inability to care for self'],
   },
   {
-    id: 'crisis_line',
-    name: 'Mental Health Crisis Line',
-    description: '24-hour telephone support',
-    contact: 'National Crisis Line',
-    criteria: ['After-hours support', 'Telephone counseling', 'Non-emergency crisis'],
+    id: 'trauma_service',
+    name: 'State Torture & Trauma Service',
+    description: 'STARTTS (NSW), Foundation House (VIC), QPASTT (QLD), STTARS (SA), ASeTTS (WA), Phoenix (TAS), Companion House (ACT), Melaleuca (NT)',
+    contact: 'Routed by patient state',
+    criteria: ['Refugee or asylum-seeker with torture/trauma history', 'PCL-5 ≥33', 'HTQ Part IV positive'],
   },
   {
     id: 'community_mental_health',
-    name: 'Community Mental Health Services',
-    description: 'For ongoing outpatient care',
-    contact: 'Local CMHT',
-    criteria: ['Follow-up care', 'Medication management', 'Therapy referral'],
-  },
-  {
-    id: 'substance_services',
-    name: 'Substance Use Services',
-    description: 'For addiction treatment and detox',
-    contact: 'Local Substance Use Service',
-    criteria: ['Detoxification', 'Rehabilitation', 'Harm reduction'],
+    name: 'Better Access / Community Mental Health',
+    description: 'GP-led referrals under MBS Better Access (MHTP items 2710 etc.) to psychologists or psychiatrists',
+    contact: 'Patient\'s GP',
+    criteria: ['Ongoing outpatient care', 'Medication review', 'Psychological therapy'],
   },
 ];
 
