@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import PatientIntake from "./pages/PatientIntake";
 import SelfAssess from "./pages/SelfAssess";
 import SelfAssessFollowUp from "./pages/SelfAssessFollowUp";
@@ -30,6 +31,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<RoleGuard blockRoles={["chw"]}><Index /></RoleGuard>} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/intake/:token" element={<PatientIntake />} />
             <Route path="/self-assess" element={<SelfAssess />} />
             <Route path="/follow-up" element={<SelfAssessFollowUp />} />
