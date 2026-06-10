@@ -97,7 +97,7 @@ export function IntakeQueue() {
       setReferrals(rawReferrals.map(r => ({
         ...r,
         patient_identifier: patientMap[r.patient_id] || "Unknown",
-        chw_name: profileMap[r.recorded_by] || "Unknown CHW",
+        chw_name: profileMap[r.recorded_by] || "Unknown Bicultural Worker",
       })));
     } else {
       setReferrals([]);
