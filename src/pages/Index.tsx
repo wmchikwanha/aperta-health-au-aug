@@ -421,6 +421,12 @@ const Index = () => {
                 {/* Clinical-only sections below */}
                 {canProcessNarrative(userRole) && (
                   <>
+                    {/* ATSI cultural safety banner */}
+                    <ATSISafetyFlag
+                      identifies={!!(currentPatientData?.metadata?.atsi_identifies)}
+                      identityLabel={currentPatientData?.metadata?.atsi_identity_label}
+                    />
+
                     {/* Screening Context */}
                     <ScreeningContext
                       patientId={selectedPatientForAssessment}
