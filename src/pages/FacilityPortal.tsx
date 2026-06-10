@@ -277,7 +277,7 @@ export default function FacilityPortal() {
               <Building2 className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">Nzwisiso for Facilities</h1>
+              <h1 className="text-lg font-bold text-foreground">Aperta Health for Facilities</h1>
               <p className="text-xs text-muted-foreground">Mental Health Facility Portal</p>
             </div>
           </div>
@@ -301,7 +301,7 @@ export default function FacilityPortal() {
           <div className="max-w-md mx-auto space-y-6">
             <div className="text-center space-y-2">
               <h2 className="text-2xl font-bold">Facility Portal</h2>
-              <p className="text-muted-foreground">Sign in or register your mental health facility to receive patient referrals through Nzwisiso.</p>
+              <p className="text-muted-foreground">Sign in or register your mental health facility to receive patient referrals through Aperta Health.</p>
             </div>
 
             <Card>
@@ -368,7 +368,7 @@ export default function FacilityPortal() {
             <Card>
               <CardHeader>
                 <CardTitle>Register Your Facility</CardTitle>
-                <CardDescription>Provide your facility details. Your registration will be reviewed and approved by the Nzwisiso team before you can receive referrals.</CardDescription>
+                <CardDescription>Provide your facility details. Your registration will be reviewed and approved by the Aperta Health team before you can receive referrals.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -456,7 +456,7 @@ export default function FacilityPortal() {
                 <Clock className="w-16 h-16 text-muted-foreground mx-auto" />
                 <h3 className="text-xl font-semibold">Registration Under Review</h3>
                 <p className="text-muted-foreground">
-                  Your facility registration has been submitted and is being reviewed by the Nzwisiso team. You'll receive access once approved.
+                  Your facility registration has been submitted and is being reviewed by the Aperta Health team. You'll receive access once approved.
                 </p>
                 <Badge variant="secondary" className="text-sm">
                   <Clock className="w-3 h-3 mr-1" /> Pending Approval

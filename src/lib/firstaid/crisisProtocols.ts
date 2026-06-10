@@ -1,5 +1,5 @@
 // Mental Health First Aid Crisis Protocols
-// Based on WHO mhGAP and adapted for Southern African context
+// Based on Australian APS Guidelines / MBS Better Access and adapted for Southern African context
 
 export interface CrisisProtocol {
   id: string;

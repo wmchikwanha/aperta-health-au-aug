@@ -40,7 +40,7 @@ export function OfflineTriageCard({ patientLabel, recommendation }: Props) {
         ul { padding-left: 18px; }
         .footer { margin-top: 32px; font-size: 11px; color: #777; border-top: 1px solid #ddd; padding-top: 12px; }
       </style></head><body>
-      <h1>Nzwisiso — Offline Referral Note</h1>
+      <h1>Aperta Health — Offline Referral Note</h1>
       <div>Patient ID: <strong>${patientLabel}</strong></div>
       <div>Generated: ${new Date().toLocaleString()}</div>
       <div class="urgency">${recommendation.urgency.toUpperCase()} — ${recommendation.pathway}</div>
@@ -49,7 +49,7 @@ export function OfflineTriageCard({ patientLabel, recommendation }: Props) {
       <h2>Reasoning</h2>
       <ul>${recommendation.reasoning.map((r) => `<li>${r}</li>`).join("")}</ul>
       ${recommendation.mhgapModules.length ? `<h2>mhGAP Modules</h2><ul>${recommendation.mhgapModules.map((m) => `<li>${m}</li>`).join("")}</ul>` : ""}
-      <div class="footer">${recommendation.disclaimer}<br/>This page was generated offline by Nzwisiso. AI-generated narrative summary will sync to the patient record when the device next reaches the internet.</div>
+      <div class="footer">${recommendation.disclaimer}<br/>This page was generated offline by Aperta Health. AI-generated narrative summary will sync to the patient record when the device next reaches the internet.</div>
       </body></html>`);
     w.document.close();
     w.focus();

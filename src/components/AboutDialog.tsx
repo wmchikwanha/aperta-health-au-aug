@@ -21,7 +21,7 @@ export const AboutDialog = () => {
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            About Nzwisiso
+            About Aperta Health
             <Badge variant="secondary" className="text-xs">v3.1</Badge>
           </DialogTitle>
           <DialogDescription className="text-left space-y-4 pt-4">
@@ -33,7 +33,7 @@ export const AboutDialog = () => {
               <div>
                 <p className="font-semibold text-foreground mb-1">What It Does</p>
                 <p>
-                  Nzwisiso ("understanding" in Shona) transforms unstructured clinical narratives into 
+                  Aperta Health transforms unstructured clinical narratives into 
                   structured mental health assessments with deep cultural sensitivity for Southern and 
                   Sub-Saharan African contexts. It supports a graduated workforce model — from Community 
                   Health Workers recording and referring, to psychiatrists completing full diagnostic 
@@ -70,7 +70,7 @@ export const AboutDialog = () => {
                       <li>ICD-10/ICD-11/DSM-5 code selection</li>
                       <li>Differential diagnosis workspace</li>
                       <li>AI diagnostic suggestions</li>
-                      <li>WHO mhGAP treatment planning</li>
+                      <li>Australian APS Guidelines / MBS Better Access treatment planning</li>
                       <li>Case Summary PDF export</li>
                     </ul>
                   </div>
@@ -136,7 +136,7 @@ export const AboutDialog = () => {
               <div>
                 <p className="font-semibold text-foreground mb-1">Standards & Compliance</p>
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                  {["FHIR R4", "ICD-10", "ICD-11", "DSM-5", "WHO mhGAP", "POPIA", "LOINC", "SaMD-aware"].map(tag => (
+                  {["FHIR R4", "ICD-10", "ICD-11", "DSM-5", "Australian APS Guidelines / MBS Better Access", "POPIA", "LOINC", "SaMD-aware"].map(tag => (
                     <Badge key={tag} variant="outline" className="text-xs font-normal">{tag}</Badge>
                   ))}
                 </div>

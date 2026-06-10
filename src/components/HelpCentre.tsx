@@ -83,7 +83,7 @@ export const HelpCentre = () => {
 const GettingStartedTab = () => (
   <div className="space-y-4">
     <p className="text-sm text-muted-foreground">
-      Welcome to Nzwisiso! Here's how to get started with your first clinical assessment.
+      Welcome to Aperta Health! Here's how to get started with your first clinical assessment.
     </p>
     
     <Accordion type="single" collapsible className="w-full">
@@ -444,7 +444,7 @@ const DiagnosisTab = () => (
       <AccordionItem value="frameworks">
         <AccordionTrigger>Diagnostic Frameworks (ICD-11 vs DSM-5)</AccordionTrigger>
         <AccordionContent className="text-sm space-y-2">
-          <p>Nzwisiso supports both major diagnostic systems:</p>
+          <p>Aperta Health supports both major diagnostic systems:</p>
           <ul className="list-disc list-inside space-y-1">
             <li><strong>ICD-11:</strong> WHO International Classification of Diseases, 11th revision - preferred for international and public health contexts</li>
             <li><strong>DSM-5:</strong> American Psychiatric Association's Diagnostic and Statistical Manual - widely used in clinical and research settings</li>
@@ -598,7 +598,7 @@ const FirstAidTab = () => (
             <li>Determine appropriate level of care</li>
           </ol>
           <p className="text-muted-foreground mt-2">
-            Protocols are based on WHO mhGAP and adapted for Southern African contexts.
+            Protocols are based on Australian APS Guidelines / MBS Better Access and adapted for Southern African contexts.
           </p>
         </AccordionContent>
       </AccordionItem>
@@ -771,7 +771,7 @@ const PatientsTab = () => (
 const FAQTab = () => (
   <div className="space-y-4">
     <p className="text-sm text-muted-foreground">
-      Frequently asked questions about using Nzwisiso.
+      Frequently asked questions about using Aperta Health.
     </p>
     
     <Accordion type="single" collapsible className="w-full">
@@ -807,7 +807,7 @@ const FAQTab = () => (
       <AccordionItem value="offline">
         <AccordionTrigger>Can I use this offline?</AccordionTrigger>
         <AccordionContent className="text-sm">
-          <p>No, Nzwisiso requires an internet connection for:</p>
+          <p>No, Aperta Health requires an internet connection for:</p>
           <ul className="list-disc list-inside space-y-1">
             <li>AI processing of narratives</li>
             <li>Audio transcription</li>
@@ -832,7 +832,7 @@ const FAQTab = () => (
       <AccordionItem value="validation">
         <AccordionTrigger>Is this clinically validated?</AccordionTrigger>
         <AccordionContent className="text-sm">
-          <p>Nzwisiso is currently in development with clinical validation planned. The screening tools used (GAD-7, PHQ-9, PCL-5, MMSE, PSQ, PRIME-R-5) are internationally validated instruments. AI-generated content should be reviewed by qualified clinicians.</p>
+          <p>Aperta Health is currently in development with clinical validation planned. The screening tools used (GAD-7, PHQ-9, PCL-5, MMSE, PSQ, PRIME-R-5) are internationally validated instruments. AI-generated content should be reviewed by qualified clinicians.</p>
         </AccordionContent>
       </AccordionItem>
       

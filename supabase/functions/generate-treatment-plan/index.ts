@@ -109,7 +109,7 @@ BREVITY REQUIREMENT:
 - Omit fields that do not apply to this specific presentation
 
 CLINICAL FRAMEWORK:
-1. WHO mhGAP guidelines — primary reference for all recommendations
+1. Australian APS Guidelines / MBS Better Access guidelines — primary reference for all recommendations
 2. NICE guidelines — secondary reference
 3. Stepped-care model — least intensive effective intervention first
 4. Resource-aware — consider medication availability and specialist access in Southern African settings
@@ -139,7 +139,7 @@ STRUCTURE: Provide primary interventions, psychosocial interventions, pharmacolo
                     properties: {
                       intervention: { type: 'string' },
                       rationale: { type: 'string' },
-                      evidence_base: { type: 'string', description: 'WHO mhGAP, NICE, or other guideline citation' },
+                      evidence_base: { type: 'string', description: 'Australian APS Guidelines / MBS Better Access, NICE, or other guideline citation' },
                       priority: { type: 'string', enum: ['urgent', 'high', 'moderate', 'low'] }
                     },
                     required: ['intervention', 'rationale', 'evidence_base', 'priority']
@@ -289,6 +289,6 @@ function buildClinicalContext(screeningData: any[], mseFindings: any, patientCon
     context += '\n';
   }
 
-  context += 'Generate WHO mhGAP-aligned treatment recommendations for this presentation.';
+  context += 'Generate Australian APS Guidelines / MBS Better Access-aligned treatment recommendations for this presentation.';
   return context;
 }

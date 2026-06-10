@@ -292,7 +292,7 @@ const Index = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">
-                  Nzwisiso: The Clinical Bridge
+                  Aperta Health
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   Multi-lingual Psychiatric Clinical Scribe | Shona · Ndebele · Xhosa · Zulu · Sotho · Afrikaans · Swahili · French · Portuguese · English

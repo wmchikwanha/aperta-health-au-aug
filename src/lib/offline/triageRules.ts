@@ -1,4 +1,4 @@
-// Rule-based offline triage derived from WHO mhGAP-IG v2.0 (2016) decision
+// Rule-based offline triage derived from Australian APS Guidelines / MBS Better Access-IG v2.0 (2016) decision
 // logic. Runs entirely on-device — no AI, no network. Output is a structured
 // recommendation card the CHW can show to the patient or print as a referral
 // note when there is no connectivity.
@@ -38,7 +38,7 @@ export interface TriageRecommendation {
 }
 
 const DISCLAIMER =
-  "Rule-based screening triage from WHO mhGAP-IG v2.0. Not a diagnosis. Requires clinician review.";
+  "Rule-based screening triage from Australian APS Guidelines / MBS Better Access-IG v2.0. Not a diagnosis. Requires clinician review.";
 
 export function computeOfflineTriage(inputs: ScreeningInput[]): TriageRecommendation {
   const reasoning: string[] = [];

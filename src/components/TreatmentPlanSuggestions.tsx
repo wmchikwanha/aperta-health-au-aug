@@ -233,7 +233,7 @@ export const TreatmentPlanSuggestions = ({
             AI Treatment Planning
           </CardTitle>
           <CardDescription>
-            Generate evidence-based treatment recommendations from WHO mhGAP and clinical guidelines
+            Generate evidence-based treatment recommendations from Australian APS Guidelines / MBS Better Access and clinical guidelines
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -257,7 +257,7 @@ export const TreatmentPlanSuggestions = ({
                 Evidence-Based Treatment Recommendations
               </CardTitle>
               <CardDescription>
-                AI-generated plan based on WHO mhGAP, NICE guidelines, and clinical best practices
+                AI-generated plan based on Australian APS Guidelines / MBS Better Access, NICE guidelines, and clinical best practices
               </CardDescription>
             </div>
             <div className="flex gap-2">
