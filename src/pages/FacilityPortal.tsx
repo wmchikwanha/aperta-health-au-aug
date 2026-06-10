@@ -19,25 +19,14 @@ import {
 import type { User } from "@supabase/supabase-js";
 
 const REGIONS = [
-  { value: "harare", label: "Harare" },
-  { value: "bulawayo", label: "Bulawayo" },
-  { value: "manicaland", label: "Manicaland" },
-  { value: "mashonaland_central", label: "Mashonaland Central" },
-  { value: "mashonaland_east", label: "Mashonaland East" },
-  { value: "mashonaland_west", label: "Mashonaland West" },
-  { value: "masvingo", label: "Masvingo" },
-  { value: "matabeleland_north", label: "Matabeleland North" },
-  { value: "matabeleland_south", label: "Matabeleland South" },
-  { value: "midlands", label: "Midlands" },
-  { value: "gauteng", label: "Gauteng (SA)" },
-  { value: "western_cape", label: "Western Cape (SA)" },
-  { value: "kwazulu_natal", label: "KwaZulu-Natal (SA)" },
-  { value: "limpopo", label: "Limpopo (SA)" },
-  { value: "other_za", label: "Other (South Africa)" },
-  { value: "botswana", label: "Botswana" },
-  { value: "zambia", label: "Zambia" },
-  { value: "mozambique", label: "Mozambique" },
-  { value: "other", label: "Other" },
+  { value: "nsw", label: "New South Wales (NSW)" },
+  { value: "vic", label: "Victoria (VIC)" },
+  { value: "qld", label: "Queensland (QLD)" },
+  { value: "wa",  label: "Western Australia (WA)" },
+  { value: "sa",  label: "South Australia (SA)" },
+  { value: "tas", label: "Tasmania (TAS)" },
+  { value: "act", label: "Australian Capital Territory (ACT)" },
+  { value: "nt",  label: "Northern Territory (NT)" },
 ];
 
 const SERVICE_OPTIONS = [
