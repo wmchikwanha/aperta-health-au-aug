@@ -162,7 +162,7 @@ export const PatientForm = ({ onSuccess, onCancel }: PatientFormProps) => {
         <Label htmlFor="cultural_background">Cultural Background</Label>
         <Input
           id="cultural_background"
-          placeholder="e.g., Shona, Ndebele, Xhosa, Afrikaans, Swahili, Congolese, Mozambican"
+          placeholder="e.g., Hazara, Tamil, Karen, Dinka, Tigrinya, Rohingya, Vietnamese"
           {...register("cultural_background")}
         />
       </div>

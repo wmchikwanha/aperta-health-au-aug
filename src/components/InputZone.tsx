@@ -913,7 +913,7 @@ export const InputZone = ({ value, onChange, onProcess, isProcessing, processing
       <Textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Enter or paste patient narrative here. Supports: English, Shona, Ndebele, Xhosa, Zulu, Sotho, French, Portuguese..."
+        placeholder="Enter or paste patient narrative here. Supports: English, Arabic, Farsi, Dari, Pashto, Urdu, Tigrinya, Swahili, Burmese, Dinka, Vietnamese, Tamil, Rohingya..."
         className="min-h-[300px] text-base bg-background border-border focus:border-primary"
       />
       {onProcess && (

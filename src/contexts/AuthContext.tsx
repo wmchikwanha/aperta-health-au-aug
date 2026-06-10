@@ -9,6 +9,8 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   userRole: string | null;
+  fullName: string | null;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -17,6 +19,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signOut: async () => {},
   userRole: null,
+  fullName: null,
+  refreshProfile: async () => {},
 });
 
 export const useAuth = () => {
@@ -32,35 +36,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [fullName, setFullName] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Fetch user role when session changes
         if (session?.user) {
           setTimeout(() => {
             fetchUserRole(session.user.id);
+            fetchProfile(session.user.id);
           }, 0);
         } else {
           setUserRole(null);
+          setFullName(null);
         }
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
       if (session?.user) {
         fetchUserRole(session.user.id);
+        fetchProfile(session.user.id);
       }
-      
       setLoading(false);
     });
 
@@ -74,7 +76,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .select("role")
         .eq("user_id", userId)
         .single();
-
       if (error) throw error;
       setUserRole(data?.role ?? null);
     } catch (error) {
@@ -83,16 +84,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", userId)
+        .maybeSingle();
+      setFullName(data?.full_name ?? null);
+    } catch (error) {
+      setFullName(null);
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (user) await fetchProfile(user.id);
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setUserRole(null);
+    setFullName(null);
     navigate("/auth");
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut, userRole }}>
+    <AuthContext.Provider value={{ user, session, loading, signOut, userRole, fullName, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

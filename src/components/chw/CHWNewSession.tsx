@@ -47,8 +47,24 @@ const RESPONSE_OPTIONS = [
   { v: "3", label: "Nearly every day" },
 ];
 const LANGUAGES = [
-  { v: "en", label: "English" }, { v: "sn", label: "Shona" }, { v: "nd", label: "Ndebele" },
-  { v: "zu", label: "siZulu" }, { v: "xh", label: "Xhosa" }, { v: "st", label: "Sotho" },
+  { v: "en",  label: "English" },
+  { v: "ar",  label: "Arabic" },
+  { v: "fa",  label: "Farsi / Persian" },
+  { v: "prs", label: "Dari" },
+  { v: "ps",  label: "Pashto" },
+  { v: "haz", label: "Hazaragi" },
+  { v: "ur",  label: "Urdu" },
+  { v: "ti",  label: "Tigrinya" },
+  { v: "am",  label: "Amharic" },
+  { v: "sw",  label: "Swahili" },
+  { v: "rn",  label: "Kirundi" },
+  { v: "rw",  label: "Kinyarwanda" },
+  { v: "my",  label: "Burmese" },
+  { v: "din", label: "Dinka" },
+  { v: "nus", label: "Nuer" },
+  { v: "vi",  label: "Vietnamese" },
+  { v: "ta",  label: "Tamil" },
+  { v: "rhg", label: "Rohingya" },
 ];
 const AGE_BANDS = ["Under 18", "18-25", "26-35", "36-50", "51-65", "Over 65"];
 
@@ -279,7 +295,7 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
                 <AlertTitle>Safety concern</AlertTitle>
                 <AlertDescription className="space-y-1">
                   <p>The person has thoughts of self-harm. Stay with them. Refer immediately.</p>
-                  <p className="font-semibold flex items-center gap-1"><Phone className="h-3 w-3" /> Zimbabwe Friendship Bench helpline: +263 71 234 5678</p>
+                  <p className="font-semibold flex items-center gap-1"><Phone className="h-3 w-3" /> Lifeline (24/7): 13 11 14 · 13YARN: 13 92 76 · Emergency: 000</p>
                 </AlertDescription>
               </Alert>
             )}

@@ -183,18 +183,12 @@ const RecordingTab = () => (
           <p>The transcription system supports:</p>
           <ul className="list-disc list-inside space-y-1">
             <li>English (primary)</li>
-            <li>Shona</li>
-            <li>Ndebele</li>
-            <li>Xhosa</li>
-            <li>Zulu</li>
-            <li>Sotho</li>
-            <li>Afrikaans</li>
-            <li>Swahili</li>
-            <li>French</li>
-            <li>Portuguese</li>
+            <li>Arabic, Farsi, Dari, Pashto, Hazaragi, Urdu</li>
+            <li>Tigrinya, Amharic, Swahili, Kirundi, Kinyarwanda</li>
+            <li>Burmese, Dinka, Nuer, Vietnamese, Tamil, Rohingya</li>
           </ul>
           <p className="text-muted-foreground mt-2">
-            Cultural idioms of distress (e.g., kufungisisa, mhepo, hartseer, msongo wa mawazo) are recognized and interpreted in the MSE analysis.
+            Cultural idioms of distress (e.g., <em>asabi</em>, <em>jigar khoon</em>, <em>nafsaniya</em>, <em>moyo wangu unauma</em>) are recognised and interpreted in the MSE analysis. For low-coverage languages the system defaults to TIS National interpreter workflow.
           </p>
         </AccordionContent>
       </AccordionItem>
@@ -383,12 +377,13 @@ const MSETab = () => (
       <AccordionItem value="cultural">
         <AccordionTrigger>Cultural Idiom Recognition</AccordionTrigger>
         <AccordionContent className="text-sm space-y-2">
-          <p>The AI recognizes CALD cultural idioms of distress (Dari, Arabic, Urdu, Dinka, Swahili, Vietnamese …):</p>
+          <p>The AI recognises CALD cultural idioms of distress (Dari, Arabic, Urdu, Dinka, Swahili, Vietnamese …):</p>
           <ul className="list-disc list-inside space-y-1">
-            <li><strong>Kufungisisa (Shona):</strong> "Thinking too much" - often depression/anxiety</li>
-            <li><strong>Mhepo (Shona):</strong> Spirit-related distress</li>
-            <li><strong>Ukuthwasa:</strong> Calling to traditional healing</li>
-            <li><strong>Amafufunyana:</strong> Possession states</li>
+            <li><strong>Jigar khoon (Dari/Farsi):</strong> "Bleeding liver" — deep grief, often complicated bereavement</li>
+            <li><strong>Asabi (Arabic):</strong> Nerves / somatic anxiety</li>
+            <li><strong>Nafsaniya (Urdu/Arabic):</strong> Psychological distress, often expressed somatically</li>
+            <li><strong>Moyo wangu unauma (Swahili):</strong> "My heart hurts" — somatic depression in East African refugees</li>
+            <li><strong>Suy nhược thần kinh (Vietnamese):</strong> Neurasthenia / chronic fatigue with low mood</li>
           </ul>
           <p className="text-muted-foreground mt-2">
             Cultural interpretations are included alongside clinical formulations.

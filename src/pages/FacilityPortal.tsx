@@ -19,25 +19,14 @@ import {
 import type { User } from "@supabase/supabase-js";
 
 const REGIONS = [
-  { value: "harare", label: "Harare" },
-  { value: "bulawayo", label: "Bulawayo" },
-  { value: "manicaland", label: "Manicaland" },
-  { value: "mashonaland_central", label: "Mashonaland Central" },
-  { value: "mashonaland_east", label: "Mashonaland East" },
-  { value: "mashonaland_west", label: "Mashonaland West" },
-  { value: "masvingo", label: "Masvingo" },
-  { value: "matabeleland_north", label: "Matabeleland North" },
-  { value: "matabeleland_south", label: "Matabeleland South" },
-  { value: "midlands", label: "Midlands" },
-  { value: "gauteng", label: "Gauteng (SA)" },
-  { value: "western_cape", label: "Western Cape (SA)" },
-  { value: "kwazulu_natal", label: "KwaZulu-Natal (SA)" },
-  { value: "limpopo", label: "Limpopo (SA)" },
-  { value: "other_za", label: "Other (South Africa)" },
-  { value: "botswana", label: "Botswana" },
-  { value: "zambia", label: "Zambia" },
-  { value: "mozambique", label: "Mozambique" },
-  { value: "other", label: "Other" },
+  { value: "nsw", label: "New South Wales (NSW)" },
+  { value: "vic", label: "Victoria (VIC)" },
+  { value: "qld", label: "Queensland (QLD)" },
+  { value: "wa",  label: "Western Australia (WA)" },
+  { value: "sa",  label: "South Australia (SA)" },
+  { value: "tas", label: "Tasmania (TAS)" },
+  { value: "act", label: "Australian Capital Territory (ACT)" },
+  { value: "nt",  label: "Northern Territory (NT)" },
 ];
 
 const SERVICE_OPTIONS = [
@@ -374,7 +363,7 @@ export default function FacilityPortal() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2 md:col-span-2">
                     <Label>Facility Name <span className="text-destructive">*</span></Label>
-                    <Input value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="e.g. Harare Mental Health Clinic" />
+                    <Input value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="e.g. Sydney Refugee Mental Health Service" />
                   </div>
 
                   <div className="space-y-2">
@@ -391,7 +380,7 @@ export default function FacilityPortal() {
 
                   <div className="space-y-2">
                     <Label>City <span className="text-destructive">*</span></Label>
-                    <Input value={regCity} onChange={(e) => setRegCity(e.target.value)} placeholder="e.g. Harare" />
+                    <Input value={regCity} onChange={(e) => setRegCity(e.target.value)} placeholder="e.g. Sydney" />
                   </div>
 
                   <div className="space-y-2">

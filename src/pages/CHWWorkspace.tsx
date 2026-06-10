@@ -5,11 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Users, LogOut, Loader2 } from "lucide-react";
+import { Heart, Users, LogOut, Loader2, User } from "lucide-react";
 import { CHWNewSession } from "@/components/chw/CHWNewSession";
 import { CHWUpwardReferral } from "@/components/chw/CHWUpwardReferral";
 import { CHWPatientList, groupSessionsByPatient, type CHWPatientGroup } from "@/components/chw/CHWPatientList";
 import { CHWPatientDetail } from "@/components/chw/CHWPatientDetail";
+import { ProfileDialog } from "@/components/ProfileDialog";
 import { Footer } from "@/components/Footer";
 
 export interface CHWSession {
@@ -35,7 +36,8 @@ type View =
   | { kind: "refer"; session: CHWSession; pseudonymKey: string };
 
 const CHWWorkspace = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, fullName } = useAuth();
+  const [profileOpen, setProfileOpen] = useState(false);
   const { toast } = useToast();
   const [sessions, setSessions] = useState<CHWSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,9 +143,20 @@ const CHWWorkspace = () => {
               <p className="text-xs text-muted-foreground">First port of call · Listen, screen, refer</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={signOut}>
-            <LogOut className="h-4 w-4 mr-2" /> Sign out
-          </Button>
+          <div className="flex items-center gap-2">
+            {fullName && (
+              <span className="hidden sm:inline text-sm font-medium text-foreground">
+                {fullName}
+              </span>
+            )}
+            <Button variant="outline" size="sm" onClick={() => setProfileOpen(true)}>
+              <User className="h-4 w-4 mr-2" /> Profile
+            </Button>
+            <Button variant="outline" size="sm" onClick={signOut}>
+              <LogOut className="h-4 w-4 mr-2" /> Sign out
+            </Button>
+          </div>
+          <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
         </div>
       </header>
 

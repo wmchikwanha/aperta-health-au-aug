@@ -18,16 +18,17 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const CRISIS_NUMBERS = [
-  { label: "Befrienders Zimbabwe", number: "0800 22 000" },
-  { label: "SADAG (South Africa)", number: "0800 567 567" },
-  { label: "Lifeline", number: "0861 322 322" },
-  { label: "Emergency Services", number: "112" },
+  { label: "Lifeline (24/7)", number: "13 11 14" },
+  { label: "13YARN (Aboriginal & Torres Strait Islander, 24/7)", number: "13 92 76" },
+  { label: "Suicide Call Back Service", number: "1300 659 467" },
+  { label: "1800RESPECT (DFV / sexual assault)", number: "1800 737 732" },
+  { label: "Emergency Services", number: "000" },
 ];
 
 const CONSENT_ITEMS = [
   { type: "screening_disclaimer", label: "I understand this is a mental health screening tool only, NOT a diagnosis or medical advice. Results will help connect me with appropriate mental health services.", required: true },
   { type: "data_sharing", label: "I consent to my anonymised responses being shared with matched mental health facilities to facilitate a referral.", required: true },
-  { type: "emergency_understanding", label: "I understand that in a medical emergency, I should call emergency services (112) or go to my nearest emergency room immediately. This tool is NOT an emergency service.", required: true },
+  { type: "emergency_understanding", label: "I understand that in a medical emergency, I should call emergency services (000) or go to my nearest emergency room immediately. This tool is NOT an emergency service.", required: true },
   { type: "voluntary_participation", label: "I confirm I am completing this assessment voluntarily and that my responses are truthful to the best of my knowledge.", required: true },
   { type: "age_confirmation", label: "I confirm I am 18 years of age or older, or I am completing this with a parent/guardian's knowledge.", required: true },
   { type: "research_opt_in", label: "I optionally consent to my fully anonymised data being used for mental health research to improve services in my region.", required: false },
@@ -53,25 +54,14 @@ const LIKERT_OPTIONS = [
 ];
 
 const REGIONS = [
-  { value: "harare", label: "Harare" },
-  { value: "bulawayo", label: "Bulawayo" },
-  { value: "manicaland", label: "Manicaland" },
-  { value: "mashonaland_central", label: "Mashonaland Central" },
-  { value: "mashonaland_east", label: "Mashonaland East" },
-  { value: "mashonaland_west", label: "Mashonaland West" },
-  { value: "masvingo", label: "Masvingo" },
-  { value: "matabeleland_north", label: "Matabeleland North" },
-  { value: "matabeleland_south", label: "Matabeleland South" },
-  { value: "midlands", label: "Midlands" },
-  { value: "gauteng", label: "Gauteng (SA)" },
-  { value: "western_cape", label: "Western Cape (SA)" },
-  { value: "kwazulu_natal", label: "KwaZulu-Natal (SA)" },
-  { value: "limpopo", label: "Limpopo (SA)" },
-  { value: "other_za", label: "Other (South Africa)" },
-  { value: "botswana", label: "Botswana" },
-  { value: "zambia", label: "Zambia" },
-  { value: "mozambique", label: "Mozambique" },
-  { value: "other", label: "Other" },
+  { value: "nsw", label: "New South Wales (NSW)" },
+  { value: "vic", label: "Victoria (VIC)" },
+  { value: "qld", label: "Queensland (QLD)" },
+  { value: "wa",  label: "Western Australia (WA)" },
+  { value: "sa",  label: "South Australia (SA)" },
+  { value: "tas", label: "Tasmania (TAS)" },
+  { value: "act", label: "Australian Capital Territory (ACT)" },
+  { value: "nt",  label: "Northern Territory (NT)" },
 ];
 
 type Step = "welcome" | "consent" | "demographics" | "screening" | "narrative" | "completing" | "result";
@@ -417,7 +407,7 @@ export default function SelfAssess() {
                   This is NOT an emergency service
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  If you are in immediate danger or having thoughts of harming yourself, please call emergency services (112) or go to your nearest emergency room.
+                  If you are in immediate danger or having thoughts of harming yourself, please call emergency services (000) or go to your nearest emergency room.
                 </p>
                 <div className="mt-2 space-y-1">
                   {CRISIS_NUMBERS.slice(0, 2).map((c) => (
