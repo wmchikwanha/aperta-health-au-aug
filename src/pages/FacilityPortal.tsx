@@ -363,7 +363,7 @@ export default function FacilityPortal() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2 md:col-span-2">
                     <Label>Facility Name <span className="text-destructive">*</span></Label>
-                    <Input value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="e.g. Harare Mental Health Clinic" />
+                    <Input value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="e.g. Sydney Refugee Mental Health Service" />
                   </div>
 
                   <div className="space-y-2">
@@ -380,7 +380,7 @@ export default function FacilityPortal() {
 
                   <div className="space-y-2">
                     <Label>City <span className="text-destructive">*</span></Label>
-                    <Input value={regCity} onChange={(e) => setRegCity(e.target.value)} placeholder="e.g. Harare" />
+                    <Input value={regCity} onChange={(e) => setRegCity(e.target.value)} placeholder="e.g. Sydney" />
                   </div>
 
                   <div className="space-y-2">

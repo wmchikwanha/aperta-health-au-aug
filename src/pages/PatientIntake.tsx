@@ -19,9 +19,10 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const CRISIS_NUMBERS = [
-  { label: "Befrienders Zimbabwe", number: "0800 22 000" },
-  { label: "SADAG (South Africa)", number: "0800 567 567" },
-  { label: "Lifeline", number: "0861 322 322" },
+  { label: "Lifeline (24/7)", number: "13 11 14" },
+  { label: "13YARN (Aboriginal & Torres Strait Islander, 24/7)", number: "13 92 76" },
+  { label: "Suicide Call Back Service", number: "1300 659 467" },
+  { label: "Emergency Services", number: "000" },
 ];
 
 const CONSENT_ITEMS = [
@@ -374,7 +375,7 @@ export default function PatientIntake() {
               </div>
               <div className="space-y-2">
                 <Label>Cultural Background</Label>
-                <Input placeholder="e.g. Shona, Ndebele, Zulu..." value={culturalBg} onChange={e => setCulturalBg(e.target.value)} />
+                <Input placeholder="e.g. Hazara, Tamil, Karen, Dinka, Rohingya..." value={culturalBg} onChange={e => setCulturalBg(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Preferred Language for Consultation</Label>

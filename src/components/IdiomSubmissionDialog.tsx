@@ -18,17 +18,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
+import { SUPPORTED_LANGUAGES } from "@/lib/languages";
+
 const LANGUAGES = [
-  { code: "sn", label: "Shona" },
-  { code: "nd", label: "Ndebele" },
-  { code: "zu", label: "siZulu" },
-  { code: "xh", label: "Xhosa" },
-  { code: "st", label: "Sotho" },
-  { code: "af", label: "Afrikaans" },
-  { code: "sw", label: "Swahili" },
-  { code: "fr", label: "French" },
-  { code: "pt", label: "Portuguese" },
-  { code: "en", label: "English" },
+  ...SUPPORTED_LANGUAGES.filter(l => l.code !== "mixed").map(l => ({ code: l.code, label: l.name })),
   { code: "other", label: "Other / Mixed" },
 ];
 
