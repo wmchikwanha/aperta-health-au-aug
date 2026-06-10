@@ -488,6 +488,19 @@ const Index = () => {
                   </div>
                 )}
 
+                {/* Stanley-Brown Safety Plan — surface when risk is elevated */}
+                {canAccessDiagnostics(userRole) && result && selectedPatientForAssessment &&
+                  ["high", "critical", "moderate"].includes(String(result?.risk_level || "").toLowerCase()) && (
+                  <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+                    <SafetyPlan
+                      patientLabel={currentPatientData?.patient_identifier || "Patient"}
+                    />
+                  </div>
+                )}
+                {/* placeholder-close */}
+                {false && (
+                  <div />
+
                 {/* Diagnostic Formulation — clinicians only */}
                 {canAccessDiagnostics(userRole) && result && selectedPatientForAssessment && (
                   <DiagnosticFormulation
