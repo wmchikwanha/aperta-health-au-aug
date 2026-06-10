@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
   const supabaseUrl =
     env.VITE_SUPABASE_URL ||
     env.SUPABASE_URL ||
-    `https://${env.VITE_SUPABASE_PROJECT_ID || fallbackProjectId}.supabase.co`;
+    `https://${fallbackProjectId}.supabase.co`;
 
   const supabasePublishableKey =
     env.VITE_SUPABASE_PUBLISHABLE_KEY ||
