@@ -200,7 +200,7 @@ const Auth = () => {
                           <input type="radio" name="accountType" value="clinician" defaultChecked className="mt-1" />
                           <span className="text-xs">
                             <span className="block font-medium text-foreground">Clinician / Facility</span>
-                            <span className="text-muted-foreground">Psychiatrist, nurse, admin</span>
+                            <span className="text-muted-foreground">Psychiatrist / Clinical Psychologist, Refugee Health Nurse, Service Admin</span>
                           </span>
                         </label>
                         <label className="flex items-start gap-2 border rounded-md p-2 cursor-pointer hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-primary/5">

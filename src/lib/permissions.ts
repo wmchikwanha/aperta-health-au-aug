@@ -1,11 +1,12 @@
 /**
- * Role-based permission helpers for graduated UI access.
+ * Role-based permission helpers for graduated UI access — Australian
+ * refugee/CALD mental-health service model.
  *
- * Hierarchy:
- *   admin (overall oversight)
- *     ├── psychiatrist (full clinical)
- *     ├── clinical_nurse (intermediate clinical)
- *     └── chw (restricted)
+ * Hierarchy (DB role values remain stable; only display labels change):
+ *   admin            → Service Administrator (PHN / NGO operations)
+ *     ├── psychiatrist    → Psychiatrist / Clinical Psychologist / GP-MHTP
+ *     ├── clinical_nurse  → Refugee Health Nurse
+ *     └── chw             → Bicultural Worker / Community Health Worker
  */
 
 export type AppRole = "admin" | "psychiatrist" | "clinical_nurse" | "chw" | "viewer" | string | null;
@@ -23,21 +24,21 @@ export const canAccessDiagnostics = (role: AppRole): boolean =>
 export const canApproveDiagnostics = (role: AppRole): boolean =>
   role === "psychiatrist" || role === "admin";
 
-/** Can view (but not approve) diagnostics — nurses can view */
+/** Can view (but not approve) diagnostics — Refugee Health Nurses can view */
 export const canViewDiagnostics = (role: AppRole): boolean =>
   role === "psychiatrist" || role === "admin" || role === "clinical_nurse";
 
 /** Can trigger Process Narrative (MSE generation) */
 export const canProcessNarrative = (role: AppRole): boolean => isClinical(role);
 
-/** Can access full screening battery (GAD-7, PCL-5, MMSE, PSQ, PRIME-R-5) */
+/** Can access full screening battery (RHS-15, PHQ-9, GAD-7, PCL-5, HTQ-IV, WHODAS 2.0, MMSE, GDS-15) */
 export const canAccessFullScreening = (role: AppRole): boolean => isClinical(role);
 
 /** Can access analytics dashboard */
 export const canAccessAnalytics = (role: AppRole): boolean =>
   role === "psychiatrist" || role === "admin";
 
-/** Can view analytics (read-only) — nurses can view */
+/** Can view analytics (read-only) — Refugee Health Nurses can view */
 export const canViewAnalytics = (role: AppRole): boolean =>
   role === "psychiatrist" || role === "admin" || role === "clinical_nurse";
 
@@ -50,7 +51,7 @@ export const canAccessAskAI = (role: AppRole): boolean => isClinical(role);
 /** Can refer patients upward to a clinician — all roles */
 export const canReferUpward = (_role: AppRole): boolean => true;
 
-/** Can receive CHW upward referrals */
+/** Can receive Bicultural Worker upward referrals */
 export const canReceiveCHWReferrals = (role: AppRole): boolean => isClinical(role);
 
 /** Can delete/amend any user's records — admin only */
@@ -59,22 +60,22 @@ export const canDeleteRecords = (role: AppRole): boolean => role === "admin";
 /** Can monitor all users' work — admin only */
 export const canMonitorAllUsers = (role: AppRole): boolean => role === "admin";
 
-/** Is a CHW (Community Health Worker) */
+/** Is a Bicultural Worker / Community Health Worker */
 export const isCHW = (role: AppRole): boolean => role === "chw";
 
-/** Is a Clinical Nurse */
+/** Is a Refugee Health Nurse */
 export const isClinicalNurse = (role: AppRole): boolean => role === "clinical_nurse";
 
-/** Is an Administrator */
+/** Is a Service Administrator */
 export const isAdmin = (role: AppRole): boolean => role === "admin";
 
-/** Human-readable role label */
+/** Human-readable role label — Australian service model */
 export const getRoleLabel = (role: AppRole): string => {
   switch (role) {
-    case "admin": return "Administrator";
-    case "psychiatrist": return "Psychiatrist";
-    case "clinical_nurse": return "Clinical Nurse";
-    case "chw": return "Community Health Worker";
+    case "admin": return "Service Administrator";
+    case "psychiatrist": return "Psychiatrist / Clinical Psychologist";
+    case "clinical_nurse": return "Refugee Health Nurse";
+    case "chw": return "Bicultural Worker";
     case "viewer": return "Viewer";
     default: return role || "Unknown";
   }

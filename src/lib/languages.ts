@@ -1,16 +1,23 @@
 /**
- * Aperta Health Supported Languages
+ * Aperta Health Supported Languages — Australian CALD / Refugee Context
  *
  * Single source of truth for all language references across the app.
  *
- * BCP-47 codes (ISO 639-1 subtags) are used:
+ * BCP-47 codes (ISO 639-1/-3 subtags) are used:
  *   - As database values in patients.language_preference
  *   - In FHIR resources (Communication.language, Patient.communication)
  *   - As keys in culturalIdioms.ts (language_code field)
  *   - In AI prompts for language-aware processing
  *
- * transcriptionCode: the BCP-47 tag sent to the transcribe-audio edge function
- *   (Gemini Speech-to-Text requires region-qualified tags for African languages)
+ * Languages reflect priority CALD/humanitarian populations in Australia
+ * (DSS Settlement Data, AIHW 2024, RACGP Refugee Health Guidelines):
+ *   Dari, Pashto, Arabic, Farsi/Persian, Urdu, Hazaragi, Kirundi,
+ *   Kinyarwanda, Burmese (Karen/Chin), Swahili, Dinka, Nuer,
+ *   Tigrinya, Amharic, Vietnamese, Tamil, Rohingya.
+ *
+ * transcriptionCode: BCP-47 tag sent to the transcribe-audio edge function.
+ * interpreterAssisted: true for languages where ASR coverage is limited and
+ *   TIS National / on-site interpreter is the recommended primary modality.
  */
 
 export interface SupportedLanguage {
@@ -22,22 +29,36 @@ export interface SupportedLanguage {
   transcriptionCode: string;
   /** IETF region this language is primarily associated with in our context */
   primaryRegion: string;
+  /**
+   * True when ASR is unreliable for this language in Australian clinical
+   * settings — UI should default to TIS National interpreter workflow and
+   * treat any AI transcript as a draft requiring interpreter confirmation.
+   */
+  interpreterAssisted?: boolean;
 }
 
 export const SUPPORTED_LANGUAGES: SupportedLanguage[] = [
-  { code: 'en',  name: 'English',    transcriptionCode: 'en-ZW', primaryRegion: 'ZW' },
-  { code: 'sn',  name: 'Shona',      transcriptionCode: 'sn-ZW', primaryRegion: 'ZW' },
-  { code: 'nd',  name: 'Ndebele',    transcriptionCode: 'nd-ZW', primaryRegion: 'ZW' },
-  { code: 'zu',  name: 'Zulu',       transcriptionCode: 'zu-ZA', primaryRegion: 'ZA' },
-  { code: 'xh',  name: 'Xhosa',      transcriptionCode: 'xh-ZA', primaryRegion: 'ZA' },
-  { code: 'st',  name: 'Sotho',      transcriptionCode: 'st-ZA', primaryRegion: 'ZA' },
-  { code: 'af',  name: 'Afrikaans',  transcriptionCode: 'af-ZA', primaryRegion: 'ZA' },
-  { code: 'sw',  name: 'Swahili',    transcriptionCode: 'sw-KE', primaryRegion: 'KE' },
-  { code: 'fr',  name: 'French',     transcriptionCode: 'fr-CD', primaryRegion: 'CD' },
-  { code: 'pt',  name: 'Portuguese', transcriptionCode: 'pt-MZ', primaryRegion: 'MZ' },
+  { code: 'en',  name: 'English',                 transcriptionCode: 'en-AU', primaryRegion: 'AU' },
+  { code: 'ar',  name: 'Arabic',                  transcriptionCode: 'ar-XA', primaryRegion: 'AU' },
+  { code: 'fa',  name: 'Farsi / Persian',         transcriptionCode: 'fa-IR', primaryRegion: 'IR' },
+  { code: 'prs', name: 'Dari',                    transcriptionCode: 'fa-AF', primaryRegion: 'AF', interpreterAssisted: true },
+  { code: 'ps',  name: 'Pashto',                  transcriptionCode: 'ps-AF', primaryRegion: 'AF', interpreterAssisted: true },
+  { code: 'haz', name: 'Hazaragi',                transcriptionCode: 'fa-AF', primaryRegion: 'AF', interpreterAssisted: true },
+  { code: 'ur',  name: 'Urdu',                    transcriptionCode: 'ur-PK', primaryRegion: 'PK' },
+  { code: 'ti',  name: 'Tigrinya',                transcriptionCode: 'ti-ER', primaryRegion: 'ER', interpreterAssisted: true },
+  { code: 'am',  name: 'Amharic',                 transcriptionCode: 'am-ET', primaryRegion: 'ET' },
+  { code: 'sw',  name: 'Swahili',                 transcriptionCode: 'sw-TZ', primaryRegion: 'TZ' },
+  { code: 'rn',  name: 'Kirundi',                 transcriptionCode: 'rn-BI', primaryRegion: 'BI', interpreterAssisted: true },
+  { code: 'rw',  name: 'Kinyarwanda',             transcriptionCode: 'rw-RW', primaryRegion: 'RW', interpreterAssisted: true },
+  { code: 'my',  name: 'Burmese',                 transcriptionCode: 'my-MM', primaryRegion: 'MM', interpreterAssisted: true },
+  { code: 'din', name: 'Dinka',                   transcriptionCode: 'en-AU', primaryRegion: 'SS', interpreterAssisted: true },
+  { code: 'nus', name: 'Nuer',                    transcriptionCode: 'en-AU', primaryRegion: 'SS', interpreterAssisted: true },
+  { code: 'vi',  name: 'Vietnamese',              transcriptionCode: 'vi-VN', primaryRegion: 'VN' },
+  { code: 'ta',  name: 'Tamil',                   transcriptionCode: 'ta-LK', primaryRegion: 'LK' },
+  { code: 'rhg', name: 'Rohingya',                transcriptionCode: 'en-AU', primaryRegion: 'MM', interpreterAssisted: true },
   // Mixed-language / code-switching — not a standard BCP-47 tag
   // Used only for AI processing hints, not stored in FHIR resources
-  { code: 'mixed', name: 'Mixed / Code-switching', transcriptionCode: 'en-ZW', primaryRegion: 'ZW' },
+  { code: 'mixed', name: 'Mixed / Code-switching', transcriptionCode: 'en-AU', primaryRegion: 'AU' },
 ];
 
 /** BCP-47 codes only — for type-safe language_code fields */
@@ -56,6 +77,11 @@ export function getLanguageName(code: string): string {
 /** Transcription code for a BCP-47 code — for use with transcribe-audio edge function */
 export function getTranscriptionCode(code: string): string {
   return getLanguage(code)?.transcriptionCode ?? code;
+}
+
+/** True when an on-site / TIS National interpreter is the recommended modality */
+export function requiresInterpreter(code: string): boolean {
+  return Boolean(getLanguage(code)?.interpreterAssisted);
 }
 
 /**
