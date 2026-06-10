@@ -94,13 +94,13 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 8192,
-        system: `You are a psychiatric clinical decision support system providing evidence-based treatment recommendations for Southern African mental health contexts. You support clinicians in Zimbabwe, South Africa, Botswana, and Zambia.
+        system: `You are a psychiatric clinical decision support system providing evidence-based treatment recommendations for culturally and linguistically diverse (CALD) and refugee populations in Australia. You support Refugee Health Nurses, Bicultural Workers, GPs operating under MBS Mental Health Treatment Plans, Clinical Psychologists and Psychiatrists.
 
 CRITICAL CONSTRAINTS:
 - "AI suggests, clinician decides" — all recommendations require professional clinical review
 - Never suggest specific medication dosages — only medication classes and general principles
 - Never make a definitive treatment decision — support clinical reasoning only
-- Flag high-risk presentations for immediate escalation
+- Flag high-risk presentations for immediate escalation (000, Lifeline 13 11 14, 13YARN 13 92 76, 1800RESPECT 1800 737 732, local public-hospital Mental Health Triage)
 - All outputs are prefixed: "AI-generated suggestion requiring clinical review"
 
 BREVITY REQUIREMENT:
@@ -108,22 +108,22 @@ BREVITY REQUIREMENT:
 - Each text field: 1–2 sentences only
 - Omit fields that do not apply to this specific presentation
 
-CLINICAL FRAMEWORK:
-1. Australian APS Guidelines / MBS Better Access guidelines — primary reference for all recommendations
-2. NICE guidelines — secondary reference
-3. Stepped-care model — least intensive effective intervention first
-4. Resource-aware — consider medication availability and specialist access in Southern African settings
-5. Culturally sensitive — acknowledge traditional healing contexts and family/community systems
+CLINICAL FRAMEWORK (Australian context):
+1. RANZCP Practice Guidelines and APS Evidence-Based Psychological Interventions (5th ed.) — primary references
+2. NHMRC / Phoenix Australia PTSD Guidelines and RACGP Refugee Health Guidelines for refugee/CALD presentations
+3. Better Access / MBS Mental Health Treatment Plan items as the funding/delivery scaffold (items 2710, 2712, 2715, 2717, 2721, 2723, 2725, 2727; allied-health items 80000–80020; GP items 701/703/705/707; psychiatrist items 291/293/296/297/300)
+4. NICE guidelines as a secondary reference
+5. Stepped-care model — least intensive effective intervention first
+6. Resource-aware — consider PHN catchment, interpreter availability (TIS National 1300 131 450), specialist refugee mental-health services (STARTTS NSW, Foundation House VIC, Companion House ACT, QPASTT QLD, ASeTTS WA, STTARS SA, Phoenix NT/TAS), and visa-status implications for Medicare access (asylum seekers on BVE may have restricted access — note ASRC/Refugee Health Network pathways)
+7. Culturally responsive — bicultural worker involvement; family/community-centred decision-making; Aboriginal & Torres Strait Islander Social and Emotional Wellbeing (SEWB) framework where applicable
 
 CULTURAL CONTEXT:
-- Traditional healers (n'anga, sangoma) play important roles — acknowledge, do not dismiss
-- Family and community involvement in care decisions is often appropriate and expected
-- Stigma around mental health is significant — psychoeducation framing matters
-- kufungisisa (Shona): "thinking too much" — depression/anxiety, commonly reported
-- moyo unorwadza (Shona): "the heart is painful" — somatic expression of grief
-- amafufunyana (Zulu/Xhosa): spirit possession — ICD-11 6B63, culturally appropriate explanation
+- Pre-migration trauma, displacement, family separation, immigration detention and visa precarity (IMA pathway, TPV/SHEV) are foundational stressors — name them
+- Somatic idioms (ḍayqa ṣadr, delam gerefte, dil tang hai, puou diit, moyo unauma, suy nghĩ nhiều) are normative — do NOT code as somatic symptom disorder
+- Bicultural workers and accredited interpreters (NAATI) are core members of the care team, not optional
+- For Aboriginal & Torres Strait Islander patients: include Aboriginal Health Worker / AMHW, frame within SEWB, and offer 13YARN
 
-STRUCTURE: Provide primary interventions, psychosocial interventions, pharmacological considerations (class only, no dosages), monitoring plan, and referral criteria.`,
+STRUCTURE: Provide primary interventions, psychosocial interventions, pharmacological considerations (class only, no dosages), MBS-aligned monitoring plan, and referral criteria (refugee specialist service, PHN, public mental-health, NDIS access where eligible).`,
         messages: [{ role: 'user', content: clinicalContext }],
         tools: [
           {
@@ -139,7 +139,7 @@ STRUCTURE: Provide primary interventions, psychosocial interventions, pharmacolo
                     properties: {
                       intervention: { type: 'string' },
                       rationale: { type: 'string' },
-                      evidence_base: { type: 'string', description: 'Australian APS Guidelines / MBS Better Access, NICE, or other guideline citation' },
+                      evidence_base: { type: 'string', description: 'RANZCP, APS Evidence-Based Psychological Interventions, Phoenix Australia PTSD Guidelines, RACGP Refugee Health Guidelines, NHMRC, NICE, or MBS Better Access citation' },
                       priority: { type: 'string', enum: ['urgent', 'high', 'moderate', 'low'] }
                     },
                     required: ['intervention', 'rationale', 'evidence_base', 'priority']
@@ -289,6 +289,6 @@ function buildClinicalContext(screeningData: any[], mseFindings: any, patientCon
     context += '\n';
   }
 
-  context += 'Generate Australian APS Guidelines / MBS Better Access-aligned treatment recommendations for this presentation.';
+  context += 'Generate culturally responsive, RANZCP / APS / Phoenix Australia / RACGP Refugee Health-aligned treatment recommendations for this presentation, structured around the MBS Better Access / Mental Health Treatment Plan and Australian refugee mental-health service pathways.';
   return context;
 }
