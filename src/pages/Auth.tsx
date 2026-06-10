@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, UserPlus } from "lucide-react";
+import { Loader2, UserPlus, Eye, EyeOff } from "lucide-react";
 import { getRoleLabel } from "@/lib/permissions";
 import type { User, Session } from "@supabase/supabase-js";
 import { Footer } from "@/components/Footer";
@@ -21,6 +21,10 @@ const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [inviteInfo, setInviteInfo] = useState<{ email: string; role: string } | null>(null);
+  const [showSignInPwd, setShowSignInPwd] = useState(false);
+  const [showSignUpPwd, setShowSignUpPwd] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
 
   const inviteToken = searchParams.get("invite");
 
@@ -90,7 +94,7 @@ const Auth = () => {
 
     const redirectUrl = `${window.location.origin}/`;
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -106,8 +110,15 @@ const Auth = () => {
 
     if (error) {
       toast({ variant: "destructive", title: "Sign up failed", description: error.message });
+    } else if (data.session) {
+      // Auto-confirm is on — user is signed in immediately
+      toast({ title: "Welcome to Aperta Health", description: "Account created and signed in." });
+      // onAuthStateChange will redirect
     } else {
-      toast({ title: "Account created!", description: "You can now sign in with your credentials" });
+      toast({
+        title: "Check your email",
+        description: "We sent a confirmation link to verify your address.",
+      });
     }
   };
 
