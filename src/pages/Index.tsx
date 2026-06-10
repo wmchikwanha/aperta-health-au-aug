@@ -85,6 +85,7 @@ const Index = () => {
   const [showPatientForm, setShowPatientForm] = useState(false);
   const [selectedScreeningTool, setSelectedScreeningTool] = useState<string | null>(null);
   const [screeningPatientId, setScreeningPatientId] = useState<string | null>(null);
+  const [screeningRefreshKey, setScreeningRefreshKey] = useState(0);
   const [patients, setPatients] = useState<any[]>([]);
   const [patientScreeningData, setPatientScreeningData] = useState<any[]>([]);
   const { toast } = useToast();
@@ -610,6 +611,7 @@ const Index = () => {
                           patientId={screeningPatientId}
                           onComplete={() => {
                             setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
                             toast({
                               title: "Assessment Saved",
                               description: "GAD-7 assessment has been saved successfully."
@@ -623,6 +625,7 @@ const Index = () => {
                           patientId={screeningPatientId}
                           onComplete={() => {
                             setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
                             toast({
                               title: "Assessment Saved",
                               description: "PHQ-9 assessment has been saved successfully."
@@ -636,6 +639,7 @@ const Index = () => {
                           patientId={screeningPatientId}
                           onComplete={() => {
                             setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
                             toast({
                               title: "Assessment Saved",
                               description: "PCL-5 assessment has been saved successfully."
@@ -649,6 +653,7 @@ const Index = () => {
                           patientId={screeningPatientId}
                           onComplete={() => {
                             setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
                             toast({
                               title: "Assessment Saved",
                               description: "MMSE assessment has been saved successfully."
@@ -662,6 +667,7 @@ const Index = () => {
                           patientId={screeningPatientId}
                           onComplete={() => {
                             setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
                             toast({
                               title: "Assessment Saved",
                               description: "PSQ assessment has been saved successfully."
@@ -675,6 +681,7 @@ const Index = () => {
                           patientId={screeningPatientId}
                           onComplete={() => {
                             setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
                             toast({
                               title: "Assessment Saved",
                               description: "PRIME-R-5 assessment has been saved successfully."
@@ -685,7 +692,7 @@ const Index = () => {
                     </div>
                   )}
 
-                  <ScreeningResults patientId={screeningPatientId} />
+                  <ScreeningResults key={screeningRefreshKey} patientId={screeningPatientId} />
                 </div>
               )}
             </div>
