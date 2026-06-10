@@ -142,7 +142,7 @@ const GettingStartedTab = () => (
 const RecordingTab = () => (
   <div className="space-y-4">
     <p className="text-sm text-muted-foreground">
-      Record clinical narratives with voice-to-text transcription supporting multiple Southern African languages.
+      Record clinical narratives with voice-to-text transcription supporting multiple Australian refugee & CALD languages (Dari, Pashto, Urdu, Arabic, Swahili, Mandarin, Vietnamese, Burmese, Dinka, Nuer …).
     </p>
     
     <Accordion type="single" collapsible className="w-full">
@@ -383,7 +383,7 @@ const MSETab = () => (
       <AccordionItem value="cultural">
         <AccordionTrigger>Cultural Idiom Recognition</AccordionTrigger>
         <AccordionContent className="text-sm space-y-2">
-          <p>The AI recognizes Southern African cultural expressions:</p>
+          <p>The AI recognizes CALD cultural idioms of distress (Dari, Arabic, Urdu, Dinka, Swahili, Vietnamese …):</p>
           <ul className="list-disc list-inside space-y-1">
             <li><strong>Kufungisisa (Shona):</strong> "Thinking too much" - often depression/anxiety</li>
             <li><strong>Mhepo (Shona):</strong> Spirit-related distress</li>
@@ -516,7 +516,7 @@ const DiagnosisTab = () => (
             <li><strong>Overall assessment:</strong> How culture influences diagnosis and care</li>
           </ul>
           <p className="text-muted-foreground mt-2">
-            Cultural formulation is essential for accurate diagnosis and effective treatment planning in Southern African contexts.
+            Cultural formulation is essential for accurate diagnosis and effective treatment planning in Australian refugee & CALD contexts.
           </p>
         </AccordionContent>
       </AccordionItem>
@@ -598,7 +598,7 @@ const FirstAidTab = () => (
             <li>Determine appropriate level of care</li>
           </ol>
           <p className="text-muted-foreground mt-2">
-            Protocols are based on Australian APS Guidelines / MBS Better Access and adapted for Southern African contexts.
+            Protocols are based on Australian APS Guidelines / MBS Better Access and adapted for Australian refugee & CALD contexts.
           </p>
         </AccordionContent>
       </AccordionItem>
