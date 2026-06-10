@@ -497,9 +497,6 @@ const Index = () => {
                     />
                   </div>
                 )}
-                {/* placeholder-close */}
-                {false && (
-                  <div />
 
                 {/* Diagnostic Formulation — clinicians only */}
                 {canAccessDiagnostics(userRole) && result && selectedPatientForAssessment && (
