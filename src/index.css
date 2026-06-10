@@ -3,139 +3,132 @@
 @tailwind utilities;
 
 /*
-  DESIGN TOKENS
-  All colours are HSL. All values defined here — components use semantic
-  Tailwind class names only (bg-card, text-muted-foreground, etc.).
-  Raw hex / rgb values must not appear in component files.
+  DESIGN TOKENS — Aperta Health (Australian clinical aesthetic)
+  All colours are HSL. Components use semantic Tailwind class names only.
 */
 
 @layer base {
   :root {
     /* ── Background scale ──────────────────────────────── */
-    --background:  38 27% 94%;   /* #f4f1ec  warm parchment  */
-    --bg-raised:   40 38% 97%;   /* #faf8f4  sidebar, topbar */
-    --bg-deep:     38 23% 91%;   /* #ede9e2  inset surfaces  */
+    --background:  210 25% 98%;
+    --bg-raised:   0   0%  100%;
+    --bg-deep:     210 20% 95%;
 
     /* ── Card / floating surfaces ──────────────────────── */
     --card:              0 0% 100%;
-    --card-foreground:   204 15% 13%;
+    --card-foreground:   215 25% 17%;
 
     --popover:           0 0% 100%;
-    --popover-foreground: 204 15% 13%;
+    --popover-foreground: 215 25% 17%;
 
     /* ── Text scale ────────────────────────────────────── */
-    --foreground: 204 15% 13%;   /* #1c2226  primary text    */
-    --text-2:     216 14% 39%;   /* #556070  secondary text  */
-    --text-3:     208 14% 64%;   /* #96a4b0  muted text      */
+    --foreground: 215 25% 17%;
+    --text-2:     215 15% 35%;
+    --text-3:     215 12% 55%;
 
-    /* ── Primary: forest green ─────────────────────────── */
-    --primary:            156 61% 26%;   /* #1a6b4a */
-    --primary-foreground: 150 50% 96%;   /* #f0faf5 */
-
-    /* ── Secondary ─────────────────────────────────────── */
-    --secondary:            38 23% 91%;
-    --secondary-foreground: 204 15% 13%;
-
-    /* ── Muted ──────────────────────────────────────────── */
-    --muted:            38 23% 91%;
-    --muted-foreground: 208 14% 64%;
-
-    /* ── Accent: light green tint ───────────────────────── */
-    --accent:            159 39% 88%;   /* #d6ede5 */
-    --accent-foreground: 156 61% 26%;
-
-    /* ── Destructive: clinical red ──────────────────────── */
-    --destructive:            6 63% 46%;   /* #c0392b */
-    --destructive-foreground: 0 0% 100%;
-
-    /* ── Borders & input ────────────────────────────────── */
-    --border:        38 15% 84%;
-    --border-strong: 38 15% 81%;
-    --input:         0 0% 100%;
-    --ring:          156 61% 26%;
-
-    /* ── Border radius ──────────────────────────────────── */
-    --radius: 0.625rem;   /* 10px — matches wireframe */
-
-    /* ── Clinical semantic palette ──────────────────────── */
-    --clinical-green:       156 61% 26%;
-    --clinical-green-light: 159 39% 88%;
-    --clinical-green-dark:  156 61% 20%;
-
-    --alert-red:            6 63% 46%;
-    --alert-red-bg:         6 84% 97%;
-
-    --warning-amber:        26 91% 37%;   /* #b45309 */
-    --warning-amber-bg:     48 96% 89%;   /* #fef3c7 */
-
-    /* ── Success (kept for shadcn compatibility) ─────────── */
-    --success:            156 61% 26%;
-    --success-foreground: 150 50% 96%;
-
-    /* ── Sidebar ────────────────────────────────────────── */
-    --sidebar-background:         40 38% 97%;
-    --sidebar-foreground:         204 15% 13%;
-    --sidebar-primary:            156 61% 26%;
-    --sidebar-primary-foreground: 150 50% 96%;
-    --sidebar-accent:             38 23% 91%;
-    --sidebar-accent-foreground:  204 15% 13%;
-    --sidebar-border:             38 15% 84%;
-    --sidebar-ring:               156 61% 26%;
-  }
-
-  /* Dark mode — values preserved from previous version for now.
-     Full dark-mode redesign is Phase 2 scope. */
-  .dark {
-    --background: 210 20% 12%;
-    --foreground: 210 10% 95%;
-
-    --card:              210 20% 15%;
-    --card-foreground:   210 10% 95%;
-
-    --popover:           210 20% 15%;
-    --popover-foreground: 210 10% 95%;
-
-    --primary:            156 61% 45%;
+    /* ── Primary: Australian health blue #0071b3 ───────── */
+    --primary:            202 100% 35%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary:            210 20% 20%;
-    --secondary-foreground: 210 10% 95%;
+    /* ── Secondary ─────────────────────────────────────── */
+    --secondary:            210 25% 94%;
+    --secondary-foreground: 215 25% 17%;
 
-    --muted:            210 20% 20%;
-    --muted-foreground: 210 10% 70%;
+    /* ── Muted ─────────────────────────────────────────── */
+    --muted:            210 20% 94%;
+    --muted-foreground: 215 12% 45%;
 
-    --accent:            210 30% 25%;
-    --accent-foreground: 156 61% 70%;
+    /* ── Accent: muted teal #00857b ────────────────────── */
+    --accent:            175 100% 26%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive:            6 63% 46%;
+    /* ── Destructive: clinical red ─────────────────────── */
+    --destructive:            0 72% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border:        210 20% 25%;
-    --border-strong: 210 20% 30%;
-    --input:         210 20% 20%;
-    --ring:          156 61% 45%;
+    /* ── Borders & input ───────────────────────────────── */
+    --border:        210 20% 88%;
+    --border-strong: 210 20% 80%;
+    --input:         0 0% 100%;
+    --ring:          202 100% 35%;
 
-    --clinical-green:       156 61% 45%;
-    --clinical-green-light: 156 30% 25%;
-    --clinical-green-dark:  156 61% 70%;
+    --radius: 0.5rem;
 
-    --alert-red:    6 63% 46%;
-    --alert-red-bg: 6 63% 20%;
+    /* ── Clinical semantic palette ─────────────────────── */
+    --clinical-green:       175 100% 26%;
+    --clinical-green-light: 175 60% 92%;
+    --clinical-green-dark:  175 100% 20%;
 
-    --warning-amber:    26 91% 55%;
-    --warning-amber-bg: 26 50% 20%;
+    --alert-red:            0 72% 45%;
+    --alert-red-bg:         0 84% 97%;
 
-    --success:            156 61% 45%;
-    --success-foreground: 156 71% 8%;
+    --warning-amber:        32 95% 44%;
+    --warning-amber-bg:     45 100% 94%;
 
-    --sidebar-background:         210 20% 10%;
-    --sidebar-foreground:         210 10% 95%;
-    --sidebar-primary:            156 61% 45%;
+    --success:            145 60% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --sidebar-background:         0 0% 100%;
+    --sidebar-foreground:         215 25% 17%;
+    --sidebar-primary:            202 100% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent:             210 20% 18%;
-    --sidebar-accent-foreground:  210 10% 95%;
-    --sidebar-border:             210 20% 20%;
-    --sidebar-ring:               156 61% 45%;
+    --sidebar-accent:             210 25% 94%;
+    --sidebar-accent-foreground:  215 25% 17%;
+    --sidebar-border:             210 20% 88%;
+    --sidebar-ring:               202 100% 35%;
+  }
+
+  .dark {
+    --background: 215 30% 10%;
+    --foreground: 210 20% 95%;
+
+    --card:              215 30% 13%;
+    --card-foreground:   210 20% 95%;
+
+    --popover:           215 30% 13%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary:            202 90% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary:            215 25% 20%;
+    --secondary-foreground: 210 20% 95%;
+
+    --muted:            215 25% 20%;
+    --muted-foreground: 215 15% 70%;
+
+    --accent:            175 70% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive:            0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border:        215 25% 25%;
+    --border-strong: 215 25% 30%;
+    --input:         215 25% 20%;
+    --ring:          202 90% 55%;
+
+    --clinical-green:       175 70% 40%;
+    --clinical-green-light: 175 40% 25%;
+    --clinical-green-dark:  175 70% 60%;
+
+    --alert-red:    0 72% 50%;
+    --alert-red-bg: 0 60% 18%;
+
+    --warning-amber:    32 95% 55%;
+    --warning-amber-bg: 32 50% 20%;
+
+    --success:            145 60% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --sidebar-background:         215 30% 8%;
+    --sidebar-foreground:         210 20% 95%;
+    --sidebar-primary:            202 90% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent:             215 25% 18%;
+    --sidebar-accent-foreground:  210 20% 95%;
+    --sidebar-border:             215 25% 22%;
+    --sidebar-ring:               202 90% 55%;
   }
 }
 
@@ -148,16 +141,5 @@
     @apply bg-background text-foreground font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* Subtle warm paper texture overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    pointer-events: none;
-    opacity: 0.018;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 }
