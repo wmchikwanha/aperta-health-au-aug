@@ -137,7 +137,7 @@ const CHWWorkspace = () => {
           <div className="flex items-center gap-3">
             <Heart className="h-7 w-7 text-primary" />
             <div>
-              <h1 className="text-xl font-bold">Community Health Worker</h1>
+              <h1 className="text-xl font-bold">Bicultural Worker</h1>
               <p className="text-xs text-muted-foreground">First port of call · Listen, screen, refer</p>
             </div>
           </div>

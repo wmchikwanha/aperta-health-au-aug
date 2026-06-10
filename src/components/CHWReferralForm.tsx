@@ -110,7 +110,7 @@ export function CHWReferralForm({ patientId, patientName, narrativeText, onSucce
                 <SelectItem key={c.id} value={c.id}>
                   <div className="flex items-center gap-2">
                     <UserCheck className="h-3 w-3" />
-                    {c.full_name} ({c.role === "clinical_nurse" ? "Clinical Nurse" : c.role === "psychiatrist" ? "Psychiatrist" : "Admin"})
+                    {c.full_name} ({c.role === "clinical_nurse" ? "Refugee Health Nurse" : c.role === "psychiatrist" ? "Psychiatrist / Clinical Psychologist" : "Service Admin"})
                   </div>
                 </SelectItem>
               ))}
