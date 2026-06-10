@@ -196,7 +196,7 @@ export function IntakeQueue() {
           <h3 className="text-lg font-semibold text-foreground">Intake Queue</h3>
           <p className="text-sm text-muted-foreground">
             {pendingIntake} intake{pendingIntake !== 1 ? "s" : ""} pending
-            {activeReferrals.length > 0 && ` • ${activeReferrals.length} CHW referral${activeReferrals.length !== 1 ? "s" : ""}`}
+            {activeReferrals.length > 0 && ` • ${activeReferrals.length} Bicultural Worker referral${activeReferrals.length !== 1 ? "s" : ""}`}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={fetchData}>Refresh</Button>
@@ -210,7 +210,7 @@ export function IntakeQueue() {
             {pendingIntake > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{pendingIntake}</Badge>}
           </TabsTrigger>
           <TabsTrigger value="chw" className="gap-1">
-            CHW Referrals
+            Bicultural Worker Referrals
             {activeReferrals.length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{activeReferrals.length}</Badge>}
           </TabsTrigger>
         </TabsList>
@@ -222,7 +222,7 @@ export function IntakeQueue() {
             <>
               {activeReferrals.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">CHW Referrals</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Bicultural Worker Referrals</p>
                   {activeReferrals.map(r => <ReferralCard key={r.id} referral={r} urgencyBadge={urgencyBadge} onView={() => setSelectedReferral(r)} />)}
                 </div>
               )}
@@ -249,7 +249,7 @@ export function IntakeQueue() {
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
                 <ArrowUpRight className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No CHW referrals yet.</p>
+                <p>No Bicultural Worker referrals yet.</p>
               </CardContent>
             </Card>
           ) : (
@@ -333,10 +333,10 @@ export function IntakeQueue() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ArrowUpRight className="h-5 w-5 text-primary" />
-              CHW Referral
+              Bicultural Worker Referral
             </DialogTitle>
             <DialogDescription>
-              Upward referral from community health worker
+              Upward referral from Bicultural Worker
             </DialogDescription>
           </DialogHeader>
           {selectedReferral && (
@@ -347,7 +347,7 @@ export function IntakeQueue() {
                   <p className="text-sm font-medium">{selectedReferral.patient_identifier}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Referring CHW</p>
+                  <p className="text-xs text-muted-foreground">Referring Bicultural Worker</p>
                   <p className="text-sm font-medium">{selectedReferral.chw_name}</p>
                 </div>
                 <div>

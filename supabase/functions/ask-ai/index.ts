@@ -45,13 +45,13 @@ async function enforceClinicianRole(req: Request): Promise<{ userId: string; rol
     { global: { headers: { Authorization: authHeader } } }
   );
   const token = authHeader.replace("Bearer ", "");
-  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-  if (claimsError || !claimsData?.claims) {
+  const { data: userData, error: userError } = await supabase.auth.getUser(token);
+  if (userError || !userData?.user) {
     return new Response(JSON.stringify({ error: "Unauthorized — invalid token" }), {
       status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-  const userId = claimsData.claims.sub as string;
+  const userId = userData.user.id;
   const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
   const userRole = roles?.[0]?.role;
   if (!userRole || !CLINICAL_ROLES.includes(userRole)) {
