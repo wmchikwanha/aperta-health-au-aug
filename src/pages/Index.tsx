@@ -8,6 +8,8 @@ import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { InputZone } from "@/components/InputZone";
 import { ClinicalAbstract } from "@/components/ClinicalAbstract";
 import { DemoScenarios } from "@/components/DemoScenarios";
+import { ATSISafetyFlag } from "@/components/ATSISafetyFlag";
+import { SafetyPlan } from "@/components/SafetyPlan";
 import { AssessmentHistory } from "@/components/AssessmentHistory";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { ClinicalDashboard } from "@/components/ClinicalDashboard";
@@ -419,6 +421,12 @@ const Index = () => {
                 {/* Clinical-only sections below */}
                 {canProcessNarrative(userRole) && (
                   <>
+                    {/* ATSI cultural safety banner */}
+                    <ATSISafetyFlag
+                      identifies={!!(currentPatientData?.metadata?.atsi_identifies)}
+                      identityLabel={currentPatientData?.metadata?.atsi_identity_label}
+                    />
+
                     {/* Screening Context */}
                     <ScreeningContext
                       patientId={selectedPatientForAssessment}
@@ -476,6 +484,16 @@ const Index = () => {
                         clinical_impressions: result?.clinical_impressions
                       }}
                       patientContext={currentPatientData}
+                    />
+                  </div>
+                )}
+
+                {/* Stanley-Brown Safety Plan — surface when risk is elevated */}
+                {canAccessDiagnostics(userRole) && result && selectedPatientForAssessment &&
+                  ["high", "critical", "moderate"].includes(String(result?.risk_level || "").toLowerCase()) && (
+                  <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+                    <SafetyPlan
+                      patientLabel={currentPatientData?.patient_identifier || "Patient"}
                     />
                   </div>
                 )}
