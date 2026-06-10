@@ -35,7 +35,8 @@ type View =
   | { kind: "refer"; session: CHWSession; pseudonymKey: string };
 
 const CHWWorkspace = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, fullName } = useAuth();
+  const [profileOpen, setProfileOpen] = useState(false);
   const { toast } = useToast();
   const [sessions, setSessions] = useState<CHWSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,9 +142,20 @@ const CHWWorkspace = () => {
               <p className="text-xs text-muted-foreground">First port of call · Listen, screen, refer</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={signOut}>
-            <LogOut className="h-4 w-4 mr-2" /> Sign out
-          </Button>
+          <div className="flex items-center gap-2">
+            {fullName && (
+              <span className="hidden sm:inline text-sm font-medium text-foreground">
+                {fullName}
+              </span>
+            )}
+            <Button variant="outline" size="sm" onClick={() => setProfileOpen(true)}>
+              <User className="h-4 w-4 mr-2" /> Profile
+            </Button>
+            <Button variant="outline" size="sm" onClick={signOut}>
+              <LogOut className="h-4 w-4 mr-2" /> Sign out
+            </Button>
+          </div>
+          <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
         </div>
       </header>
 
