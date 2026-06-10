@@ -193,7 +193,7 @@ export const CHWUpwardReferral = ({ session, onDone, onCancel }: Props) => {
                 return f ? `${f.facility_name}${f.emergency_capable ? " (Emergency)" : ""}${f.region ? ` · ${f.region}` : ""}` : "";
               }
               const c = clinicians.find(x => x.id === id);
-              return c ? `${c.full_name} (${c.role === "clinical_nurse" ? "Nurse" : c.role === "psychiatrist" ? "Psychiatrist" : "Admin"})` : "";
+              return c ? `${c.full_name} (${c.role === "clinical_nurse" ? "Refugee Health Nurse" : c.role === "psychiatrist" ? "Psychiatrist / Psychologist" : "Admin"})` : "";
             })();
             const pick = (v: string) => { setDestValue(v); setDestOpen(false); };
             return (
@@ -235,7 +235,7 @@ export const CHWUpwardReferral = ({ session, onDone, onCancel }: Props) => {
                           <CommandGroup heading="Clinicians">
                             {clinicians.map(c => {
                               const v = `clinician:${c.id}`;
-                              const roleLabel = c.role === "clinical_nurse" ? "Nurse" : c.role === "psychiatrist" ? "Psychiatrist" : "Admin";
+                              const roleLabel = c.role === "clinical_nurse" ? "Refugee Health Nurse" : c.role === "psychiatrist" ? "Psychiatrist / Psychologist" : "Admin";
                               const search = `${c.full_name} ${roleLabel}`;
                               return (
                                 <CommandItem key={c.id} value={search} onSelect={() => pick(v)}>
@@ -339,7 +339,7 @@ export const CHWUpwardReferral = ({ session, onDone, onCancel }: Props) => {
                     <span className="font-medium">{c.full_name}</span>
                   </div>
                   <div className="text-muted-foreground pl-6 capitalize">
-                    Role: {c.role === "clinical_nurse" ? "Clinical Nurse" : c.role === "psychiatrist" ? "Psychiatrist" : "Admin"}
+                    Role: {c.role === "clinical_nurse" ? "Refugee Health Nurse" : c.role === "psychiatrist" ? "Psychiatrist / Clinical Psychologist" : "Service Admin"}
                   </div>
                   {c.email
                     ? <div className="text-muted-foreground pl-6">Email: <a className="underline" href={`mailto:${c.email}`}>{c.email}</a></div>
