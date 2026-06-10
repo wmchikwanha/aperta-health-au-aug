@@ -48,6 +48,7 @@ import { PSQForm } from "@/components/screening/PSQForm";
 import { PRIMER5Form } from "@/components/screening/PRIMER5Form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScreeningContext } from "@/components/ScreeningContext";
+import { ProfileDialog } from "@/components/ProfileDialog";
 import { TreatmentPlanSuggestions } from "@/components/TreatmentPlanSuggestions";
 import { AppointmentScheduler } from "@/components/AppointmentScheduler";
 import { AppointmentList } from "@/components/AppointmentList";
@@ -87,9 +88,10 @@ const Index = () => {
   const [patients, setPatients] = useState<any[]>([]);
   const [patientScreeningData, setPatientScreeningData] = useState<any[]>([]);
   const { toast } = useToast();
-  const { user, signOut, loading, userRole } = useAuth();
+  const { user, signOut, loading, userRole, fullName } = useAuth();
   const navigate = useNavigate();
   const { pendingCount: offlinePendingCount } = useOfflineQueue();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
