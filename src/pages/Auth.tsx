@@ -144,6 +144,24 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!forgotEmail) {
+      toast({ variant: "destructive", title: "Email required", description: "Enter your email to receive a reset link." });
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Could not send reset email", description: error.message });
+    } else {
+      toast({ title: "Check your email", description: "If an account exists, a reset link has been sent." });
+      setForgotOpen(false);
+    }
+  };
+
   const defaultTab = inviteToken ? "signup" : "signin";
 
   return (
@@ -192,12 +210,52 @@ const Auth = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signin-password">Password</Label>
-                    <Input id="signin-password" name="password" type="password" required />
+                    <div className="relative">
+                      <Input id="signin-password" name="password" type={showSignInPwd ? "text" : "password"} required className="pr-10" />
+                      <button
+                        type="button"
+                        onClick={() => setShowSignInPwd((s) => !s)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        aria-label={showSignInPwd ? "Hide password" : "Show password"}
+                      >
+                        {showSignInPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    <div className="text-right">
+                      <button
+                        type="button"
+                        onClick={() => { setForgotEmail((document.getElementById("signin-email") as HTMLInputElement)?.value || ""); setForgotOpen(true); }}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Sign In
                   </Button>
+                  {forgotOpen && (
+                    <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+                      <Label htmlFor="forgot-email" className="text-xs">Send a password reset link to:</Label>
+                      <Input
+                        id="forgot-email"
+                        type="email"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        placeholder="you@example.com"
+                      />
+                      <div className="flex gap-2">
+                        <Button type="button" size="sm" onClick={handleForgotPassword} disabled={loading}>
+                          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          Send reset link
+                        </Button>
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setForgotOpen(false)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </form>
               </TabsContent>
               
@@ -241,7 +299,17 @@ const Auth = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input id="signup-password" name="password" type="password" minLength={6} required />
+                    <div className="relative">
+                      <Input id="signup-password" name="password" type={showSignUpPwd ? "text" : "password"} minLength={6} required className="pr-10" />
+                      <button
+                        type="button"
+                        onClick={() => setShowSignUpPwd((s) => !s)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        aria-label={showSignUpPwd ? "Hide password" : "Show password"}
+                      >
+                        {showSignUpPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
