@@ -385,7 +385,7 @@ export default function FacilityPortal() {
 
                   <div className="space-y-2">
                     <Label>Phone</Label>
-                    <Input value={regPhone} onChange={(e) => setRegPhone(e.target.value)} placeholder="+263..." />
+                    <Input value={regPhone} onChange={(e) => setRegPhone(e.target.value)} placeholder="+61..." />
                   </div>
 
                   <div className="space-y-2">

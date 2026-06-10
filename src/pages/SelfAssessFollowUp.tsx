@@ -281,7 +281,7 @@ export default function SelfAssessFollowUp() {
                   </div>
                   <div className="space-y-1">
                     <Label htmlFor="cp" className="text-xs">Phone</Label>
-                    <Input id="cp" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="+263…" />
+                    <Input id="cp" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="+61…" />
                   </div>
                   <div className="space-y-1">
                     <Label htmlFor="ce" className="text-xs">Email</Label>
