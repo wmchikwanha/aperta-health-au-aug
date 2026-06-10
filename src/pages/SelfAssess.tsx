@@ -28,7 +28,7 @@ const CRISIS_NUMBERS = [
 const CONSENT_ITEMS = [
   { type: "screening_disclaimer", label: "I understand this is a mental health screening tool only, NOT a diagnosis or medical advice. Results will help connect me with appropriate mental health services.", required: true },
   { type: "data_sharing", label: "I consent to my anonymised responses being shared with matched mental health facilities to facilitate a referral.", required: true },
-  { type: "emergency_understanding", label: "I understand that in a medical emergency, I should call emergency services (112) or go to my nearest emergency room immediately. This tool is NOT an emergency service.", required: true },
+  { type: "emergency_understanding", label: "I understand that in a medical emergency, I should call emergency services (000) or go to my nearest emergency room immediately. This tool is NOT an emergency service.", required: true },
   { type: "voluntary_participation", label: "I confirm I am completing this assessment voluntarily and that my responses are truthful to the best of my knowledge.", required: true },
   { type: "age_confirmation", label: "I confirm I am 18 years of age or older, or I am completing this with a parent/guardian's knowledge.", required: true },
   { type: "research_opt_in", label: "I optionally consent to my fully anonymised data being used for mental health research to improve services in my region.", required: false },
@@ -407,7 +407,7 @@ export default function SelfAssess() {
                   This is NOT an emergency service
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  If you are in immediate danger or having thoughts of harming yourself, please call emergency services (112) or go to your nearest emergency room.
+                  If you are in immediate danger or having thoughts of harming yourself, please call emergency services (000) or go to your nearest emergency room.
                 </p>
                 <div className="mt-2 space-y-1">
                   {CRISIS_NUMBERS.slice(0, 2).map((c) => (
