@@ -5,11 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Users, LogOut, Loader2 } from "lucide-react";
+import { Heart, Users, LogOut, Loader2, User } from "lucide-react";
 import { CHWNewSession } from "@/components/chw/CHWNewSession";
 import { CHWUpwardReferral } from "@/components/chw/CHWUpwardReferral";
 import { CHWPatientList, groupSessionsByPatient, type CHWPatientGroup } from "@/components/chw/CHWPatientList";
 import { CHWPatientDetail } from "@/components/chw/CHWPatientDetail";
+import { ProfileDialog } from "@/components/ProfileDialog";
 import { Footer } from "@/components/Footer";
 
 export interface CHWSession {
