@@ -291,13 +291,17 @@ const Index = () => {
                 <Stethoscope className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">
+                <h1 className="text-2xl font-bold text-foreground font-display tracking-tight">
                   Aperta Health
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  Multi-lingual Psychiatric Clinical Scribe | Shona · Ndebele · Xhosa · Zulu · Sotho · Afrikaans · Swahili · French · Portuguese · English
+                  Mental Health Decision Support · Refugee &amp; CALD clinical workflows · Hosted in Australia
                 </p>
               </div>
+              <span className="hidden md:inline-flex items-center gap-1.5 ml-2 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-medium border border-primary/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                Data Sovereign · Privacy Act 1988 (APPs)
+              </span>
               <HelpCentre />
               <AboutDialog />
               <ConnectivityStatus />
