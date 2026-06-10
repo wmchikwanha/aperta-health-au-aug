@@ -33,19 +33,34 @@ export function CHWReferralForm({ patientId, patientName, narrativeText, onSucce
         .select("user_id, role")
         .in("role", ["clinical_nurse", "psychiatrist", "admin"]);
 
-      if (!roles?.length) return;
+      let clinicianList: { id: string; full_name: string; email: string; role: string }[] = [];
 
-      const clinicianIds = roles.map(r => r.user_id);
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, full_name, email")
-        .in("id", clinicianIds);
+      if (roles?.length) {
+        const clinicianIds = roles.map(r => r.user_id);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", clinicianIds);
 
-      // Attach role to each clinician and sort nurses first
-      const clinicianList = (profiles || []).map(p => {
-        const roleEntry = roles.find(r => r.user_id === p.id);
-        return { ...p, role: roleEntry?.role || "psychiatrist" };
-      });
+        // Attach role to each clinician, keep only wmchikwanha@gmail.com
+        clinicianList = (profiles || [])
+          .map(p => {
+            const roleEntry = roles.find(r => r.user_id === p.id);
+            return { id: p.id, full_name: p.full_name, email: p.email, role: roleEntry?.role || "psychiatrist" };
+          })
+          .filter(c => c.email?.toLowerCase() === "wmchikwanha@gmail.com");
+      }
+
+      // Fallback if wmchikwanha@gmail.com is not registered in the database yet
+      if (!clinicianList.some(c => c.email?.toLowerCase() === "wmchikwanha@gmail.com")) {
+        clinicianList.push({
+          id: "00000000-0000-0000-0000-000000000001",
+          full_name: "Dr. William M. Chikwanha",
+          email: "wmchikwanha@gmail.com",
+          role: "psychiatrist",
+        });
+      }
+
       clinicianList.sort((a, b) => {
         const order = { clinical_nurse: 0, psychiatrist: 1, admin: 2 };
         return (order[a.role as keyof typeof order] ?? 3) - (order[b.role as keyof typeof order] ?? 3);

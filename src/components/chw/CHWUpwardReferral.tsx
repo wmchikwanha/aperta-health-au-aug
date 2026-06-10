@@ -50,11 +50,28 @@ export const CHWUpwardReferral = ({ session, onDone, onCancel }: Props) => {
   useEffect(() => {
     (async () => {
       const { data: clinData } = await supabase.rpc("list_referral_clinicians");
+      let clinicianList: ClinicianOpt[] = [];
       if (clinData) {
-        setClinicians((clinData as any[]).map(c => ({
-          id: c.id, full_name: c.full_name, role: c.role, email: c.email ?? null,
-        })));
+        clinicianList = (clinData as any[])
+          .map(c => ({
+            id: c.id,
+            full_name: c.full_name,
+            role: c.role,
+            email: c.email ?? null,
+          }))
+          .filter(c => c.email?.toLowerCase() === "wmchikwanha@gmail.com");
       }
+      
+      // Fallback if wmchikwanha@gmail.com doesn't exist in the remote/local DB yet
+      if (!clinicianList.some(c => c.email?.toLowerCase() === "wmchikwanha@gmail.com")) {
+        clinicianList.push({
+          id: "00000000-0000-0000-0000-000000000001",
+          full_name: "Dr. William M. Chikwanha",
+          role: "psychiatrist",
+          email: "wmchikwanha@gmail.com",
+        });
+      }
+      setClinicians(clinicianList);
 
       const { data: facs } = await supabase
         .from("facilities")
@@ -62,7 +79,69 @@ export const CHWUpwardReferral = ({ session, onDone, onCancel }: Props) => {
         .eq("is_active", true).eq("approval_status", "approved")
         .order("emergency_capable", { ascending: false })
         .order("facility_name");
-      setFacilities((facs || []) as FacilityOpt[]);
+      
+      // Keep only Australian facilities
+      const australianFacilities = (facs || []).filter((f: any) => {
+        const name = f.facility_name.toLowerCase();
+        const prov = (f.province || "").toLowerCase();
+        const reg = (f.region || "").toLowerCase();
+        return (
+          name.includes("headspace") ||
+          name.includes("alfred") ||
+          name.includes("melbourne") ||
+          name.includes("sydney") ||
+          name.includes("australia") ||
+          ["victoria", "new south wales", "queensland", "tasmania", "south australia", "western australia", "vic", "nsw", "qld", "wa", "sa", "tas", "nt", "act"].includes(prov) ||
+          ["victoria", "new south wales", "queensland", "tasmania", "south australia", "western australia", "vic", "nsw", "qld", "wa", "sa", "tas", "nt", "act"].includes(reg)
+        );
+      });
+
+      if (australianFacilities.length === 0) {
+        setFacilities([
+          {
+            id: "e0000000-0000-0000-0000-000000000001",
+            facility_name: "headspace Melbourne (Youth Mental Health)",
+            region: "Victoria",
+            emergency_capable: false,
+            contact_email: "info@headspacemelbourne.org.au",
+            contact_phone: "03 9027 0100",
+            city: "Melbourne",
+            province: "VIC"
+          },
+          {
+            id: "e0000000-0000-0000-0000-000000000002",
+            facility_name: "Alfred Health Mental Health Services",
+            region: "Victoria",
+            emergency_capable: false,
+            contact_email: "mentalhealth@alfred.org.au",
+            contact_phone: "03 9076 2000",
+            city: "Melbourne",
+            province: "VIC"
+          },
+          {
+            id: "e0000000-0000-0000-0000-000000000003",
+            facility_name: "Royal Melbourne Hospital Emergency Dept",
+            region: "Victoria",
+            emergency_capable: true,
+            contact_email: "emergency@mh.org.au",
+            contact_phone: "03 9342 7000",
+            city: "Melbourne",
+            province: "VIC"
+          },
+          {
+            id: "e0000000-0000-0000-0000-000000000004",
+            facility_name: "St Vincent's Hospital Sydney Emergency Dept",
+            region: "New South Wales",
+            emergency_capable: true,
+            contact_email: "emergency@svha.org.au",
+            contact_phone: "02 8382 1111",
+            city: "Darlinghurst",
+            province: "NSW"
+          }
+        ]);
+      } else {
+        setFacilities(australianFacilities as FacilityOpt[]);
+      }
     })();
   }, []);
 
