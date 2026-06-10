@@ -75,7 +75,7 @@ export interface CacheMetaRow {
   updatedAt: string;
 }
 
-class Aperta HealthOfflineDB extends Dexie {
+class ApertaHealthOfflineDB extends Dexie {
   outbox!: Table<OutboxRow, string>;
   audio_chunks!: Table<AudioChunkRow, string>;
   encounters!: Table<EncounterDraftRow, string>;
@@ -94,7 +94,7 @@ class Aperta HealthOfflineDB extends Dexie {
   }
 }
 
-export const offlineDB = new Aperta HealthOfflineDB();
+export const offlineDB = new ApertaHealthOfflineDB();
 
 // ---------------------------------------------------------------------------
 // Convenience helpers
