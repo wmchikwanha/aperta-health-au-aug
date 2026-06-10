@@ -368,7 +368,7 @@ export function DiagnosticFormulation({
                     ...prev, 
                     culturalFormulation: e.target.value 
                   }))}
-                  placeholder="Document cultural factors including idioms of distress (e.g., kufungisisa), cultural explanatory models, and how culture influences symptom presentation..."
+                  placeholder="Document cultural factors including idioms of distress (e.g., jigar khoon, asabi, nafsaniya), cultural explanatory models, and how culture influences symptom presentation..."
                   className="min-h-[100px]"
                 />
               </div>
