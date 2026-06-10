@@ -142,7 +142,7 @@ export const AnalyticsDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Assessments</CardTitle>
+            <CardTitle className="text-sm font-medium">Assessments Completed</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -164,7 +164,7 @@ export const AnalyticsDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">High Risk Cases</CardTitle>
+            <CardTitle className="text-sm font-medium">High Acuity (ATS 1–2)</CardTitle>
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
@@ -175,7 +175,7 @@ export const AnalyticsDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
+            <CardTitle className="text-sm font-medium">Patients in Catchment</CardTitle>
             <Languages className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -210,7 +210,7 @@ export const AnalyticsDashboard = () => {
         {/* Language Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Language Distribution</CardTitle>
+            <CardTitle>Language &amp; Interpreter Mix</CardTitle>
             <CardDescription>Assessment languages</CardDescription>
           </CardHeader>
           <CardContent>
@@ -234,7 +234,7 @@ export const AnalyticsDashboard = () => {
         {/* Risk Level Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Risk Level Distribution</CardTitle>
+            <CardTitle>ATS Triage Distribution</CardTitle>
             <CardDescription>Assessment risk levels</CardDescription>
           </CardHeader>
           <CardContent>
