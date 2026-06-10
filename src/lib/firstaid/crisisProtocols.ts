@@ -1,5 +1,6 @@
-// Mental Health First Aid Crisis Protocols
-// Based on Australian APS Guidelines / MBS Better Access and adapted for Southern African context
+// Aperta Health — Mental Health First Aid Crisis Protocols
+// Aligned with Australian APS Guidelines, Lifeline / 13YARN / 1800RESPECT pathways,
+// and MBS Better Access referral criteria.
 
 export interface CrisisProtocol {
   id: string;
