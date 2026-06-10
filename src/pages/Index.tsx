@@ -317,6 +317,11 @@ const Index = () => {
               >
                 🆘 Get Help Now
               </Button>
+              {fullName && (
+                <span className="hidden md:inline text-sm font-medium text-foreground">
+                  {fullName}
+                </span>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon">
@@ -326,7 +331,8 @@ const Index = () => {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">{user?.email}</p>
+                      <p className="text-sm font-medium">{fullName || user?.email}</p>
+                      {fullName && <p className="text-xs text-muted-foreground">{user?.email}</p>}
                        {userRole && (
                         <Badge variant={isAdmin(userRole) ? "destructive" : isCHW(userRole) ? "default" : "secondary"} className="w-fit text-xs">
                           {getRoleLabel(userRole)}
@@ -335,12 +341,17 @@ const Index = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setProfileOpen(true)} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile &amp; Settings
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
             </div>
           </div>
         </div>
@@ -795,7 +806,7 @@ const Index = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
             <div>
-              <strong className="text-foreground">Better:</strong> Understands cultural idioms across 10 languages (English, Shona, Ndebele, kiSwahili, Afrikaans, Xhosa, siZulu, Sotho, French, Portuguese)
+              <strong className="text-foreground">Better:</strong> Understands cultural idioms across Australian refugee &amp; CALD languages (English, Arabic, Farsi, Dari, Pashto, Hazaragi, Urdu, Tigrinya, Amharic, Swahili, Kirundi, Kinyarwanda, Burmese, Dinka, Nuer, Vietnamese, Tamil, Rohingya)
             </div>
             <div>
               <strong className="text-foreground">Faster:</strong> Converts raw narratives into structured MSE format instantly
