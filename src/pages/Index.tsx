@@ -8,6 +8,8 @@ import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { InputZone } from "@/components/InputZone";
 import { ClinicalAbstract } from "@/components/ClinicalAbstract";
 import { DemoScenarios } from "@/components/DemoScenarios";
+import { ATSISafetyFlag } from "@/components/ATSISafetyFlag";
+import { SafetyPlan } from "@/components/SafetyPlan";
 import { AssessmentHistory } from "@/components/AssessmentHistory";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { ClinicalDashboard } from "@/components/ClinicalDashboard";
