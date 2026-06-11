@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Stethoscope, ChevronRight, ChevronLeft, Check, AlertTriangle, ShieldCheck, Loader2, Phone, Mail, Globe, Mic, MicOff, Upload, FileText, Copy, KeyRound, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,44 +13,27 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/Footer";
 import { SUPPORTED_LANGUAGES } from "@/lib/languages";
+import { getStrings, isRTL, formatStepOf } from "@/lib/i18n/selfAssess";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-const CRISIS_NUMBERS = [
-  { label: "Lifeline (24/7)", number: "13 11 14" },
-  { label: "13YARN (Aboriginal & Torres Strait Islander, 24/7)", number: "13 92 76" },
-  { label: "Suicide Call Back Service", number: "1300 659 467" },
-  { label: "1800RESPECT (DFV / sexual assault)", number: "1800 737 732" },
-  { label: "Emergency Services", number: "000" },
+// Australian crisis numbers — digits never localise; labels come from i18n strings.
+const CRISIS_NUMBERS_RAW: Array<{ key: keyof ReturnType<typeof getStrings>["crisis"]["numbers"]; number: string }> = [
+  { key: "lifeline", number: "13 11 14" },
+  { key: "yarn", number: "13 92 76" },
+  { key: "suicide", number: "1300 659 467" },
+  { key: "respect", number: "1800 737 732" },
+  { key: "emergency", number: "000" },
 ];
 
-const CONSENT_ITEMS = [
-  { type: "screening_disclaimer", label: "I understand this is a mental health screening tool only, NOT a diagnosis or medical advice. Results will help connect me with appropriate mental health services.", required: true },
-  { type: "data_sharing", label: "I consent to my anonymised responses being shared with matched mental health facilities to facilitate a referral.", required: true },
-  { type: "emergency_understanding", label: "I understand that in a medical emergency, I should call emergency services (000) or go to my nearest emergency room immediately. This tool is NOT an emergency service.", required: true },
-  { type: "voluntary_participation", label: "I confirm I am completing this assessment voluntarily and that my responses are truthful to the best of my knowledge.", required: true },
-  { type: "age_confirmation", label: "I confirm I am 18 years of age or older, or I am completing this with a parent/guardian's knowledge.", required: true },
-  { type: "research_opt_in", label: "I optionally consent to my fully anonymised data being used for mental health research to improve services in my region.", required: false },
-];
-
-const PHQ9_QUESTIONS = [
-  "Little interest or pleasure in doing things",
-  "Feeling down, depressed, or hopeless",
-  "Trouble falling or staying asleep, or sleeping too much",
-  "Feeling tired or having little energy",
-  "Poor appetite or overeating",
-  "Feeling bad about yourself — or that you are a failure or have let yourself or your family down",
-  "Trouble concentrating on things, such as reading or watching television",
-  "Moving or speaking so slowly that other people could have noticed? Or the opposite — being so fidgety or restless",
-  "Thoughts that you would be better off dead, or of hurting yourself in some way",
-];
-
-const LIKERT_OPTIONS = [
-  { value: 0, label: "Not at all" },
-  { value: 1, label: "Several days" },
-  { value: 2, label: "More than half the days" },
-  { value: 3, label: "Nearly every day" },
+const CONSENT_KEYS: Array<{ type: string; itemKey: keyof ReturnType<typeof getStrings>["consent"]["items"]; required: boolean }> = [
+  { type: "screening_disclaimer", itemKey: "screening", required: true },
+  { type: "data_sharing", itemKey: "data", required: true },
+  { type: "emergency_understanding", itemKey: "emergency", required: true },
+  { type: "voluntary_participation", itemKey: "voluntary", required: true },
+  { type: "age_confirmation", itemKey: "age", required: true },
+  { type: "research_opt_in", itemKey: "research", required: false },
 ];
 
 const REGIONS = [
@@ -62,6 +45,14 @@ const REGIONS = [
   { value: "tas", label: "Tasmania (TAS)" },
   { value: "act", label: "Australian Capital Territory (ACT)" },
   { value: "nt",  label: "Northern Territory (NT)" },
+];
+
+const AGE_BANDS = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
+const GENDERS: Array<{ value: string; key: keyof ReturnType<typeof getStrings>["demographics"]["genderOptions"] }> = [
+  { value: "male", key: "male" },
+  { value: "female", key: "female" },
+  { value: "non-binary", key: "nonbinary" },
+  { value: "prefer_not_to_say", key: "prefer" },
 ];
 
 type Step = "welcome" | "consent" | "demographics" | "screening" | "narrative" | "completing" | "result";
@@ -86,31 +77,29 @@ export default function SelfAssess() {
   const [loading, setLoading] = useState(false);
   const [crisisDetected, setCrisisDetected] = useState(false);
 
-  // Consent
   const [consents, setConsents] = useState<Record<string, boolean>>({});
-
-  // Demographics
   const [ageBand, setAgeBand] = useState("");
   const [gender, setGender] = useState("");
   const [region, setRegion] = useState("");
   const [preferredLanguage, setPreferredLanguage] = useState("en");
 
-  // PHQ-9
   const [phq9Responses, setPhq9Responses] = useState<Record<number, number>>({});
 
-  // Narrative
   const [narrativeText, setNarrativeText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
 
-  // Result
   const [resultData, setResultData] = useState<any>(null);
+
+  const t = useMemo(() => getStrings(preferredLanguage), [preferredLanguage]);
+  const rtl = isRTL(preferredLanguage);
+  const Forward = rtl ? ChevronLeft : ChevronRight;
+  const Backward = rtl ? ChevronRight : ChevronLeft;
 
   const totalSteps = 5;
   const stepIndex = { welcome: 0, consent: 1, demographics: 2, screening: 3, narrative: 4, completing: 4, result: 5 };
   const progress = (stepIndex[step] / totalSteps) * 100;
 
-  // ── Start session ──
   const startSession = useCallback(async () => {
     setLoading(true);
     try {
@@ -120,22 +109,21 @@ export default function SelfAssess() {
       setVerificationPin(data.verification_pin || "");
       setStep("consent");
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t.common.errorTitle, description: e.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  }, [preferredLanguage, toast]);
+  }, [preferredLanguage, toast, t]);
 
-  // ── Save consents ──
   const saveConsents = useCallback(async () => {
-    const requiredMissing = CONSENT_ITEMS.filter(c => c.required && !consents[c.type]);
+    const requiredMissing = CONSENT_KEYS.filter(c => c.required && !consents[c.type]);
     if (requiredMissing.length > 0) {
-      toast({ title: "Required consents", description: "Please agree to all required items before continuing.", variant: "destructive" });
+      toast({ title: t.consent.requiredTitle, description: t.consent.requiredDesc, variant: "destructive" });
       return;
     }
     setLoading(true);
     try {
-      const consentRows = CONSENT_ITEMS.map(c => ({
+      const consentRows = CONSENT_KEYS.map(c => ({
         consent_type: c.type,
         granted: !!consents[c.type],
         consent_text_version: "1.0",
@@ -143,16 +131,15 @@ export default function SelfAssess() {
       await callApi({ action: "save_consents", session_token: sessionToken, consents: consentRows });
       setStep("demographics");
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t.common.errorTitle, description: e.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  }, [consents, sessionToken, toast]);
+  }, [consents, sessionToken, toast, t]);
 
-  // ── Save demographics ──
   const saveDemographics = useCallback(async () => {
     if (!ageBand || !gender || !region) {
-      toast({ title: "Required fields", description: "Please complete all required fields.", variant: "destructive" });
+      toast({ title: t.demographics.requiredTitle, description: t.demographics.requiredDesc, variant: "destructive" });
       return;
     }
     setLoading(true);
@@ -165,16 +152,15 @@ export default function SelfAssess() {
       });
       setStep("screening");
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t.common.errorTitle, description: e.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  }, [ageBand, gender, region, preferredLanguage, sessionToken, toast]);
+  }, [ageBand, gender, region, preferredLanguage, sessionToken, toast, t]);
 
-  // ── Save screening ──
   const saveScreening = useCallback(async () => {
     if (Object.keys(phq9Responses).length < 9) {
-      toast({ title: "Incomplete", description: "Please answer all 9 questions.", variant: "destructive" });
+      toast({ title: t.phq9.incompleteTitle, description: t.phq9.incompleteDesc, variant: "destructive" });
       return;
     }
     setLoading(true);
@@ -212,13 +198,12 @@ export default function SelfAssess() {
       }
       setStep("narrative");
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t.common.errorTitle, description: e.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  }, [phq9Responses, sessionToken, toast]);
+  }, [phq9Responses, sessionToken, toast, t]);
 
-  // ── Save narrative & complete ──
   const completeAssessment = useCallback(async () => {
     setLoading(true);
     setStep("completing");
@@ -230,14 +215,13 @@ export default function SelfAssess() {
       setResultData(result);
       setStep("result");
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t.common.errorTitle, description: e.message, variant: "destructive" });
       setStep("narrative");
     } finally {
       setLoading(false);
     }
-  }, [narrativeText, sessionToken, toast]);
+  }, [narrativeText, sessionToken, toast, t]);
 
-  // ── Voice recording ──
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -245,7 +229,7 @@ export default function SelfAssess() {
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
+        stream.getTracks().forEach(tr => tr.stop());
         const blob = new Blob(chunks, { type: "audio/webm" });
         const reader = new FileReader();
         reader.onloadend = async () => {
@@ -259,10 +243,9 @@ export default function SelfAssess() {
             const data = await res.json();
             if (data.text) {
               setNarrativeText(prev => prev ? `${prev}\n\n${data.text}` : data.text);
-              toast({ title: "Transcription complete", description: "Your voice has been converted to text." });
             }
           } catch {
-            toast({ title: "Transcription failed", description: "Please type your concerns instead.", variant: "destructive" });
+            toast({ title: t.common.errorTitle, variant: "destructive" });
           }
         };
         reader.readAsDataURL(blob);
@@ -271,9 +254,9 @@ export default function SelfAssess() {
       setMediaRecorder(recorder);
       setIsRecording(true);
     } catch {
-      toast({ title: "Microphone access denied", description: "Please allow microphone access or type your concerns.", variant: "destructive" });
+      toast({ title: t.common.errorTitle, variant: "destructive" });
     }
-  }, [preferredLanguage, toast]);
+  }, [preferredLanguage, toast, t]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorder && mediaRecorder.state !== "inactive") {
@@ -283,21 +266,16 @@ export default function SelfAssess() {
     }
   }, [mediaRecorder]);
 
-  // ── Document upload ──
   const handleDocumentUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp", "text/plain"];
-    if (!allowedTypes.includes(file.type)) {
-      toast({ title: "Unsupported file", description: "Please upload a PDF, image, or text file.", variant: "destructive" });
-      return;
-    }
+    if (!allowedTypes.includes(file.type)) return;
 
     if (file.type === "text/plain") {
       const text = await file.text();
-      setNarrativeText(prev => prev ? `${prev}\n\n--- From ${file.name} ---\n${text}` : text);
-      toast({ title: "File loaded", description: `Text from ${file.name} has been added.` });
+      setNarrativeText(prev => prev ? `${prev}\n\n--- ${file.name} ---\n${text}` : text);
       return;
     }
 
@@ -313,23 +291,19 @@ export default function SelfAssess() {
         });
         const data = await res.json();
         if (data.text) {
-          setNarrativeText(prev => prev ? `${prev}\n\n--- From ${file.name} ---\n${data.text}` : data.text);
-          toast({ title: "Document processed", description: `Content from ${file.name} has been extracted.` });
-        } else if (data.error) {
-          toast({ title: "Processing failed", description: data.error, variant: "destructive" });
+          setNarrativeText(prev => prev ? `${prev}\n\n--- ${file.name} ---\n${data.text}` : data.text);
         }
         setLoading(false);
       };
       reader.readAsDataURL(file);
     } catch {
-      toast({ title: "Upload failed", description: "Could not process the document.", variant: "destructive" });
+      toast({ title: t.common.errorTitle, variant: "destructive" });
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, t]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
+    <div className="min-h-screen bg-background flex flex-col" dir={rtl ? "rtl" : "ltr"} lang={preferredLanguage}>
       <header className="bg-card border-b px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -338,36 +312,34 @@ export default function SelfAssess() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-foreground">Aperta Health</h1>
-              <p className="text-xs text-muted-foreground">Mental Health Self-Assessment</p>
+              <p className="text-xs text-muted-foreground">{t.header.subtitle}</p>
             </div>
           </div>
-          <Badge variant="outline" className="text-xs">Confidential</Badge>
+          <Badge variant="outline" className="text-xs">{t.header.confidential}</Badge>
         </div>
       </header>
 
-      {/* Progress */}
       {step !== "welcome" && step !== "result" && (
         <div className="max-w-3xl mx-auto w-full px-6 pt-4">
           <Progress value={progress} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-1 text-right">
-            Step {stepIndex[step]} of {totalSteps}
+          <p className="text-xs text-muted-foreground mt-1 text-end">
+            {formatStepOf(t.progress.stepOf, stepIndex[step], totalSteps)}
           </p>
         </div>
       )}
 
-      {/* Crisis banner — always visible once detected */}
       {crisisDetected && (
         <div className="max-w-3xl mx-auto w-full px-6 mt-4">
           <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-destructive text-sm">If you are in immediate danger, please contact emergency services now</p>
+                <p className="font-semibold text-destructive text-sm">{t.crisis.heading}</p>
                 <div className="mt-2 space-y-1">
-                  {CRISIS_NUMBERS.map((c) => (
+                  {CRISIS_NUMBERS_RAW.map((c) => (
                     <p key={c.number} className="text-sm">
-                      <strong>{c.label}:</strong>{" "}
-                      <a href={`tel:${c.number.replace(/\s/g, "")}`} className="text-destructive underline font-mono">{c.number}</a>
+                      <strong>{t.crisis.numbers[c.key]}:</strong>{" "}
+                      <a href={`tel:${c.number.replace(/\s/g, "")}`} className="text-destructive underline font-mono" dir="ltr">{c.number}</a>
                     </p>
                   ))}
                 </div>
@@ -378,53 +350,45 @@ export default function SelfAssess() {
       )}
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-8">
-        {/* ── WELCOME ─── */}
         {step === "welcome" && (
           <Card>
             <CardHeader className="text-center pb-2">
               <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <ShieldCheck className="w-8 h-8 text-primary" />
               </div>
-              <CardTitle className="text-2xl">Mental Health Self-Assessment</CardTitle>
-              <CardDescription className="text-base mt-2">
-                This free, confidential tool helps you understand your mental wellbeing and connects you with mental health professionals in your area.
-              </CardDescription>
+              <CardTitle className="text-2xl">{t.welcome.title}</CardTitle>
+              <CardDescription className="text-base mt-2">{t.welcome.subtitle}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="bg-accent/30 rounded-lg p-4 space-y-2">
-                <h3 className="font-semibold text-sm">What to expect:</h3>
+                <h3 className="font-semibold text-sm">{t.welcome.expectHeading}</h3>
                 <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                  <li>A short screening questionnaire (about 5 minutes)</li>
-                  <li>Option to share your story by voice, text, or document upload</li>
-                  <li>Confidential matching to mental health services near you</li>
-                  <li>No personal identifying information is stored</li>
+                  {t.welcome.expect.map((line, i) => <li key={i}>{line}</li>)}
                 </ul>
               </div>
 
               <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4">
                 <p className="text-sm font-medium text-destructive flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" />
-                  This is NOT an emergency service
+                  {t.welcome.notEmergencyTitle}
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  If you are in immediate danger or having thoughts of harming yourself, please call emergency services (000) or go to your nearest emergency room.
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">{t.welcome.notEmergencyBody}</p>
                 <div className="mt-2 space-y-1">
-                  {CRISIS_NUMBERS.slice(0, 2).map((c) => (
+                  {CRISIS_NUMBERS_RAW.slice(0, 2).map((c) => (
                     <p key={c.number} className="text-xs">
-                      <strong>{c.label}:</strong>{" "}
-                      <a href={`tel:${c.number.replace(/\s/g, "")}`} className="text-destructive underline">{c.number}</a>
+                      <strong>{t.crisis.numbers[c.key]}:</strong>{" "}
+                      <a href={`tel:${c.number.replace(/\s/g, "")}`} className="text-destructive underline" dir="ltr">{c.number}</a>
                     </p>
                   ))}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Preferred language</Label>
+                <Label>{t.welcome.languageLabel}</Label>
                 <Select value={preferredLanguage} onValueChange={setPreferredLanguage}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {SUPPORTED_LANGUAGES.map(l => (
+                    {SUPPORTED_LANGUAGES.filter(l => l.code !== "mixed").map(l => (
                       <SelectItem key={l.code} value={l.code}>{l.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -432,26 +396,25 @@ export default function SelfAssess() {
               </div>
 
               <Button onClick={startSession} disabled={loading} className="w-full" size="lg">
-                {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                Begin Self-Assessment
-                <ChevronRight className="w-4 h-4 ml-2" />
+                {loading ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : null}
+                {t.welcome.startButton}
+                <Forward className="w-4 h-4 ms-2" />
               </Button>
             </CardContent>
           </Card>
         )}
 
-        {/* ── CONSENT ─── */}
         {step === "consent" && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-primary" />
-                Consent & Safety Information
+                {t.consent.title}
               </CardTitle>
-              <CardDescription>Please read and agree to the following before continuing.</CardDescription>
+              <CardDescription>{t.consent.subtitle}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {CONSENT_ITEMS.map((item) => (
+              {CONSENT_KEYS.map((item) => (
                 <div key={item.type} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/20 transition-colors">
                   <Checkbox
                     id={item.type}
@@ -459,66 +422,57 @@ export default function SelfAssess() {
                     onCheckedChange={(c) => setConsents(prev => ({ ...prev, [item.type]: !!c }))}
                   />
                   <Label htmlFor={item.type} className="text-sm leading-relaxed cursor-pointer flex-1">
-                    {item.label}
-                    {item.required && <span className="text-destructive ml-1">*</span>}
+                    {t.consent.items[item.itemKey]}
+                    {item.required && <span className="text-destructive ms-1">*</span>}
                   </Label>
                 </div>
               ))}
 
               <div className="flex gap-3 pt-4">
                 <Button variant="outline" onClick={() => setStep("welcome")}>
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Back
+                  <Backward className="w-4 h-4 me-1" /> {t.consent.back}
                 </Button>
                 <Button onClick={saveConsents} disabled={loading} className="flex-1">
-                  {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  I Agree & Continue
-                  <ChevronRight className="w-4 h-4 ml-2" />
+                  {loading ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : null}
+                  {t.consent.agree}
+                  <Forward className="w-4 h-4 ms-2" />
                 </Button>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* ── DEMOGRAPHICS ─── */}
         {step === "demographics" && (
           <Card>
             <CardHeader>
-              <CardTitle>About You</CardTitle>
-              <CardDescription>Help us match you with the right services. No identifying information is stored.</CardDescription>
+              <CardTitle>{t.demographics.title}</CardTitle>
+              <CardDescription>{t.demographics.subtitle}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Age range <span className="text-destructive">*</span></Label>
+                <Label>{t.demographics.ageLabel} <span className="text-destructive">*</span></Label>
                 <Select value={ageBand} onValueChange={setAgeBand}>
-                  <SelectTrigger><SelectValue placeholder="Select age range" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t.demographics.agePlaceholder} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="18-24">18–24</SelectItem>
-                    <SelectItem value="25-34">25–34</SelectItem>
-                    <SelectItem value="35-44">35–44</SelectItem>
-                    <SelectItem value="45-54">45–54</SelectItem>
-                    <SelectItem value="55-64">55–64</SelectItem>
-                    <SelectItem value="65+">65+</SelectItem>
+                    {AGE_BANDS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label>Gender <span className="text-destructive">*</span></Label>
+                <Label>{t.demographics.genderLabel} <span className="text-destructive">*</span></Label>
                 <Select value={gender} onValueChange={setGender}>
-                  <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t.demographics.genderPlaceholder} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="non-binary">Non-binary</SelectItem>
-                    <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                    {GENDERS.map(g => <SelectItem key={g.value} value={g.value}>{t.demographics.genderOptions[g.key]}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label>Region / Province <span className="text-destructive">*</span></Label>
+                <Label>{t.demographics.regionLabel} <span className="text-destructive">*</span></Label>
                 <Select value={region} onValueChange={setRegion}>
-                  <SelectTrigger><SelectValue placeholder="Select your region" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t.demographics.regionPlaceholder} /></SelectTrigger>
                   <SelectContent>
                     {REGIONS.map(r => (
                       <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
@@ -529,47 +483,44 @@ export default function SelfAssess() {
 
               <div className="flex gap-3 pt-4">
                 <Button variant="outline" onClick={() => setStep("consent")}>
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Back
+                  <Backward className="w-4 h-4 me-1" /> {t.demographics.back}
                 </Button>
                 <Button onClick={saveDemographics} disabled={loading} className="flex-1">
-                  {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  Continue to Screening
-                  <ChevronRight className="w-4 h-4 ml-2" />
+                  {loading ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : null}
+                  {t.demographics.next}
+                  <Forward className="w-4 h-4 ms-2" />
                 </Button>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* ── SCREENING (PHQ-9) ─── */}
         {step === "screening" && (
           <Card>
             <CardHeader>
-              <CardTitle>How Have You Been Feeling?</CardTitle>
-              <CardDescription>
-                Over the <strong>last 2 weeks</strong>, how often have you been bothered by any of the following problems?
-              </CardDescription>
+              <CardTitle>{t.phq9.title}</CardTitle>
+              <CardDescription>{t.phq9.subtitle}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {PHQ9_QUESTIONS.map((q, i) => (
+              {t.phq9.questions.map((q, i) => (
                 <div key={i} className="space-y-2">
                   <Label className="text-sm font-medium">
                     {i + 1}. {q}
-                    {i === 8 && <Badge variant="outline" className="ml-2 text-xs">Safety question</Badge>}
+                    {i === 8 && <Badge variant="outline" className="ms-2 text-xs">{t.phq9.safetyBadge}</Badge>}
                   </Label>
                   <RadioGroup
                     value={phq9Responses[i]?.toString()}
                     onValueChange={(v) => setPhq9Responses(prev => ({ ...prev, [i]: parseInt(v) }))}
                     className="flex flex-wrap gap-2"
                   >
-                    {LIKERT_OPTIONS.map(opt => (
-                      <div key={opt.value} className="flex items-center">
-                        <RadioGroupItem value={opt.value.toString()} id={`q${i}-${opt.value}`} className="peer sr-only" />
+                    {t.phq9.likert.map((label, val) => (
+                      <div key={val} className="flex items-center">
+                        <RadioGroupItem value={val.toString()} id={`q${i}-${val}`} className="peer sr-only" />
                         <Label
-                          htmlFor={`q${i}-${opt.value}`}
+                          htmlFor={`q${i}-${val}`}
                           className="px-3 py-2 rounded-md border text-xs cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary hover:bg-accent transition-colors"
                         >
-                          {opt.label}
+                          {label}
                         </Label>
                       </div>
                     ))}
@@ -579,94 +530,76 @@ export default function SelfAssess() {
 
               <div className="flex gap-3 pt-4">
                 <Button variant="outline" onClick={() => setStep("demographics")}>
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Back
+                  <Backward className="w-4 h-4 me-1" /> {t.phq9.back}
                 </Button>
                 <Button onClick={saveScreening} disabled={loading} className="flex-1">
-                  {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  Continue
-                  <ChevronRight className="w-4 h-4 ml-2" />
+                  {loading ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : null}
+                  {t.phq9.next}
+                  <Forward className="w-4 h-4 ms-2" />
                 </Button>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* ── NARRATIVE ─── */}
         {step === "narrative" && (
           <Card>
             <CardHeader>
-              <CardTitle>Tell Us More (Optional)</CardTitle>
-              <CardDescription>
-                Share anything else about how you've been feeling. You can type, speak, or upload documents from previous appointments.
-              </CardDescription>
+              <CardTitle>{t.narrative.title}</CardTitle>
+              <CardDescription>{t.narrative.subtitle}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Textarea
                 value={narrativeText}
                 onChange={(e) => setNarrativeText(e.target.value)}
-                placeholder="Describe what's been on your mind, any symptoms, or concerns you'd like help with..."
+                placeholder={t.narrative.placeholder}
                 rows={6}
                 className="resize-y"
               />
 
               <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant={isRecording ? "destructive" : "outline"}
-                  size="sm"
-                  onClick={isRecording ? stopRecording : startRecording}
-                >
-                  {isRecording ? <MicOff className="w-4 h-4 mr-1" /> : <Mic className="w-4 h-4 mr-1" />}
-                  {isRecording ? "Stop Recording" : "Speak"}
+                <Button type="button" variant={isRecording ? "destructive" : "outline"} size="sm" onClick={isRecording ? stopRecording : startRecording}>
+                  {isRecording ? <MicOff className="w-4 h-4 me-1" /> : <Mic className="w-4 h-4 me-1" />}
+                  {isRecording ? t.narrative.stop : t.narrative.speak}
                 </Button>
 
                 <Label htmlFor="doc-upload" className="cursor-pointer">
                   <Button type="button" variant="outline" size="sm" asChild>
                     <span>
-                      <Upload className="w-4 h-4 mr-1" />
-                      Upload Document
+                      <Upload className="w-4 h-4 me-1" />
+                      {t.narrative.upload}
                     </span>
                   </Button>
                 </Label>
-                <Input
-                  id="doc-upload"
-                  type="file"
-                  className="hidden"
-                  accept=".pdf,.txt,.jpg,.jpeg,.png,.webp"
-                  onChange={handleDocumentUpload}
-                />
+                <Input id="doc-upload" type="file" className="hidden" accept=".pdf,.txt,.jpg,.jpeg,.png,.webp" onChange={handleDocumentUpload} />
               </div>
 
-              <p className="text-xs text-muted-foreground">
-                Accepted: PDF, images (JPG, PNG), or text files from previous appointments.
-              </p>
+              <p className="text-xs text-muted-foreground">{t.narrative.accepted}</p>
 
               <div className="flex gap-3 pt-4">
                 <Button variant="outline" onClick={() => setStep("screening")}>
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Back
+                  <Backward className="w-4 h-4 me-1" /> {t.narrative.back}
                 </Button>
                 <Button onClick={completeAssessment} disabled={loading} className="flex-1">
-                  {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  {narrativeText.trim() ? "Submit & Get Results" : "Skip & Get Results"}
-                  <ChevronRight className="w-4 h-4 ml-2" />
+                  {loading ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : null}
+                  {narrativeText.trim() ? t.narrative.submit : t.narrative.skip}
+                  <Forward className="w-4 h-4 ms-2" />
                 </Button>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* ── COMPLETING ─── */}
         {step === "completing" && (
           <Card>
             <CardContent className="py-12 text-center space-y-4">
               <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
-              <h3 className="text-lg font-semibold">Processing your assessment...</h3>
-              <p className="text-sm text-muted-foreground">We're matching you with mental health services in your area.</p>
+              <h3 className="text-lg font-semibold">{t.completing.title}</h3>
+              <p className="text-sm text-muted-foreground">{t.completing.subtitle}</p>
             </CardContent>
           </Card>
         )}
 
-        {/* ── RESULT ─── */}
         {step === "result" && resultData && (
           <div className="space-y-6">
             {resultData.is_crisis ? (
@@ -674,16 +607,13 @@ export default function SelfAssess() {
                 <CardHeader>
                   <CardTitle className="text-destructive flex items-center gap-2">
                     <AlertTriangle className="w-6 h-6" />
-                    Immediate Support Available
+                    {t.result.crisisTitle}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-sm">
-                    Based on your responses, we strongly recommend you speak with someone right away.
-                    Please contact one of the services below or go to your nearest emergency room.
-                  </p>
+                  <p className="text-sm">{t.result.crisisBody}</p>
                   <div className="space-y-3">
-                    {CRISIS_NUMBERS.map(c => (
+                    {CRISIS_NUMBERS_RAW.map(c => (
                       <a
                         key={c.number}
                         href={`tel:${c.number.replace(/\s/g, "")}`}
@@ -691,8 +621,8 @@ export default function SelfAssess() {
                       >
                         <Phone className="w-5 h-5 text-destructive" />
                         <div>
-                          <p className="font-semibold text-sm">{c.label}</p>
-                          <p className="text-destructive font-mono">{c.number}</p>
+                          <p className="font-semibold text-sm">{t.crisis.numbers[c.key]}</p>
+                          <p className="text-destructive font-mono" dir="ltr">{c.number}</p>
                         </div>
                       </a>
                     ))}
@@ -704,30 +634,27 @@ export default function SelfAssess() {
                 <CardHeader>
                   <CardTitle className="text-primary flex items-center gap-2">
                     <Check className="w-6 h-6" />
-                    Assessment Complete
+                    {t.result.completeTitle}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Thank you for completing this self-assessment. Based on your responses, we've identified mental health services that may be able to help you.
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t.result.completeBody}</p>
                 </CardContent>
               </Card>
             )}
 
-            {/* Matched facilities */}
             {resultData.facilities && resultData.facilities.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Recommended Services Near You</CardTitle>
-                  <CardDescription>These facilities have been notified of your referral. You can also contact them directly.</CardDescription>
+                  <CardTitle className="text-lg">{t.result.nearbyTitle}</CardTitle>
+                  <CardDescription>{t.result.nearbySubtitle}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {resultData.facilities.map((f: any, i: number) => (
                     <div key={i} className="p-4 rounded-lg border bg-card space-y-2">
                       <div className="flex items-center justify-between">
                         <h4 className="font-semibold">{f.name}</h4>
-                        {f.emergency && <Badge variant="destructive" className="text-xs">Emergency capable</Badge>}
+                        {f.emergency && <Badge variant="destructive" className="text-xs">{t.result.emergencyBadge}</Badge>}
                       </div>
                       {f.city && <p className="text-sm text-muted-foreground">{f.city}</p>}
                       <div className="flex flex-wrap gap-2 text-sm">
@@ -743,7 +670,7 @@ export default function SelfAssess() {
                         )}
                         {f.website && (
                           <a href={f.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
-                            <Globe className="w-3 h-3" /> Website
+                            <Globe className="w-3 h-3" /> {t.result.websiteLabel}
                           </a>
                         )}
                       </div>
@@ -764,15 +691,13 @@ export default function SelfAssess() {
               <Card>
                 <CardContent className="py-8 text-center space-y-3">
                   <FileText className="w-10 h-10 text-muted-foreground mx-auto" />
-                  <p className="text-sm text-muted-foreground">
-                    No facilities are currently registered in your region. Your assessment has been recorded and you will be contacted when services become available.
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t.result.noFacilities}</p>
                   <div className="space-y-1 mt-4">
-                    <p className="text-sm font-medium">In the meantime, you can reach out to:</p>
-                    {CRISIS_NUMBERS.slice(0, 2).map(c => (
+                    <p className="text-sm font-medium">{t.result.meantime}</p>
+                    {CRISIS_NUMBERS_RAW.slice(0, 2).map(c => (
                       <p key={c.number} className="text-sm">
-                        <strong>{c.label}:</strong>{" "}
-                        <a href={`tel:${c.number.replace(/\s/g, "")}`} className="text-primary underline">{c.number}</a>
+                        <strong>{t.crisis.numbers[c.key]}:</strong>{" "}
+                        <a href={`tel:${c.number.replace(/\s/g, "")}`} className="text-primary underline" dir="ltr">{c.number}</a>
                       </p>
                     ))}
                   </div>
@@ -780,100 +705,75 @@ export default function SelfAssess() {
               </Card>
             )}
 
-            {/* Referral ID & PIN — anonymous follow-up credentials */}
             {referralCode && verificationPin && (
               <Card className="border-2 border-primary/40 bg-card">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <KeyRound className="w-5 h-5 text-primary" />
-                    Your Referral ID — write this down now
+                    {t.result.refIdTitle}
                   </CardTitle>
-                  <CardDescription>
-                    This is the only way to follow up anonymously. We cannot recover your PIN if you lose it.
-                  </CardDescription>
+                  <CardDescription>{t.result.refIdSubtitle}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid sm:grid-cols-2 gap-3">
                     <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 text-center">
-                      <p className="text-xs uppercase text-muted-foreground tracking-wider mb-1">Referral ID</p>
-                      <p className="text-2xl font-mono font-bold text-primary tracking-widest break-all">{referralCode}</p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="mt-2 text-xs"
-                        onClick={() => { navigator.clipboard.writeText(referralCode); toast({ title: "Copied" }); }}
-                      >
-                        <Copy className="w-3 h-3 mr-1" /> Copy
+                      <p className="text-xs uppercase text-muted-foreground tracking-wider mb-1">{t.result.refIdLabel}</p>
+                      <p className="text-2xl font-mono font-bold text-primary tracking-widest break-all" dir="ltr">{referralCode}</p>
+                      <Button variant="ghost" size="sm" className="mt-2 text-xs"
+                        onClick={() => { navigator.clipboard.writeText(referralCode); toast({ title: t.result.copied }); }}>
+                        <Copy className="w-3 h-3 me-1" /> {t.result.copy}
                       </Button>
                     </div>
                     <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 text-center">
-                      <p className="text-xs uppercase text-muted-foreground tracking-wider mb-1">Verification PIN</p>
-                      <p className="text-2xl font-mono font-bold text-primary tracking-widest">{verificationPin}</p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="mt-2 text-xs"
-                        onClick={() => { navigator.clipboard.writeText(verificationPin); toast({ title: "Copied" }); }}
-                      >
-                        <Copy className="w-3 h-3 mr-1" /> Copy
+                      <p className="text-xs uppercase text-muted-foreground tracking-wider mb-1">{t.result.pinLabel}</p>
+                      <p className="text-2xl font-mono font-bold text-primary tracking-widest" dir="ltr">{verificationPin}</p>
+                      <Button variant="ghost" size="sm" className="mt-2 text-xs"
+                        onClick={() => { navigator.clipboard.writeText(verificationPin); toast({ title: t.result.copied }); }}>
+                        <Copy className="w-3 h-3 me-1" /> {t.result.copy}
                       </Button>
                     </div>
                   </div>
                   <div className="bg-amber-500/10 border border-amber-500/30 rounded p-3 text-sm">
-                    <p className="font-semibold text-amber-700 dark:text-amber-400 mb-1">⚠ Save these before closing this page</p>
-                    <p className="text-muted-foreground text-xs">Screenshot, write down, or copy them. They will not be shown again.</p>
+                    <p className="font-semibold text-amber-700 dark:text-amber-400 mb-1">{t.result.saveWarn}</p>
+                    <p className="text-muted-foreground text-xs">{t.result.saveWarnBody}</p>
                   </div>
                   <Button variant="outline" className="w-full" onClick={() => window.open("/follow-up", "_blank")}>
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Check status or message your facility
+                    <MessageCircle className="w-4 h-4 me-2" />
+                    {t.result.checkStatus}
                   </Button>
                 </CardContent>
               </Card>
             )}
 
-            {/* What happens next */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">What Happens Next?</CardTitle>
+                <CardTitle className="text-lg">{t.result.nextTitle}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-primary">1</span>
+                {[t.result.next1, t.result.next2, t.result.next3].map((line, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-bold text-primary">{i + 1}</span>
+                    </div>
+                    <p>{line}</p>
                   </div>
-                  <p>Your matched facility has been notified of your anonymous referral.</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-primary">2</span>
-                  </div>
-                  <p><strong>Visit, call, or email the facility</strong> and quote your Referral ID + PIN — they will pull up your assessment immediately.</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-primary">3</span>
-                  </div>
-                  <p>If it's not urgent, please follow up within 14 days. You can also <a href="/follow-up" className="text-primary underline">return here</a> any time to check status, message the facility, or share contact details if you'd like them to reach out directly.</p>
-                </div>
+                ))}
               </CardContent>
             </Card>
 
-            {/* Facility registration CTA */}
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="pt-6 text-center space-y-3">
-                <p className="text-sm font-medium text-foreground">Are you a mental health facility?</p>
-                <p className="text-xs text-muted-foreground">
-                  Register your facility on Aperta Health to receive self-referrals and connect with patients in your region.
-                </p>
+                <p className="text-sm font-medium text-foreground">{t.result.facilityCta}</p>
+                <p className="text-xs text-muted-foreground">{t.result.facilityCtaBody}</p>
                 <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => window.location.href = "/facility"}>
-                  Register Your Facility
+                  {t.result.facilityCtaBtn}
                 </Button>
               </CardContent>
             </Card>
 
             <div className="text-center">
               <Button variant="outline" onClick={() => window.location.href = "/"}>
-                Return to Home
+                {t.result.home}
               </Button>
             </div>
           </div>
