@@ -171,7 +171,7 @@ const Auth = () => {
             <div className="flex items-center justify-center gap-2 mb-1">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-medium border border-primary/20">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                Data Sovereign · Hosted in Australia
+                Data Sovereign
               </span>
             </div>
             <CardTitle className="text-2xl font-bold text-center font-display">
