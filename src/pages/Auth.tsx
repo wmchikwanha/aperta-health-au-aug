@@ -261,6 +261,12 @@ const Auth = () => {
               
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-4">
+<div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm">
+  <p className="text-blue-800">
+    <strong>Privacy Note:</strong> You can use temporary email addresses for testing. 
+    Different account types require separate email addresses.
+  </p>
+</div>
                   {!inviteInfo && (
                     <div className="space-y-2">
                       <Label>I am signing up as</Label>
