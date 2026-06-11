@@ -283,10 +283,15 @@ export const AdminDashboard = () => {
           <h2 className="text-2xl font-bold text-foreground">Admin Dashboard</h2>
           <p className="text-muted-foreground">Manage team members and monitor activity</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => { loadTeamMembers(); loadAuditLog(); }}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.location.assign("/fhir-sandbox")}>
+            FHIR Sandbox
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => { loadTeamMembers(); loadAuditLog(); }}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
