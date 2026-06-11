@@ -65,7 +65,7 @@ export function IntakeQueue() {
     if (!user) return;
     setLoading(true);
 
-    // Fetch intake sessions and CHW referrals in parallel
+    // Fetch intake sessions and BCW referrals in parallel
     const [sessionsRes, referralsRes] = await Promise.all([
       supabase
         .from("patient_intake_sessions")
@@ -74,7 +74,7 @@ export function IntakeQueue() {
       supabase
         .from("referrals")
         .select("*")
-        .eq("context", "chw_upward_referral")
+        .eq("context", "bcw_upward_referral")
         .order("created_at", { ascending: false }),
     ]);
 
@@ -327,7 +327,7 @@ export function IntakeQueue() {
         </DialogContent>
       </Dialog>
 
-      {/* CHW Referral Detail Dialog */}
+      {/* BCW Referral Detail Dialog */}
       <Dialog open={!!selectedReferral} onOpenChange={() => setSelectedReferral(null)}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -436,7 +436,7 @@ function ReferralCard({ referral, urgencyBadge, onView }: { referral: CHWReferra
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="gap-1">
-              <ArrowUpRight className="h-3 w-3" /> CHW Referral
+              <ArrowUpRight className="h-3 w-3" /> BCW Referral
             </Badge>
             {urgencyBadge(referral.urgency)}
             {referral.status === "reviewed" && <Badge variant="outline" className="gap-1"><CheckCircle className="h-3 w-3" /> Reviewed</Badge>}
