@@ -19,16 +19,16 @@ export const Footer = ({ portfolioUrl }: FooterProps) => {
                 rel="noopener noreferrer"
                 className="text-muted-foreground/70 hover:text-muted-foreground text-xs font-semibold tracking-wide transition-colors"
               >
-                StratedgeAI
+                Aperta Health
               </a>
             ) : (
               <span className="text-muted-foreground/70 text-xs font-semibold tracking-wide">
-                StratedgeAI
+                Aperta Health
               </span>
             )}
           </div>
           <p className="text-muted-foreground/45 text-[10px] font-normal">
-            Developed by Walt C
+            Developed by Walter C
           </p>
         </div>
       </div>
