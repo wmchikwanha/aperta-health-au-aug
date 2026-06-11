@@ -252,10 +252,10 @@ serve(async (req) => {
   if (authResult instanceof Response) return authResult;
   console.log(`Role verified: ${authResult.role} (${authResult.userId})`);
 
-  const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!ANTHROPIC_API_KEY) {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) {
     return new Response(
-      JSON.stringify({ error: "ANTHROPIC_API_KEY is not configured" }),
+      JSON.stringify({ error: "LOVABLE_API_KEY is not configured" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
@@ -277,38 +277,46 @@ serve(async (req) => {
     );
   }
 
-  console.log("Processing narrative (streaming):", narrative.substring(0, 100));
+  console.log("Processing narrative via Lovable AI Gateway (streaming):", narrative.substring(0, 100));
 
-  const claudeResponse = await fetch("https://api.anthropic.com/v1/messages", {
+  const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
+      "Authorization": `Bearer ${LOVABLE_API_KEY}`,
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 4096,
+      model: "google/gemini-2.5-pro",
       stream: true,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: narrative }],
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: narrative },
+      ],
+      response_format: { type: "json_object" },
     }),
   });
 
-  if (!claudeResponse.ok) {
-    if (claudeResponse.status === 429) {
+  if (!aiResponse.ok) {
+    if (aiResponse.status === 429) {
       return new Response(
         JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    const errorText = await claudeResponse.text();
-    console.error("Claude API error:", claudeResponse.status, errorText);
+    if (aiResponse.status === 402) {
+      return new Response(
+        JSON.stringify({ error: "AI credits exhausted. Please add credits to your Lovable workspace." }),
+        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const errorText = await aiResponse.text();
+    console.error("Lovable AI Gateway error:", aiResponse.status, errorText);
     return new Response(
-      JSON.stringify({ error: `Claude API error: ${claudeResponse.status}` }),
+      JSON.stringify({ error: `AI Gateway error: ${aiResponse.status}` }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
+
 
   // Commit to streaming — HTTP 200 is sent immediately so the client sees activity at once
   const { readable, writable } = new TransformStream();
@@ -321,7 +329,7 @@ serve(async (req) => {
   ];
 
   (async () => {
-    const reader = claudeResponse.body!.getReader();
+    const reader = aiResponse.body!.getReader();
     const decoder = new TextDecoder();
     let evtBuffer = "";
     let fullText = "";
@@ -345,12 +353,9 @@ serve(async (req) => {
 
           try {
             const event = JSON.parse(jsonStr);
-            if (
-              event.type === "content_block_delta" &&
-              event.delta?.type === "text_delta" &&
-              event.delta?.text
-            ) {
-              fullText += event.delta.text;
+            const delta = event?.choices?.[0]?.delta?.content;
+            if (typeof delta === "string" && delta.length > 0) {
+              fullText += delta;
               tokenCount++;
               // Progress ping every 15 tokens so the client shows live activity
               if (tokenCount % 15 === 0) {
@@ -369,6 +374,8 @@ serve(async (req) => {
         let content = fullText;
         const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
         if (jsonMatch) content = jsonMatch[1];
+
+
 
         result = JSON.parse(content);
         if (!result.appearance || !result.speech || !result.mood || !result.perception || !result.risk) {

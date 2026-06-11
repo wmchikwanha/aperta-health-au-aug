@@ -12,6 +12,8 @@ import SelfAssess from "./pages/SelfAssess";
 import SelfAssessFollowUp from "./pages/SelfAssessFollowUp";
 import FacilityPortal from "./pages/FacilityPortal";
 import CHWWorkspace from "./pages/CHWWorkspace";
+import FHIRSandbox from "./pages/FHIRSandbox";
+import FacilityOnboarding from "./pages/FacilityOnboarding";
 import { RoleGuard } from "./components/RoleGuard";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
@@ -36,6 +38,8 @@ const App = () => {
             <Route path="/self-assess" element={<SelfAssess />} />
             <Route path="/follow-up" element={<SelfAssessFollowUp />} />
             <Route path="/facility" element={<RoleGuard blockRoles={["chw"]}><FacilityPortal /></RoleGuard>} />
+            <Route path="/facility/onboarding" element={<RoleGuard blockRoles={["chw"]}><FacilityOnboarding /></RoleGuard>} />
+            <Route path="/fhir-sandbox" element={<RoleGuard blockRoles={["chw"]}><FHIRSandbox /></RoleGuard>} />
             <Route path="/chw" element={<RoleGuard allowRoles={["chw"]}><CHWWorkspace /></RoleGuard>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

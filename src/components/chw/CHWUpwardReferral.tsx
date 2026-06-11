@@ -58,18 +58,7 @@ export const CHWUpwardReferral = ({ session, onDone, onCancel }: Props) => {
             full_name: c.full_name,
             role: c.role,
             email: c.email ?? null,
-          }))
-          .filter(c => c.email?.toLowerCase() === "wmchikwanha@gmail.com");
-      }
-      
-      // Fallback if wmchikwanha@gmail.com doesn't exist in the remote/local DB yet
-      if (!clinicianList.some(c => c.email?.toLowerCase() === "wmchikwanha@gmail.com")) {
-        clinicianList.push({
-          id: "00000000-0000-0000-0000-000000000001",
-          full_name: "Dr. William M. Chikwanha",
-          role: "psychiatrist",
-          email: "wmchikwanha@gmail.com",
-        });
+          }));
       }
       setClinicians(clinicianList);
 

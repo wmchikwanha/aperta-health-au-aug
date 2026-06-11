@@ -244,6 +244,25 @@ export function FacilityDashboard({ facilityId, facilityData }: FacilityDashboar
         </Button>
       </div>
 
+      {/* Pilot onboarding entry */}
+      <Card className="border-primary/30 bg-primary/5">
+        <CardContent className="py-4 flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <div className="font-semibold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-primary" /> Pilot onboarding
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Provision clinician seats, configure referral channels, run test cases, and submit for go-live sign-off.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => window.location.assign("/fhir-sandbox")}>FHIR sandbox</Button>
+            <Button size="sm" onClick={() => window.location.assign("/facility/onboarding")}>Open onboarding</Button>
+          </div>
+        </CardContent>
+      </Card>
+
+
       {/* Look up by Referral ID */}
       <Card className="border-primary/20">
         <CardContent className="py-4">

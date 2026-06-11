@@ -8,20 +8,17 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
 
-  const fallbackProjectId = "pmfbhmaeysgcmbapghby";
-  const fallbackPublishableKey =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZmJobWFleXNnY21iYXBnaGJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2MTIyMDAsImV4cCI6MjA3OTE4ODIwMH0.HTzl10QXTipfFwn8ZqdrF5tuutA79NPjZJuO4Fg5rEQ";
+  const currentProjectId = "pytvadhrygzyvjvgjqob";
+  const currentPublishableKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHZhZGhyeWd6eXZqdmdqcW9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwOTQ4MzgsImV4cCI6MjA5NjY3MDgzOH0.oIwZu5XvwDXjvNv5hUT9Wwx_surPtqtfLfr0Uo3E3a4";
+  const currentSupabaseUrl = `https://${currentProjectId}.supabase.co`;
+  const viteUrlIsCurrent = env.VITE_SUPABASE_URL?.includes(currentProjectId);
 
-  const supabaseUrl =
-    env.VITE_SUPABASE_URL ||
-    env.SUPABASE_URL ||
-    `https://${env.VITE_SUPABASE_PROJECT_ID || fallbackProjectId}.supabase.co`;
+  const supabaseUrl = viteUrlIsCurrent ? env.VITE_SUPABASE_URL : currentSupabaseUrl;
 
-  const supabasePublishableKey =
-    env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    env.SUPABASE_PUBLISHABLE_KEY ||
-    env.SUPABASE_ANON_KEY ||
-    fallbackPublishableKey;
+  const supabasePublishableKey = viteUrlIsCurrent
+    ? env.VITE_SUPABASE_PUBLISHABLE_KEY || currentPublishableKey
+    : currentPublishableKey;
 
   return {
     server: {
