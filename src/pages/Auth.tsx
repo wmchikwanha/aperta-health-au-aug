@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, UserPlus, Eye, EyeOff } from "lucide-react";
 import { getRoleLabel } from "@/lib/permissions";
@@ -179,8 +178,7 @@ const Auth = () => {
               Aperta Health
             </CardTitle>
             <CardDescription className="text-center">
-              Mental Health Decision Support · sign in to continue
-            </CardDescription>
+              Mental Health Decision Support System           </CardDescription>
             <p className="text-[11px] text-center text-muted-foreground italic px-2">
               We acknowledge the Traditional Owners of the lands on which this tool is used and pay
               our respects to Elders past, present and emerging.
