@@ -329,7 +329,7 @@ serve(async (req) => {
   ];
 
   (async () => {
-    const reader = claudeResponse.body!.getReader();
+    const reader = aiResponse.body!.getReader();
     const decoder = new TextDecoder();
     let evtBuffer = "";
     let fullText = "";
@@ -353,12 +353,9 @@ serve(async (req) => {
 
           try {
             const event = JSON.parse(jsonStr);
-            if (
-              event.type === "content_block_delta" &&
-              event.delta?.type === "text_delta" &&
-              event.delta?.text
-            ) {
-              fullText += event.delta.text;
+            const delta = event?.choices?.[0]?.delta?.content;
+            if (typeof delta === "string" && delta.length > 0) {
+              fullText += delta;
               tokenCount++;
               // Progress ping every 15 tokens so the client shows live activity
               if (tokenCount % 15 === 0) {
@@ -377,6 +374,8 @@ serve(async (req) => {
         let content = fullText;
         const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
         if (jsonMatch) content = jsonMatch[1];
+
+
 
         result = JSON.parse(content);
         if (!result.appearance || !result.speech || !result.mood || !result.perception || !result.risk) {
