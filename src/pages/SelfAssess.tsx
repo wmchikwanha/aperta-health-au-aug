@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/Footer";
 import { SUPPORTED_LANGUAGES } from "@/lib/languages";
-import { getStrings, isRTL, SELF_ASSESS_LANGS, SELF_ASSESS_LANGUAGE_NAMES } from '../lib/i18n';
+import { getStrings, isRTL, formatStepOf } from "@/lib/i18n/selfAssess";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
