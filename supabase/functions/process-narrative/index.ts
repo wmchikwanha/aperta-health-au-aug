@@ -34,47 +34,34 @@ async function logAuditEvent(userId: string, role: string, action: string, outco
 
 async function enforceClinicianRole(req: Request): Promise<{ userId: string; role: string } | Response> {
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return new Response(JSON.stringify({ error: "Unauthorized — no token provided" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: "No token provided" }), { status: 401, headers: corsHeaders });
   }
+
+  // Use the standard client initialization which handles the token verification automatically
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_ANON_KEY")!,
     { global: { headers: { Authorization: authHeader } } }
   );
-  const token = authHeader.replace("Bearer ", "");
-  // Try getClaims (new signing-keys flow); fall back to getUser for older tokens.
-  let userId: string | null = null;
-  try {
-    // @ts-ignore - getClaims exists on newer SDK versions
-    if (typeof (supabase.auth as any).getClaims === "function") {
-      const { data, error } = await (supabase.auth as any).getClaims(token);
-      if (!error && data?.claims?.sub) userId = data.claims.sub as string;
-    }
-  } catch (e) {
-    console.error("getClaims threw:", e);
+
+  // Use the standard getUser() without passing the token string manually
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    console.error("Auth error:", userError?.message);
+    return new Response(JSON.stringify({ error: "Unauthorized — invalid token" }), { status: 401, headers: corsHeaders });
   }
-  if (!userId) {
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !userData?.user?.id) {
-      console.error("getUser failed:", userError);
-      return new Response(JSON.stringify({ error: "Unauthorized — invalid token" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    userId = userData.user.id;
-  }
-  const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+
+  const userId = user.id;
+  const svc = createServiceClient(); // Use service role to check the role table
+  const { data: roles } = await svc.from("user_roles").select("role").eq("user_id", userId);
+
   const userRole = roles?.[0]?.role;
   if (!userRole || !CLINICAL_ROLES.includes(userRole)) {
-    await logAuditEvent(userId, userRole || "unknown", "process_narrative", "denied", { reason: "insufficient_role" });
-    return new Response(JSON.stringify({ error: "Forbidden — insufficient clinical role" }), {
-      status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify({ error: "Forbidden — insufficient role" }), { status: 403, headers: corsHeaders });
   }
-  await logAuditEvent(userId, userRole, "process_narrative", "success");
+
   return { userId, role: userRole };
 }
 
