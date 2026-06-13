@@ -11,6 +11,7 @@ import { Loader2, UserPlus, Eye, EyeOff } from "lucide-react";
 import { getRoleLabel } from "@/lib/permissions";
 import type { User, Session } from "@supabase/supabase-js";
 import { Footer } from "@/components/Footer";
+import { Badge } from "@/components/ui/badge";
 
 const Auth = () => {
   const navigate = useNavigate();
