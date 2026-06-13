@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,14 +45,27 @@ async function enforceClinicianRole(req: Request): Promise<{ userId: string; rol
     { global: { headers: { Authorization: authHeader } } }
   );
   const token = authHeader.replace("Bearer ", "");
-  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-  if (claimsError || !claimsData?.claims?.sub) {
-    console.error("getClaims failed:", claimsError);
-    return new Response(JSON.stringify({ error: "Unauthorized — invalid token" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  // Try getClaims (new signing-keys flow); fall back to getUser for older tokens.
+  let userId: string | null = null;
+  try {
+    // @ts-ignore - getClaims exists on newer SDK versions
+    if (typeof (supabase.auth as any).getClaims === "function") {
+      const { data, error } = await (supabase.auth as any).getClaims(token);
+      if (!error && data?.claims?.sub) userId = data.claims.sub as string;
+    }
+  } catch (e) {
+    console.error("getClaims threw:", e);
   }
-  const userId = claimsData.claims.sub as string;
+  if (!userId) {
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !userData?.user?.id) {
+      console.error("getUser failed:", userError);
+      return new Response(JSON.stringify({ error: "Unauthorized — invalid token" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    userId = userData.user.id;
+  }
   const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
   const userRole = roles?.[0]?.role;
   if (!userRole || !CLINICAL_ROLES.includes(userRole)) {
