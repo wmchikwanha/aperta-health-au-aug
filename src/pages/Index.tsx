@@ -744,15 +744,32 @@ const Index = () => {
                 patientId={selectedPatientId}
                 onBack={() => setSelectedPatientId(null)}
               />
-            ) : hubPatientId && patients.find(p => p.id === hubPatientId) ? (
-              <PatientHub
-                patient={patients.find(p => p.id === hubPatientId)!}
-                onBack={() => setHubPatientId(null)}
-                onViewProfile={() => setSelectedPatientId(hubPatientId)}
-                onStartAssessment={() => setActiveTab("assessment")}
-                onStartScreening={() => setActiveTab("screening")}
-                onStartFirstAid={() => setActiveTab("firstaid")}
-              />
+            ) : hubPatientId ? (
+              (() => {
+                const hubPatient = patients.find(p => p.id === hubPatientId);
+                if (hubPatient) {
+                  return (
+                    <PatientHub
+                      patient={hubPatient}
+                      onBack={() => setHubPatientId(null)}
+                      onViewProfile={() => setSelectedPatientId(hubPatientId)}
+                      onStartAssessment={() => setActiveTab("assessment")}
+                      onStartScreening={() => setActiveTab("screening")}
+                      onStartFirstAid={() => setActiveTab("firstaid")}
+                    />
+                  );
+                }
+                // Patient not in local cache yet (just created) — fetch then render
+                supabase.from("patients").select("*").eq("id", hubPatientId).maybeSingle().then(({ data }) => {
+                  if (data) setPatients(prev => prev.some(p => p.id === data.id) ? prev : [data, ...prev]);
+                  else setHubPatientId(null);
+                });
+                return (
+                  <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
+                    Loading patient…
+                  </div>
+                );
+              })()
             ) : (
               <PatientList
                 onSelectPatient={(id) => setHubPatientId(id)}
