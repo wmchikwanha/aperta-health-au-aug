@@ -84,13 +84,24 @@ serve(async (req) => {
 
     const clinicalContext = buildClinicalContext(screeningData, mseFindings, patientContext);
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${LOVABLE_API_KEY}`, // Uses Lovable Key, not Anthropic Key
+  },
+  body: JSON.stringify({
+    model: "google/gemini-2.5-pro", 
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: userContent }, // or clinicalSummary
+    ],
+    // If you need it to be JSON, include:
+    // response_format: { type: "json_object" }, 
+  }),
+});
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 8192,

@@ -68,7 +68,7 @@ async function enforceClinicianRole(req: Request): Promise<{ userId: string; rol
 // =============================================================================
 // SYSTEM PROMPT
 // Derived from src/lib/culturalIdioms.ts — regenerate when idioms are updated.
-// Model: claude-sonnet-4-6 (complex clinical reasoning)
+// Model: claude-sonnet-4-6 (complex clinical reasoning) changed to gemini-2.5-flash 14/6/26
 // =============================================================================
 
 const SYSTEM_PROMPT = `You are an expert Psychiatric Clinical Scribe for the Aperta Health system, supporting Refugee Health Nurses, Bicultural Workers, GPs (MBS Mental Health Treatment Plan), Clinical Psychologists, and Psychiatrists working with culturally and linguistically diverse (CALD) and refugee populations in Australia.

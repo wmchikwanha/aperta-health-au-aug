@@ -85,7 +85,7 @@ serve(async (req) => {
         'anthropic-beta': 'pdfs-2024-09-25', // Required for PDF document support
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'google/gemini-2.5-flash',
         max_tokens: 4096,
         system: 'You are a document text extraction assistant for a psychiatric clinical system. Extract ALL text content from the provided document faithfully and completely. Preserve structure (headings, paragraphs, lists, tables). Do not summarise or interpret — extract the raw text exactly as written. If the document contains clinical notes, patient narratives, or assessment data, preserve every detail.',
         messages: [
