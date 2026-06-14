@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -34,9 +34,11 @@ async function logAuditEvent(userId: string, role: string, action: string, outco
 
 async function enforceClinicianRole(req: Request): Promise<{ userId: string; role: string } | Response> {
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader) {
+  if (!authHeader?.startsWith("Bearer ")) {
     return new Response(JSON.stringify({ error: "No token provided" }), { status: 401, headers: corsHeaders });
   }
+
+  const token = authHeader.replace("Bearer ", "").trim();
 
   // Use the standard client initialization which handles the token verification automatically
   const supabase = createClient(
@@ -45,15 +47,14 @@ async function enforceClinicianRole(req: Request): Promise<{ userId: string; rol
     { global: { headers: { Authorization: authHeader } } }
   );
 
-  // Use the standard getUser() without passing the token string manually
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const { data: userData, error: userError } = await supabase.auth.getUser(token);
 
-  if (userError || !user) {
-    console.error("Auth error:", userError?.message);
+  if (userError || !userData?.user?.id) {
+    console.error("Auth getUser error:", userError?.message);
     return new Response(JSON.stringify({ error: "Unauthorized — invalid token" }), { status: 401, headers: corsHeaders });
   }
 
-  const userId = user.id;
+  const userId = userData.user.id;
   const svc = createServiceClient(); // Use service role to check the role table
   const { data: roles } = await svc.from("user_roles").select("role").eq("user_id", userId);
 

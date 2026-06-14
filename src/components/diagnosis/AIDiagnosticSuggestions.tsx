@@ -62,11 +62,16 @@ export function AIDiagnosticSuggestions({
 
     try {
       const DIAG_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/suggest-diagnosis`;
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) throw new Error('Please sign in to generate diagnostic suggestions.');
       const response = await fetch(DIAG_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ screeningData, mseFindings, patientContext, framework }),
       });

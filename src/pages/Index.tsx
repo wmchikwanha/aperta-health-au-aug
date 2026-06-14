@@ -180,12 +180,20 @@ const Index = () => {
     setIsProcessing(true);
     setProcessingTokens(0);
     try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (sessionError || !accessToken) {
+        throw new Error("Please sign in again before processing the narrative.");
+      }
+
       const NARRATIVE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-narrative`;
       const response = await fetch(NARRATIVE_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ narrative }),
       });
@@ -231,7 +239,7 @@ const Index = () => {
           .from("patients")
           .select("patient_identifier, age_band, gender, cultural_background, language_preference")
           .eq("id", selectedPatientForAssessment)
-          .single();
+          .maybeSingle();
         setCurrentPatientData(patientData);
       }
 
