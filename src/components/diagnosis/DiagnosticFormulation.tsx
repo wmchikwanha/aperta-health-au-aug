@@ -79,7 +79,7 @@ export function DiagnosticFormulation({
         const { data, error } = await supabase
           .from('diagnostic_formulations')
           .select('*')
-          .eq('patient_identifier, patientId)
+          .eq('patient_id', patientId)
           .eq('user_id', user.id)
           .neq('status', 'superseded')
           .order('created_at', { ascending: false })

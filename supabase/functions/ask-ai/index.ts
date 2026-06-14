@@ -1,68 +1,48 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const CLINICAL_ROLES = ["admin", "psychiatrist", "clinical_nurse"];
+serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-function createServiceClient() {
-  return createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-  );
-}
-
-async function logAuditEvent(userId: string, role: string, action: string, outcome: string, metadata?: Record<string, unknown>) {
   try {
-    const svc = createServiceClient();
-    await svc.from("audit_events").insert({
-      actor_id: userId,
-      actor_role: role,
-      action,
-      resource_type: "edge_function",
-      outcome,
-      source: "edge_function",
-      metadata: metadata ?? null,
+    const authHeader = req.headers.get("Authorization");
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader! } },
     });
-  } catch (e) {
-    console.error("Audit log failed:", e);
-  }
-}
 
-async function enforceClinicianRole(req: Request): Promise<{ userId: string; role: string } | Response> {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return new Response(JSON.stringify({ error: "Unauthorized — no token provided" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("Unauthorized");
+
+    const { message } = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-pro",
+        messages: [
+          { role: "system", content: "You are a helpful clinical assistant." },
+          { role: "user", content: message }
+        ],
+      }),
     });
+
+    const result = await aiResponse.json();
+    return new Response(JSON.stringify(result), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
   }
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-  const token = authHeader.replace("Bearer ", "");
-  const { data: userData, error: userError } = await supabase.auth.getUser(token);
-  if (userError || !userData?.user) {
-    return new Response(JSON.stringify({ error: "Unauthorized — invalid token" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-  const userId = userData.user.id;
-  const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-  const userRole = roles?.[0]?.role;
-  if (!userRole || !CLINICAL_ROLES.includes(userRole)) {
-    await logAuditEvent(userId, userRole || "unknown", "ask_ai", "denied", { reason: "insufficient_role" });
-    return new Response(JSON.stringify({ error: "Forbidden — insufficient clinical role" }), {
-      status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-  await logAuditEvent(userId, userRole, "ask_ai", "success");
-  return { userId, role: userRole };
-}
+});
 
 const SYSTEM_PROMPT = `You are the Aperta Health AI Clinical Assistant — embedded within the Aperta Health clinical decision support application used by Refugee Health Nurses, Bicultural Workers, GPs (MBS Mental Health Treatment Plan), Clinical Psychologists and Psychiatrists serving culturally and linguistically diverse (CALD) and refugee populations in Australia.
 

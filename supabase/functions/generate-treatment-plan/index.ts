@@ -1,106 +1,48 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const DIAGNOSTIC_ROLES = ["admin", "psychiatrist"];
-
-function createServiceClient() {
-  return createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-  );
-}
-
-async function logAuditEvent(userId: string, role: string, action: string, outcome: string, metadata?: Record<string, unknown>) {
-  try {
-    const svc = createServiceClient();
-    await svc.from("audit_events").insert({
-      actor_id: userId,
-      actor_role: role,
-      action,
-      resource_type: "edge_function",
-      outcome,
-      source: "edge_function",
-      metadata: metadata ?? null,
-    });
-  } catch (e) {
-    console.error("Audit log failed:", e);
-  }
-}
-
-async function enforceDiagnosticRole(req: Request): Promise<{ userId: string; role: string } | Response> {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return new Response(JSON.stringify({ error: "Unauthorized — no token provided" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-  const token = authHeader.replace("Bearer ", "");
-  const { data: userData, error: userError } = await supabase.auth.getUser(token);
-  if (userError || !userData?.user) {
-    return new Response(JSON.stringify({ error: "Unauthorized — invalid token" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-  const userId = userData.user.id;
-  const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-  const userRole = roles?.[0]?.role;
-  if (!userRole || !DIAGNOSTIC_ROLES.includes(userRole)) {
-    await logAuditEvent(userId, userRole || "unknown", "generate_treatment_plan", "denied", { reason: "insufficient_role" });
-    return new Response(JSON.stringify({ error: "Forbidden — only psychiatrists and admins can generate treatment plans" }), {
-      status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-  await logAuditEvent(userId, userRole, "generate_treatment_plan", "success");
-  return { userId, role: userRole };
-}
-
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // Server-side role enforcement: only psychiatrists and admins can generate treatment plans
-    const authResult = await enforceDiagnosticRole(req);
-    if (authResult instanceof Response) return authResult;
-    console.log(`Role verified: ${authResult.role} (${authResult.userId})`);
+    const authHeader = req.headers.get("Authorization");
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader! } },
+    });
 
-    const { screeningData, mseFindings, patientContext } = await req.json();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("Unauthorized");
 
-    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
-    if (!ANTHROPIC_API_KEY) {
-      throw new Error('ANTHROPIC_API_KEY not configured');
-    }
-
-    const clinicalContext = buildClinicalContext(screeningData, mseFindings, patientContext);
-
+    const { patientId, clinicalSummary } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
-const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${LOVABLE_API_KEY}`, // Uses Lovable Key, not Anthropic Key
-  },
-  body: JSON.stringify({
-    model: "google/gemini-2.5-pro", 
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: userContent }, // or clinicalSummary
-    ],
-    // If you need it to be JSON, include:
-    // response_format: { type: "json_object" }, 
-  }),
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-pro",
+        messages: [
+          { role: "system", content: "You are an expert clinical strategist. Create a treatment plan based on the provided summary." },
+          { role: "user", content: clinicalSummary }
+        ],
+        response_format: { type: "json_object" }
+      }),
+    });
+
+    const result = await aiResponse.json();
+    return new Response(JSON.stringify(result), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+  }
 });
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
