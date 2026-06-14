@@ -47,14 +47,14 @@ async function enforceClinicianRole(req: Request): Promise<{ userId: string; rol
     { global: { headers: { Authorization: authHeader } } }
   );
 
-  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+  const { data: userData, error: userError } = await supabase.auth.getUser(token);
 
-  if (claimsError || !claimsData?.claims?.sub) {
-    console.error("Auth claims error:", claimsError?.message);
+  if (userError || !userData?.user?.id) {
+    console.error("Auth getUser error:", userError?.message);
     return new Response(JSON.stringify({ error: "Unauthorized — invalid token" }), { status: 401, headers: corsHeaders });
   }
 
-  const userId = claimsData.claims.sub as string;
+  const userId = userData.user.id;
   const svc = createServiceClient(); // Use service role to check the role table
   const { data: roles } = await svc.from("user_roles").select("role").eq("user_id", userId);
 

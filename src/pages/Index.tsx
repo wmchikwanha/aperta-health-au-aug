@@ -239,7 +239,7 @@ const Index = () => {
           .from("patients")
           .select("patient_identifier, age_band, gender, cultural_background, language_preference")
           .eq("id", selectedPatientForAssessment)
-          .single();
+          .maybeSingle();
         setCurrentPatientData(patientData);
       }
 
