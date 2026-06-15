@@ -74,8 +74,20 @@ export const PatientList = ({ onSelectPatient, onCreatePatient }: PatientListPro
       const { data, error } = await query;
 
       if (error) throw error;
-      setPatients(data || []);
-      setFilteredPatients(data || []);
+
+      // Exclude patients that are still pending a Bicultural Worker / CHW upward referral.
+      // They must be reviewed and accepted from the Intake Queue first.
+      const { data: pendingRefs } = await supabase
+        .from('referrals')
+        .select('patient_id')
+        .in('context', ['chw_upward_referral', 'bcw_upward_referral'])
+        .eq('status', 'active');
+
+      const pendingIds = new Set((pendingRefs || []).map((r: any) => r.patient_id));
+      const visible = (data || []).filter((p) => !pendingIds.has(p.id));
+
+      setPatients(visible);
+      setFilteredPatients(visible);
     } catch (error) {
       console.error('Error fetching patients:', error);
       toast({
