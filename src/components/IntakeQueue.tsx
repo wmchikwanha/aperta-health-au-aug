@@ -74,7 +74,7 @@ export function IntakeQueue() {
       supabase
         .from("referrals")
         .select("*")
-        .eq("context", "bcw_upward_referral")
+        .in("context", ["chw_upward_referral", "bcw_upward_referral"])
         .order("created_at", { ascending: false }),
     ]);
 
