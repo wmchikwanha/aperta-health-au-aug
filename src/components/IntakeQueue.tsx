@@ -74,7 +74,7 @@ export function IntakeQueue() {
       supabase
         .from("referrals")
         .select("*")
-        .eq("context", "bcw_upward_referral")
+        .in("context", ["chw_upward_referral", "bcw_upward_referral"])
         .order("created_at", { ascending: false }),
     ]);
 
@@ -145,6 +145,51 @@ export function IntakeQueue() {
       setSelectedReferral(null);
       fetchData();
     }
+  };
+
+  const acceptReferral = async (referral: CHWReferral) => {
+    if (!user) return;
+    // 1. Mark referral accepted and assign destination to current clinician
+    const { error: refErr } = await supabase
+      .from("referrals")
+      .update({ status: "accepted", destination: user.id, updated_at: new Date().toISOString() })
+      .eq("id", referral.id);
+    if (refErr) {
+      toast({ title: "Error", description: refErr.message, variant: "destructive" });
+      return;
+    }
+    // 2. Transfer patient ownership to accepting clinician
+    const { error: patErr } = await supabase
+      .from("patients")
+      .update({ user_id: user.id })
+      .eq("id", referral.patient_id);
+    if (patErr) {
+      toast({ title: "Error transferring patient", description: patErr.message, variant: "destructive" });
+      return;
+    }
+    // 3. Seed a pending assessment so the BCW session appears in the doctor's upcoming/ongoing work
+    const { error: aErr } = await supabase.from("assessments").insert({
+      patient_id: referral.patient_id,
+      user_id: user.id,
+      narrative: referral.notes || referral.reason || "Bicultural Worker handoff",
+      processed_result: null,
+      assessment_date: new Date().toISOString(),
+      metadata: {
+        source: "chw_referral",
+        referral_id: referral.id,
+        chw_id: referral.recorded_by,
+        chw_name: referral.chw_name,
+        urgency: referral.urgency,
+        handoff_notes: referral.notes,
+      },
+    } as any);
+    if (aErr) {
+      toast({ title: "Warning", description: `Patient accepted but seeding assessment failed: ${aErr.message}`, variant: "destructive" });
+    } else {
+      toast({ title: "Referral Accepted", description: `${referral.patient_identifier} added to your patient list with the BCW session attached.` });
+    }
+    setSelectedReferral(null);
+    fetchData();
   };
 
   const statusBadge = (status: string, riskFlags: any) => {
@@ -379,9 +424,14 @@ export function IntakeQueue() {
               )}
 
               {selectedReferral.status === "active" && (
-                <Button onClick={() => markReferralReviewed(selectedReferral.id)} className="w-full">
-                  <CheckCircle className="h-4 w-4 mr-2" /> Mark as Reviewed
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={() => acceptReferral(selectedReferral)} className="flex-1">
+                    <CheckCircle className="h-4 w-4 mr-2" /> Accept &amp; Add to My Patients
+                  </Button>
+                  <Button variant="outline" onClick={() => markReferralReviewed(selectedReferral.id)} className="flex-1">
+                    Mark Reviewed
+                  </Button>
+                </div>
               )}
             </div>
           )}
