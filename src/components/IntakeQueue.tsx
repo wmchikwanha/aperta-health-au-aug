@@ -424,9 +424,14 @@ export function IntakeQueue() {
               )}
 
               {selectedReferral.status === "active" && (
-                <Button onClick={() => markReferralReviewed(selectedReferral.id)} className="w-full">
-                  <CheckCircle className="h-4 w-4 mr-2" /> Mark as Reviewed
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={() => acceptReferral(selectedReferral)} className="flex-1">
+                    <CheckCircle className="h-4 w-4 mr-2" /> Accept &amp; Add to My Patients
+                  </Button>
+                  <Button variant="outline" onClick={() => markReferralReviewed(selectedReferral.id)} className="flex-1">
+                    Mark Reviewed
+                  </Button>
+                </div>
               )}
             </div>
           )}
