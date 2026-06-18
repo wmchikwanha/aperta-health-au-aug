@@ -61,54 +61,18 @@ export function AIDiagnosticSuggestions({
     setError(null);
 
     try {
-      const DIAG_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/suggest-diagnosis`;
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData.session?.access_token;
-      if (!accessToken) throw new Error('Please sign in to generate diagnostic suggestions.');
-      const response = await fetch(DIAG_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ screeningData, mseFindings, patientContext, framework }),
+      const { data, error: invokeError } = await supabase.functions.invoke('suggest-diagnosis', {
+        body: { screeningData, mseFindings, patientContext, framework },
       });
 
-      if (!response.ok || !response.headers.get('Content-Type')?.includes('text/event-stream')) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error((errData as { error?: string }).error ?? `HTTP ${response.status}`);
+      if (invokeError) {
+        throw new Error(invokeError.message || 'Failed to reach diagnostic service');
+      }
+      if (!data || (data as any).error) {
+        throw new Error((data as any)?.error || 'No result received from server');
       }
 
-      const reader = response.body!.getReader();
-      const decoder = new TextDecoder();
-      let buf = '';
-      let data = null;
-
-      outer: while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        const lines = buf.split('\n');
-        buf = lines.pop() ?? '';
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed.startsWith('data: ')) continue;
-          const jsonStr = trimmed.slice(6).trim();
-          if (jsonStr === '[DONE]') break outer;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.result) { data = parsed.result; }
-            else if (parsed.error) { throw new Error(parsed.error); }
-            else if (parsed.tokens) { setProcessingTokens(parsed.tokens as number); }
-          } catch (e) { if ((e as Error).message !== 'Unexpected token') throw e; }
-        }
-      }
-
-      if (!data) throw new Error('No result received from server');
-
-      setSuggestions(data);
+      setSuggestions(data as SuggestionsResult);
       toast({
         title: 'Suggestions Generated',
         description: 'AI diagnostic suggestions are ready for review.',
