@@ -138,6 +138,13 @@ const Index = () => {
     }
   }, [hubPatientId]);
 
+  // Clear the assessment workspace whenever the active patient changes so a
+  // previous patient's narrative / MSE never bleeds into the new patient.
+  useEffect(() => {
+    setNarrative("");
+    setResult(null);
+  }, [selectedPatientForAssessment]);
+
   // Load screening data when patient is selected for assessment
   useEffect(() => {
     const loadPatientScreeningData = async () => {
