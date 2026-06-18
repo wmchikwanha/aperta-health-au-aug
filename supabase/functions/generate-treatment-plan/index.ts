@@ -76,22 +76,26 @@ Return ONLY a valid JSON object with this exact shape:
 
     const clinicalSummary = buildClinicalContext(screeningData, mseFindings, patientContext);
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: clinicalSummary },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
+    async function callModel(model: string) {
+      const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: clinicalSummary },
+          ],
+          response_format: { type: "json_object" },
+        }),
+      });
+      return r;
+    }
 
+    let aiResponse = await callModel("google/gemini-2.5-flash");
     if (!aiResponse.ok) {
       const errText = await aiResponse.text();
       console.error("AI Gateway error:", aiResponse.status, errText);
@@ -101,8 +105,16 @@ Return ONLY a valid JSON object with this exact shape:
       });
     }
 
-    const aiData = await aiResponse.json();
-    const content = aiData?.choices?.[0]?.message?.content;
+    let aiData = await aiResponse.json();
+    let content = aiData?.choices?.[0]?.message?.content;
+    if (!content) {
+      console.warn("Flash returned empty content, retrying with gemini-2.5-pro");
+      const retry = await callModel("google/gemini-2.5-pro");
+      if (retry.ok) {
+        aiData = await retry.json();
+        content = aiData?.choices?.[0]?.message?.content;
+      }
+    }
     if (!content) throw new Error("AI returned empty response");
 
     let treatmentPlan: any;
