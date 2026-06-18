@@ -172,7 +172,12 @@ export function IntakeQueue() {
       patient_id: referral.patient_id,
       user_id: user.id,
       narrative: referral.notes || referral.reason || "Bicultural Worker handoff",
-      processed_result: null,
+      processed_result: {
+        pending: true,
+        source: "chw_referral",
+        handoff_summary: referral.notes || referral.reason || "",
+        note: "Awaiting clinician processing — seeded from Bicultural Worker referral.",
+      },
       assessment_date: new Date().toISOString(),
       metadata: {
         source: "chw_referral",
