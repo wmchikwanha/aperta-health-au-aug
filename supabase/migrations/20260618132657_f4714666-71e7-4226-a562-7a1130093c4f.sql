@@ -1,0 +1,2 @@
+ALTER TABLE public.diagnostic_formulations DROP CONSTRAINT IF EXISTS diagnostic_formulations_diagnostic_framework_check;
+ALTER TABLE public.diagnostic_formulations ADD CONSTRAINT diagnostic_formulations_diagnostic_framework_check CHECK (diagnostic_framework = ANY (ARRAY['ICD-10'::text, 'ICD-11'::text, 'DSM-5'::text]));
