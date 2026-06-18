@@ -120,7 +120,7 @@ export function IdiomSubmissionDialog({ prefillIdiom, prefillLanguage }: IdiomSu
               </Label>
               <Input
                 id="idiom-term"
-                placeholder="e.g. kunzwisa tsitsi"
+                placeholder="e.g. I am on edge, I am a burden"
                 value={idiom}
                 onChange={(e) => setIdiom(e.target.value)}
               />
@@ -148,7 +148,7 @@ export function IdiomSubmissionDialog({ prefillIdiom, prefillLanguage }: IdiomSu
             </Label>
             <Textarea
               id="patient-utterance"
-              placeholder='e.g. "Ndinzwa kuti ndiri kunzwisa tsitsi mhuri yangu" — remove any identifying details'
+              placeholder='e.g. "I am at my wits end" — remove any identifying details'
               value={patientUtterance}
               onChange={(e) => setPatientUtterance(e.target.value)}
               className="min-h-[80px]"
