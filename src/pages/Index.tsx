@@ -709,6 +709,50 @@ const Index = () => {
                           }}
                         />
                       )}
+
+                      {selectedScreeningTool === "RHS15" && (
+                        <RHS15Form
+                          patientId={screeningPatientId}
+                          onComplete={() => {
+                            setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
+                            toast({ title: "Assessment Saved", description: "RHS-15 saved successfully." });
+                          }}
+                        />
+                      )}
+
+                      {selectedScreeningTool === "HTQ4" && (
+                        <HTQ4Form
+                          patientId={screeningPatientId}
+                          onComplete={() => {
+                            setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
+                            toast({ title: "Assessment Saved", description: "HTQ-IV saved successfully." });
+                          }}
+                        />
+                      )}
+
+                      {selectedScreeningTool === "WHODAS2" && (
+                        <WHODAS2Form
+                          patientId={screeningPatientId}
+                          onComplete={() => {
+                            setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
+                            toast({ title: "Assessment Saved", description: "WHODAS 2.0 saved successfully." });
+                          }}
+                        />
+                      )}
+
+                      {selectedScreeningTool === "GDS15" && (
+                        <GDS15Form
+                          patientId={screeningPatientId}
+                          onComplete={() => {
+                            setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
+                            toast({ title: "Assessment Saved", description: "GDS-15 saved successfully." });
+                          }}
+                        />
+                      )}
                     </div>
                   )}
 
