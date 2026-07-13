@@ -31,7 +31,11 @@ const TOOL_NAMES = {
   PCL5: "PCL-5",
   MMSE: "MMSE",
   PSQ: "PSQ",
-  PRIMER5: "PRIME-R-5"
+  PRIMER5: "PRIME-R-5",
+  RHS15: "RHS-15",
+  HTQ4: "HTQ-IV",
+  WHODAS2: "WHODAS 2.0",
+  GDS15: "GDS-15",
 };
 
 const getSeverityColor = (severity: string) => {
