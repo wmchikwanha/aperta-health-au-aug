@@ -38,28 +38,39 @@ export const ScreeningToolSelector = ({ onSelectTool, allowedTools }: ScreeningT
     : SCREENING_TOOLS;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {tools.map((tool) => {
-        const Icon = tool.icon;
+    <div className="space-y-6">
+      {GROUP_ORDER.map(group => {
+        const groupTools = tools.filter(t => t.group === group);
+        if (groupTools.length === 0) return null;
         return (
-          <Card
-            key={tool.id}
-            className="cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={() => onSelectTool(tool.id)}
-          >
-            <CardHeader>
-              <div className="flex items-start gap-3">
-                <Icon className={`h-6 w-6 ${tool.color}`} />
-                <div className="flex-1">
-                  <CardTitle className="text-lg">{tool.name}</CardTitle>
-                  <CardDescription className="mt-1.5">
-                    {tool.description}
-                  </CardDescription>
-                  <p className="text-xs text-muted-foreground mt-2">{tool.detail}</p>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
+          <div key={group} className="space-y-3">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              {group}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {groupTools.map(tool => {
+                const Icon = tool.icon;
+                return (
+                  <Card
+                    key={tool.id}
+                    className="cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => onSelectTool(tool.id)}
+                  >
+                    <CardHeader>
+                      <div className="flex items-start gap-3">
+                        <Icon className={`h-6 w-6 ${tool.color}`} />
+                        <div className="flex-1">
+                          <CardTitle className="text-lg">{tool.name}</CardTitle>
+                          <CardDescription className="mt-1.5">{tool.description}</CardDescription>
+                          <p className="text-xs text-muted-foreground mt-2">{tool.detail}</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
         );
       })}
     </div>
