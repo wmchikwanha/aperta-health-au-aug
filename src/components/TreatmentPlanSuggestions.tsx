@@ -6,9 +6,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, AlertTriangle, Clock, Users, Pill, Brain, BookOpen, Copy, Check, FileDown } from "lucide-react";
+import { Sparkles, AlertTriangle, Clock, Users, Pill, Brain, BookOpen, Copy, Check, FileDown, Coins, Video } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { exportTreatmentPlanToPDF } from "@/lib/treatmentPlanPdfExport";
+import { MBS_MENTAL_HEALTH_ITEMS, RECOMMENDED_REFUGEE_MHTP_BUNDLE } from "@/lib/mbs/itemCatalogue";
+
+const AUD = new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" });
 
 interface TreatmentPlanSuggestionsProps {
   screeningData: any[];
