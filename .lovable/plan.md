@@ -1,53 +1,72 @@
-## Goal
-When a user picks a language on the Self-Assessment welcome screen (e.g. Urdu), **every** subsequent screen — Consent & Safety, Demographics, PHQ-9, Narrative, Completing, Result, Crisis banner, header, progress label, buttons, toasts — renders in that language with correct script direction (RTL for Arabic/Farsi/Dari/Pashto/Hazaragi/Urdu/Rohingya). No mixed-English UI.
+
+## Problem
+
+The scoring logic and reference data already exist but are invisible to users (and to an Australian review panel):
+- `src/lib/screening/refugeeScreening.ts` — scoring for RHS-15, HTQ-IV, WHODAS 2.0, GDS-15, plus ATS triage. **No forms, not in the tool selector.**
+- `src/lib/mbs/itemCatalogue.ts` — MBS Better Access item catalogue with rebates. **Only mentioned as a text label in `TreatmentPlanSuggestions.tsx`; no browsable UI.**
+
+An assessor opening the app today sees only PHQ-9/GAD-7/PCL-5/MMSE/PSQ/PRIME-R-5 and no MBS anywhere.
 
 ## Scope
-Frontend-only changes to the public Self-Assessment flow. No DB, no edge-function, no auth changes. AI-generated result text (already produced by `self-assess` edge function in the chosen `language_code`) is unchanged.
 
-## Approach
-Static, human-quality i18n bundles for all 18 supported languages, loaded synchronously — no runtime AI translation (avoids latency, drift, and cost on a public page). Bundles cover every literal string currently hard-coded in `src/pages/SelfAssess.tsx`.
+Frontend + one DB migration (tool_type check constraint). No changes to AI/edge functions, auth, or business rules.
 
-### 1. New i18n module
-`src/lib/i18n/selfAssess/` 
-- `types.ts` — `SelfAssessStrings` interface listing every key (welcome.title, welcome.intro, welcome.expect[], consent.heading, consent.items[6], demographics.*, phq9.questions[9], phq9.likert[4], regions[8] labels stay in English (official AU names) but the *label* "State / Territory" translates, narrative.*, completing.*, result.*, crisis.heading, crisis.numbers[5].label, buttons.{next,back,start,finish,record,stop,upload}, toasts.{required,error,...}, header.subtitle, progress.stepOf).
-- `en.ts` … plus 17 more files: `ar.ts, fa.ts, prs.ts, ps.ts, haz.ts, ur.ts, ti.ts, am.ts, sw.ts, rn.ts, rw.ts, my.ts, din.ts, nus.ts, vi.ts, ta.ts, rhg.ts`.
-- `index.ts` — exports `getStrings(code: LanguageCode): SelfAssessStrings` with English fallback for any missing key, and `isRTL(code)` returning true for `ar|fa|prs|ps|haz|ur|rhg`.
+## Changes
 
-Translations are produced once, committed as TS literals. English source stays canonical; other locales mirror keys. Clinical phrasing for PHQ-9 follows the published validated translations where they exist (PHQ-9 has official translations for Arabic, Farsi, Dari, Urdu, Vietnamese, Tamil, Burmese, Amharic, Swahili — we'll use those; for Tigrinya/Kirundi/Kinyarwanda/Dinka/Nuer/Hazaragi/Pashto/Rohingya we'll use community-back-translated phrasing already curated by clinical reviewers — flagged with a `// review:` comment for sign-off).
+### 1. Add refugee screening forms
+Create four new forms mirroring the existing pattern (`PHQ9Form.tsx` style: Likert grid → local scoring via `refugeeScreening.ts` → save to `screening_assessments` → show `ScreeningResults`):
 
-### 2. Wire-up in `src/pages/SelfAssess.tsx`
-- Move the language `<Select>` (currently in Demographics) to the **welcome** card, above the "Start Self Assessment" button. Demographics keeps a read-only display of the chosen language with a "Change" link that returns to welcome.
-- `const t = getStrings(preferredLanguage)` recomputed each render.
-- Replace every hard-coded English literal with `t.*` lookups. `CONSENT_ITEMS`, `PHQ9_QUESTIONS`, `LIKERT_OPTIONS`, `CRISIS_NUMBERS` labels, region label, age-band/gender option labels, all `<CardTitle>`/`<CardDescription>`/`<Button>` text, "Step X of Y", toast titles/descriptions.
-- Add `dir={isRTL(preferredLanguage) ? 'rtl' : 'ltr'}` and `lang={preferredLanguage}` on the root `<div className="min-h-screen…">` so layout, icons margin, and progress bar mirror correctly. Tailwind handles most flex/spacing fine in RTL; a couple of `ml-*`/`mr-*` get swapped to `ms-*`/`me-*` (logical properties) where they affect chevrons.
-- Chevron direction: in RTL, swap `ChevronRight` ↔ `ChevronLeft` on Next/Back buttons.
+- `src/components/screening/RHS15Form.tsx` — 14 × 0–4 Likert + distress thermometer 0–10, uses `scoreRHS15`.
+- `src/components/screening/HTQ4Form.tsx` — 16 × 1–4 Likert, uses `scoreHTQ4`.
+- `src/components/screening/WHODAS2Form.tsx` — 12 × 0–4 Likert, uses `scoreWHODAS2`.
+- `src/components/screening/GDS15Form.tsx` — 15 yes/no, uses `scoreGDS15`.
 
-### 3. Crisis banner
-Heading + per-number `label` translate. The phone numbers themselves (`13 11 14`, `000`, etc.) stay as digits — Australian emergency numbers don't localize.
+### 2. Wire them into the selector and Index
+- `ScreeningToolSelector.tsx`: append four tiles — RHS-15 (Refugee Health Screener), HTQ-IV (Harvard Trauma), WHODAS 2.0 (Function/Disability), GDS-15 (Geriatric Depression). Group visually as "Refugee & CALD Battery" and "Older Adults".
+- `src/pages/Index.tsx`: add four `selectedScreeningTool === "…"` branches rendering the new forms.
+- `src/components/screening/ScreeningResults.tsx`: extend `TOOL_NAMES` and `maxScores` map for the new IDs, with a note that RHS-15/WHODAS are higher = worse and GDS-15 higher = worse (MMSE remains the sole "higher is better" case).
 
-### 4. Result step
-The narrative result block from the edge function already returns text in the chosen language (the function receives `language_code`). We only translate the surrounding chrome ("Your results", "Matched services near you", "Save your reference code", "Verification PIN", action buttons).
+### 3. DB migration — allow the new tool_type values
+Extend the check constraint on `public.screening_assessments.tool_type`:
 
-### 5. Persistence
-Selected language stays in component state for the session. No localStorage write (public, anonymous flow).
+```sql
+ALTER TABLE public.screening_assessments DROP CONSTRAINT IF EXISTS screening_assessments_tool_type_check;
+ALTER TABLE public.screening_assessments ADD CONSTRAINT screening_assessments_tool_type_check
+  CHECK (tool_type IN ('PHQ9','GAD7','PCL5','MMSE','PSQ','PRIMER5','RHS15','HTQ4','WHODAS2','GDS15'));
+```
 
-## Files
-**New (20):**
-- `src/lib/i18n/selfAssess/types.ts`
-- `src/lib/i18n/selfAssess/index.ts`
-- `src/lib/i18n/selfAssess/{en,ar,fa,prs,ps,haz,ur,ti,am,sw,rn,rw,my,din,nus,vi,ta,rhg}.ts`
+### 4. Make MBS visible
+- New `src/components/mbs/MBSItemCatalogue.tsx` — searchable/filter-by-provider table over `MBS_MENTAL_HEALTH_ITEMS` (item number, short name, provider, rebate AUD, telehealth, notes). Header states rebates are indicative (from the catalogue's own preamble) and to confirm against MBS Online.
+- New route/tab entry from the sidebar/nav (e.g. "MBS Reference") rendering that component.
+- In `TreatmentPlanSuggestions.tsx`, add a "Suggested MBS items" panel that shows the `RECOMMENDED_REFUGEE_MHTP_BUNDLE` items (2717 / 2712 / 80000 / 80125 / 715) with rebate and telehealth flags, so MBS is evident inside the clinical workflow — not only in a reference page.
 
-**Edited (1):**
-- `src/pages/SelfAssess.tsx` — language picker moved to welcome, every literal replaced by `t.*`, RTL wrapper, chevron flip.
+### 5. Access control
+`canAccessFullScreening(userRole)` already gates the full battery; the four new tools inherit the same gate. Bicultural Workers keep the current PHQ-9-only view.
 
-## Out of scope (call out explicitly)
-- Clinician-facing app (Index, dashboards, CHW workspace) stays English — separate effort.
-- Region names stay in English (official AU jurisdiction names).
-- AI translation at runtime — not used; static bundles are deterministic and audit-friendly for a clinical screening tool.
-- PHQ-9 wording for the 9 non-officially-translated languages will ship marked `review:` and is queued for clinical reviewer sign-off before any pilot in those languages.
+## Out of scope
 
-## Verification
-- Manual: switch language to Urdu on welcome → click Start → every screen end-to-end is Urdu, RTL, chevrons flipped, crisis labels Urdu, completion + result chrome Urdu.
-- Repeat spot-check for Arabic (RTL), Vietnamese (LTR diacritics), Burmese (complex script), Dinka (Latin extended).
-- `scripts/acceptance-check.sh` stays green.
-- No console errors; missing-key fallback verified by temporarily removing one key.
+- No changes to `process-narrative`, `generate-treatment-plan`, or `suggest-diagnosis` prompts (the prompts already reference these tools).
+- No changes to permissions/RBAC beyond the existing full-battery flag.
+- ATS triage derivation (`deriveATS`) is left for a follow-up — not requested here.
+
+## Technical notes
+
+- Forms follow the existing local-only scoring pattern: compute with `refugeeScreening.ts`, then `supabase.from('screening_assessments').insert({...})` with `tool_type`, `total_score`, `severity_level`, `interpretation`, `responses` (JSONB array), `patient_id`, `user_id`. RLS/GRANTs already in place for that table.
+- RHS-15 stores responses as `{ items: number[14], distressThermometer: number }`.
+- MBS component is pure client-side over the static catalogue — no query needed.
+
+## Files touched
+
+Created:
+- `src/components/screening/RHS15Form.tsx`
+- `src/components/screening/HTQ4Form.tsx`
+- `src/components/screening/WHODAS2Form.tsx`
+- `src/components/screening/GDS15Form.tsx`
+- `src/components/mbs/MBSItemCatalogue.tsx`
+- One Supabase migration extending the `tool_type` check constraint.
+
+Edited:
+- `src/components/screening/ScreeningToolSelector.tsx`
+- `src/components/screening/ScreeningResults.tsx`
+- `src/pages/Index.tsx` (form branches + MBS nav entry)
+- `src/components/TreatmentPlanSuggestions.tsx` (MBS bundle panel)
