@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Stethoscope, LogOut, User, History, BarChart3, Users, ClipboardList, Shield, Inbox, Settings, CloudOff } from "lucide-react";
+import { Stethoscope, LogOut, User, History, BarChart3, Users, ClipboardList, Shield, Inbox, Settings, CloudOff, Coins } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ConnectivityStatus } from "@/components/ConnectivityStatus";
 import { OfflineBanner } from "@/components/OfflineBanner";
