@@ -441,6 +441,44 @@ export const TreatmentPlanSuggestions = ({
               </AccordionContent>
             </AccordionItem>
 
+            {/* Suggested MBS items */}
+            <AccordionItem value="mbs">
+              <AccordionTrigger className="text-sm font-semibold">
+                <div className="flex items-center gap-2">
+                  <Coins className="h-4 w-4 text-primary" />
+                  Suggested MBS Items ({RECOMMENDED_REFUGEE_MHTP_BUNDLE.length})
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-2 pt-2">
+                  <p className="text-xs text-muted-foreground">
+                    Better Access / CALD-refugee MHTP bundle. Rebates indicative — confirm against MBS Online before billing.
+                  </p>
+                  {RECOMMENDED_REFUGEE_MHTP_BUNDLE
+                    .map(n => MBS_MENTAL_HEALTH_ITEMS.find(i => i.itemNumber === n))
+                    .filter((i): i is NonNullable<typeof i> => !!i)
+                    .map(item => (
+                      <div key={item.itemNumber} className="flex items-start justify-between p-3 rounded-lg border border-border gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono font-semibold text-sm">{item.itemNumber}</span>
+                            <span className="text-sm font-medium">{item.shortName}</span>
+                            {item.telehealthAvailable && (
+                              <Badge variant="secondary" className="gap-1 text-xs"><Video className="h-3 w-3" />Telehealth</Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">{item.provider}</p>
+                          {item.notes && (
+                            <p className="text-xs text-muted-foreground italic mt-1">{item.notes}</p>
+                          )}
+                        </div>
+                        <div className="font-mono text-sm whitespace-nowrap">{AUD.format(item.rebateAUD)}</div>
+                      </div>
+                    ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
             {/* Referral Criteria */}
             <AccordionItem value="referral">
               <AccordionTrigger className="text-sm font-semibold">
