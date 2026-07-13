@@ -31,7 +31,11 @@ const TOOL_NAMES = {
   PCL5: "PCL-5",
   MMSE: "MMSE",
   PSQ: "PSQ",
-  PRIMER5: "PRIME-R-5"
+  PRIMER5: "PRIME-R-5",
+  RHS15: "RHS-15",
+  HTQ4: "HTQ-IV",
+  WHODAS2: "WHODAS 2.0",
+  GDS15: "GDS-15",
 };
 
 const getSeverityColor = (severity: string) => {
@@ -150,7 +154,11 @@ export const ScreeningResults = ({ patientId }: ScreeningResultsProps) => {
       PCL5: 80,
       MMSE: 30,
       PSQ: 5,
-      PRIMER5: 30
+      PRIMER5: 30,
+      RHS15: 56,
+      HTQ4: 4,
+      WHODAS2: 48,
+      GDS15: 15,
     };
 
     exportScreeningToPDF({

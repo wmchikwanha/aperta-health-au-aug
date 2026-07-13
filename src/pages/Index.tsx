@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Stethoscope, LogOut, User, History, BarChart3, Users, ClipboardList, Shield, Inbox, Settings, CloudOff } from "lucide-react";
+import { Stethoscope, LogOut, User, History, BarChart3, Users, ClipboardList, Shield, Inbox, Settings, CloudOff, Coins } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ConnectivityStatus } from "@/components/ConnectivityStatus";
 import { OfflineBanner } from "@/components/OfflineBanner";
@@ -46,6 +46,11 @@ import { PCL5Form } from "@/components/screening/PCL5Form";
 import { MMSEForm } from "@/components/screening/MMSEForm";
 import { PSQForm } from "@/components/screening/PSQForm";
 import { PRIMER5Form } from "@/components/screening/PRIMER5Form";
+import { RHS15Form } from "@/components/screening/RHS15Form";
+import { HTQ4Form } from "@/components/screening/HTQ4Form";
+import { WHODAS2Form } from "@/components/screening/WHODAS2Form";
+import { GDS15Form } from "@/components/screening/GDS15Form";
+import { MBSItemCatalogue } from "@/components/mbs/MBSItemCatalogue";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScreeningContext } from "@/components/ScreeningContext";
 import { ProfileDialog } from "@/components/ProfileDialog";
@@ -387,6 +392,7 @@ const Index = () => {
               { value: "firstaid", icon: Shield, label: "First Aid", show: canAccessCrisisProtocols(userRole), disabled: !hubPatientId, className: "data-[state=active]:text-destructive" },
               { value: "history", icon: History, label: "History", show: true, disabled: !hubPatientId },
               { value: "analytics", icon: BarChart3, label: "Analytics", show: canViewAnalytics(userRole), disabled: false },
+              { value: "mbs", icon: Coins, label: "MBS", show: true, disabled: false },
               { value: "offline", icon: CloudOff, label: "Offline Queue", show: true, disabled: false },
               { value: "admin", icon: Settings, label: "Admin", show: isAdmin(userRole), disabled: false },
             ];
@@ -704,6 +710,50 @@ const Index = () => {
                           }}
                         />
                       )}
+
+                      {selectedScreeningTool === "RHS15" && (
+                        <RHS15Form
+                          patientId={screeningPatientId}
+                          onComplete={() => {
+                            setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
+                            toast({ title: "Assessment Saved", description: "RHS-15 saved successfully." });
+                          }}
+                        />
+                      )}
+
+                      {selectedScreeningTool === "HTQ4" && (
+                        <HTQ4Form
+                          patientId={screeningPatientId}
+                          onComplete={() => {
+                            setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
+                            toast({ title: "Assessment Saved", description: "HTQ-IV saved successfully." });
+                          }}
+                        />
+                      )}
+
+                      {selectedScreeningTool === "WHODAS2" && (
+                        <WHODAS2Form
+                          patientId={screeningPatientId}
+                          onComplete={() => {
+                            setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
+                            toast({ title: "Assessment Saved", description: "WHODAS 2.0 saved successfully." });
+                          }}
+                        />
+                      )}
+
+                      {selectedScreeningTool === "GDS15" && (
+                        <GDS15Form
+                          patientId={screeningPatientId}
+                          onComplete={() => {
+                            setSelectedScreeningTool(null);
+                            setScreeningRefreshKey(k => k + 1);
+                            toast({ title: "Assessment Saved", description: "GDS-15 saved successfully." });
+                          }}
+                        />
+                      )}
                     </div>
                   )}
 
@@ -813,6 +863,10 @@ const Index = () => {
                 <AnalyticsDashboard />
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="mbs">
+            <MBSItemCatalogue />
           </TabsContent>
 
           <TabsContent value="offline">
