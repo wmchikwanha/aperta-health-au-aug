@@ -154,7 +154,11 @@ export const ScreeningResults = ({ patientId }: ScreeningResultsProps) => {
       PCL5: 80,
       MMSE: 30,
       PSQ: 5,
-      PRIMER5: 30
+      PRIMER5: 30,
+      RHS15: 56,
+      HTQ4: 4,
+      WHODAS2: 48,
+      GDS15: 15,
     };
 
     exportScreeningToPDF({
