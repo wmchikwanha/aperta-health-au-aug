@@ -865,6 +865,10 @@ const Index = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="mbs">
+            <MBSItemCatalogue />
+          </TabsContent>
+
           <TabsContent value="offline">
             <OfflineQueueView />
           </TabsContent>
