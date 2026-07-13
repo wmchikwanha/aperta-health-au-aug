@@ -392,6 +392,7 @@ const Index = () => {
               { value: "firstaid", icon: Shield, label: "First Aid", show: canAccessCrisisProtocols(userRole), disabled: !hubPatientId, className: "data-[state=active]:text-destructive" },
               { value: "history", icon: History, label: "History", show: true, disabled: !hubPatientId },
               { value: "analytics", icon: BarChart3, label: "Analytics", show: canViewAnalytics(userRole), disabled: false },
+              { value: "mbs", icon: Coins, label: "MBS", show: true, disabled: false },
               { value: "offline", icon: CloudOff, label: "Offline Queue", show: true, disabled: false },
               { value: "admin", icon: Settings, label: "Admin", show: isAdmin(userRole), disabled: false },
             ];
