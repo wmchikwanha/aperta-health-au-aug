@@ -145,9 +145,23 @@ const Index = () => {
 
   // Clear the assessment workspace whenever the active patient changes so a
   // previous patient's narrative / MSE never bleeds into the new patient.
+  // Also eagerly load the patient record so cultural-safety flags (e.g. ATSI SEWB)
+  // render immediately — not only after a narrative has been processed.
   useEffect(() => {
     setNarrative("");
     setResult(null);
+    if (!selectedPatientForAssessment) {
+      setCurrentPatientData(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("patients")
+        .select("patient_identifier, age_band, gender, cultural_background, language_preference, metadata")
+        .eq("id", selectedPatientForAssessment)
+        .maybeSingle();
+      if (data) setCurrentPatientData(data);
+    })();
   }, [selectedPatientForAssessment]);
 
   // Load screening data when patient is selected for assessment
