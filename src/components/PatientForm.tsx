@@ -89,7 +89,7 @@ export const PatientForm = ({ onSuccess, onCancel }: PatientFormProps) => {
         gender: data.gender || null,
         language_preference: data.language_preference || null,
         cultural_background: data.cultural_background || null,
-        metadata,
+        metadata: metadata as any,
       });
 
       if (error) throw error;
