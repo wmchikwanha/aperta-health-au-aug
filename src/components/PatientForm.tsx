@@ -18,6 +18,7 @@ const patientSchema = z.object({
   gender: z.string().optional(),
   language_preference: z.string().optional(), // stored as BCP-47 code (e.g. "sn", "nd")
   cultural_background: z.string().optional(),
+  atsi_identity: z.enum(["none", "aboriginal", "torres_strait", "both", "not_stated"]).optional(),
 });
 
 type PatientFormData = z.infer<typeof patientSchema>;
