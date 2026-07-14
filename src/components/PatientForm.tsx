@@ -75,13 +75,21 @@ export const PatientForm = ({ onSuccess, onCancel }: PatientFormProps) => {
   const onSubmit = async (data: PatientFormData) => {
     setLoading(true);
     try {
+      const atsi = ATSI_LABELS[data.atsi_identity || "none"] ?? ATSI_LABELS.none;
+      const metadata: Record<string, unknown> = {};
+      if (data.age_band) metadata.age_band = data.age_band;
+      if (data.atsi_identity && data.atsi_identity !== "none") {
+        metadata.atsi_identity_response = data.atsi_identity;
+        metadata.atsi_identifies = atsi.identifies;
+        if (atsi.label) metadata.atsi_identity_label = atsi.label;
+      }
       const { error } = await supabase.from('patients').insert({
         user_id: user!.id,
         patient_identifier: data.patient_identifier,
         gender: data.gender || null,
         language_preference: data.language_preference || null,
         cultural_background: data.cultural_background || null,
-        metadata: data.age_band ? { age_band: data.age_band } : {},
+        metadata,
       });
 
       if (error) throw error;
