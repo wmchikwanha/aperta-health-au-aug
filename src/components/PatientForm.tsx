@@ -18,6 +18,7 @@ const patientSchema = z.object({
   gender: z.string().optional(),
   language_preference: z.string().optional(), // stored as BCP-47 code (e.g. "sn", "nd")
   cultural_background: z.string().optional(),
+  atsi_identity: z.enum(["none", "aboriginal", "torres_strait", "both", "not_stated"]).optional(),
 });
 
 type PatientFormData = z.infer<typeof patientSchema>;
@@ -59,19 +60,36 @@ export const PatientForm = ({ onSuccess, onCancel }: PatientFormProps) => {
       gender: "",
       language_preference: "",
       cultural_background: "",
+      atsi_identity: "none",
     },
   });
+
+  const ATSI_LABELS: Record<string, { identifies: boolean; label?: string }> = {
+    none: { identifies: false },
+    not_stated: { identifies: false },
+    aboriginal: { identifies: true, label: "Aboriginal" },
+    torres_strait: { identifies: true, label: "Torres Strait Islander" },
+    both: { identifies: true, label: "Aboriginal and Torres Strait Islander" },
+  };
 
   const onSubmit = async (data: PatientFormData) => {
     setLoading(true);
     try {
+      const atsi = ATSI_LABELS[data.atsi_identity || "none"] ?? ATSI_LABELS.none;
+      const metadata: Record<string, unknown> = {};
+      if (data.age_band) metadata.age_band = data.age_band;
+      if (data.atsi_identity && data.atsi_identity !== "none") {
+        metadata.atsi_identity_response = data.atsi_identity;
+        metadata.atsi_identifies = atsi.identifies;
+        if (atsi.label) metadata.atsi_identity_label = atsi.label;
+      }
       const { error } = await supabase.from('patients').insert({
         user_id: user!.id,
         patient_identifier: data.patient_identifier,
         gender: data.gender || null,
         language_preference: data.language_preference || null,
         cultural_background: data.cultural_background || null,
-        metadata: data.age_band ? { age_band: data.age_band } : {},
+        metadata: metadata as any,
       });
 
       if (error) throw error;
@@ -166,6 +184,32 @@ export const PatientForm = ({ onSuccess, onCancel }: PatientFormProps) => {
           {...register("cultural_background")}
         />
       </div>
+
+      <div>
+        <Label htmlFor="atsi_identity">
+          Aboriginal and/or Torres Strait Islander origin
+        </Label>
+        <Select
+          onValueChange={(value) => setValue("atsi_identity", value as any)}
+          value={watch("atsi_identity") || "none"}
+        >
+          <SelectTrigger id="atsi_identity">
+            <SelectValue placeholder="Select response" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No</SelectItem>
+            <SelectItem value="aboriginal">Yes, Aboriginal</SelectItem>
+            <SelectItem value="torres_strait">Yes, Torres Strait Islander</SelectItem>
+            <SelectItem value="both">Yes, both Aboriginal and Torres Strait Islander</SelectItem>
+            <SelectItem value="not_stated">Prefer not to say</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground mt-1">
+          Standard AIHW Indigenous status question. When "Yes", the app applies the Social &amp;
+          Emotional Wellbeing (SEWB) framing and surfaces 13YARN in crisis pathways.
+        </p>
+      </div>
+
 
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>

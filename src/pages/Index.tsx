@@ -145,9 +145,23 @@ const Index = () => {
 
   // Clear the assessment workspace whenever the active patient changes so a
   // previous patient's narrative / MSE never bleeds into the new patient.
+  // Also eagerly load the patient record so cultural-safety flags (e.g. ATSI SEWB)
+  // render immediately — not only after a narrative has been processed.
   useEffect(() => {
     setNarrative("");
     setResult(null);
+    if (!selectedPatientForAssessment) {
+      setCurrentPatientData(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("patients")
+        .select("patient_identifier, age_band, gender, cultural_background, language_preference, metadata")
+        .eq("id", selectedPatientForAssessment)
+        .maybeSingle();
+      if (data) setCurrentPatientData(data);
+    })();
   }, [selectedPatientForAssessment]);
 
   // Load screening data when patient is selected for assessment
@@ -398,13 +412,26 @@ const Index = () => {
             ];
             const visibleTabs = tabs.filter(t => t.show);
             return (
-              <TabsList className={`grid w-full max-w-5xl mx-auto mb-6`} style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}>
+              <TabsList
+                className="mb-6 w-full max-w-5xl mx-auto h-auto flex flex-wrap gap-1 p-1 md:grid"
+                style={{
+                  // md+ overrides flex with grid via inline style + media handled by classes.
+                  // We keep grid template only when the md:grid class applies.
+                  ['--tab-cols' as any]: visibleTabs.length,
+                  gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))`,
+                }}
+              >
                 {visibleTabs.map(t => {
                   const Icon = t.icon;
                   return (
-                    <TabsTrigger key={t.value} value={t.value} disabled={t.disabled} className={`relative ${t.className || ''}`}>
-                      <Icon className="h-4 w-4 mr-2" />
-                      {t.label}
+                    <TabsTrigger
+                      key={t.value}
+                      value={t.value}
+                      disabled={t.disabled}
+                      className={`relative flex-1 min-w-[calc(50%-0.25rem)] sm:min-w-[calc(33.333%-0.25rem)] md:min-w-0 justify-center text-xs sm:text-sm py-2 ${t.className || ''}`}
+                    >
+                      <Icon className="h-4 w-4 mr-1.5 shrink-0" />
+                      <span className="truncate">{t.label}</span>
                       {t.value === "offline" && offlinePendingCount > 0 && (
                         <span className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
                           {offlinePendingCount}
@@ -585,7 +612,7 @@ const Index = () => {
                   <p className="text-muted-foreground">
                     Select a patient to begin screening assessment
                   </p>
-                  <Select value={screeningPatientId || ""} onValueChange={setScreeningPatientId}>
+                  <Select value={screeningPatientId || ""} onValueChange={(v) => { setScreeningPatientId(v); setSelectedPatientForAssessment(v); }}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select Patient" />
                     </SelectTrigger>
@@ -612,6 +639,11 @@ const Index = () => {
                       Change Patient
                     </Button>
                   </div>
+
+                  <ATSISafetyFlag
+                    identifies={!!(currentPatientData?.metadata?.atsi_identifies)}
+                    identityLabel={currentPatientData?.metadata?.atsi_identity_label}
+                  />
 
                   {!selectedScreeningTool ? (
                     <ScreeningToolSelector
