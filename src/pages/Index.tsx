@@ -612,7 +612,7 @@ const Index = () => {
                   <p className="text-muted-foreground">
                     Select a patient to begin screening assessment
                   </p>
-                  <Select value={screeningPatientId || ""} onValueChange={setScreeningPatientId}>
+                  <Select value={screeningPatientId || ""} onValueChange={(v) => { setScreeningPatientId(v); setSelectedPatientForAssessment(v); }}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select Patient" />
                     </SelectTrigger>
