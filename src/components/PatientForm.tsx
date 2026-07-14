@@ -185,6 +185,32 @@ export const PatientForm = ({ onSuccess, onCancel }: PatientFormProps) => {
         />
       </div>
 
+      <div>
+        <Label htmlFor="atsi_identity">
+          Aboriginal and/or Torres Strait Islander origin
+        </Label>
+        <Select
+          onValueChange={(value) => setValue("atsi_identity", value as any)}
+          value={watch("atsi_identity") || "none"}
+        >
+          <SelectTrigger id="atsi_identity">
+            <SelectValue placeholder="Select response" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No</SelectItem>
+            <SelectItem value="aboriginal">Yes, Aboriginal</SelectItem>
+            <SelectItem value="torres_strait">Yes, Torres Strait Islander</SelectItem>
+            <SelectItem value="both">Yes, both Aboriginal and Torres Strait Islander</SelectItem>
+            <SelectItem value="not_stated">Prefer not to say</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground mt-1">
+          Standard AIHW Indigenous status question. When "Yes", the app applies the Social &amp;
+          Emotional Wellbeing (SEWB) framing and surfaces 13YARN in crisis pathways.
+        </p>
+      </div>
+
+
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
           Cancel
