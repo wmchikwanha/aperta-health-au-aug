@@ -398,13 +398,26 @@ const Index = () => {
             ];
             const visibleTabs = tabs.filter(t => t.show);
             return (
-              <TabsList className={`grid w-full max-w-5xl mx-auto mb-6`} style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}>
+              <TabsList
+                className="mb-6 w-full max-w-5xl mx-auto h-auto flex flex-wrap gap-1 p-1 md:grid"
+                style={{
+                  // md+ overrides flex with grid via inline style + media handled by classes.
+                  // We keep grid template only when the md:grid class applies.
+                  ['--tab-cols' as any]: visibleTabs.length,
+                  gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))`,
+                }}
+              >
                 {visibleTabs.map(t => {
                   const Icon = t.icon;
                   return (
-                    <TabsTrigger key={t.value} value={t.value} disabled={t.disabled} className={`relative ${t.className || ''}`}>
-                      <Icon className="h-4 w-4 mr-2" />
-                      {t.label}
+                    <TabsTrigger
+                      key={t.value}
+                      value={t.value}
+                      disabled={t.disabled}
+                      className={`relative flex-1 min-w-[calc(50%-0.25rem)] sm:min-w-[calc(33.333%-0.25rem)] md:min-w-0 justify-center text-xs sm:text-sm py-2 ${t.className || ''}`}
+                    >
+                      <Icon className="h-4 w-4 mr-1.5 shrink-0" />
+                      <span className="truncate">{t.label}</span>
                       {t.value === "offline" && offlinePendingCount > 0 && (
                         <span className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
                           {offlinePendingCount}
