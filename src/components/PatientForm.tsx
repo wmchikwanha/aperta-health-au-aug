@@ -60,8 +60,17 @@ export const PatientForm = ({ onSuccess, onCancel }: PatientFormProps) => {
       gender: "",
       language_preference: "",
       cultural_background: "",
+      atsi_identity: "none",
     },
   });
+
+  const ATSI_LABELS: Record<string, { identifies: boolean; label?: string }> = {
+    none: { identifies: false },
+    not_stated: { identifies: false },
+    aboriginal: { identifies: true, label: "Aboriginal" },
+    torres_strait: { identifies: true, label: "Torres Strait Islander" },
+    both: { identifies: true, label: "Aboriginal and Torres Strait Islander" },
+  };
 
   const onSubmit = async (data: PatientFormData) => {
     setLoading(true);
