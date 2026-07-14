@@ -640,6 +640,11 @@ const Index = () => {
                     </Button>
                   </div>
 
+                  <ATSISafetyFlag
+                    identifies={!!(currentPatientData?.metadata?.atsi_identifies)}
+                    identityLabel={currentPatientData?.metadata?.atsi_identity_label}
+                  />
+
                   {!selectedScreeningTool ? (
                     <ScreeningToolSelector
                       onSelectTool={setSelectedScreeningTool}
