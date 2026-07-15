@@ -147,7 +147,7 @@ export function AskAI({ context, contextLabel }: AskAIProps) {
   }
 
   return (
-    <Card className="fixed bottom-4 right-4 w-96 h-[600px] shadow-2xl flex flex-col">
+    <Card className="fixed bottom-20 right-4 w-96 h-[600px] shadow-2xl flex flex-col">
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">
           <Brain className="h-5 w-5 text-primary" />
