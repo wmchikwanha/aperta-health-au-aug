@@ -132,6 +132,9 @@ export const AboutDialog = () => {
                   © {new Date().getFullYear()} Aperta Health · Opening the space between clinical
                   precision and cultural understanding.
                 </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Contact the developer: <a href="mailto:wmchikwanha@gmail.com" className="underline hover:text-foreground">Walter Chikwanha — wmchikwanha@gmail.com</a>
+                </p>
               </div>
             </div>
           </DialogDescription>

@@ -149,53 +149,24 @@ export function IntakeQueue() {
 
   const acceptReferral = async (referral: CHWReferral) => {
     if (!user) return;
-    // 1. Mark referral accepted and assign destination to current clinician
-    const { error: refErr } = await supabase
-      .from("referrals")
-      .update({ status: "accepted", destination: user.id, updated_at: new Date().toISOString() })
-      .eq("id", referral.id);
-    if (refErr) {
-      toast({ title: "Error", description: refErr.message, variant: "destructive" });
+    // Server-side transfer: marks referral accepted, reassigns patient ownership,
+    // and seeds a pending assessment — all in one privileged call so RLS on
+    // patients (owner-only UPDATE) doesn't silently drop the ownership change.
+    const { error } = await supabase.rpc("accept_upward_referral", {
+      _referral_id: referral.id,
+    });
+    if (error) {
+      toast({ title: "Error accepting referral", description: error.message, variant: "destructive" });
       return;
     }
-    // 2. Transfer patient ownership to accepting clinician
-    const { error: patErr } = await supabase
-      .from("patients")
-      .update({ user_id: user.id })
-      .eq("id", referral.patient_id);
-    if (patErr) {
-      toast({ title: "Error transferring patient", description: patErr.message, variant: "destructive" });
-      return;
-    }
-    // 3. Seed a pending assessment so the BCW session appears in the doctor's upcoming/ongoing work
-    const { error: aErr } = await supabase.from("assessments").insert({
-      patient_id: referral.patient_id,
-      user_id: user.id,
-      narrative: referral.notes || referral.reason || "Bicultural Worker handoff",
-      processed_result: {
-        pending: true,
-        source: "chw_referral",
-        handoff_summary: referral.notes || referral.reason || "",
-        note: "Awaiting clinician processing — seeded from Bicultural Worker referral.",
-      },
-      assessment_date: new Date().toISOString(),
-      metadata: {
-        source: "chw_referral",
-        referral_id: referral.id,
-        chw_id: referral.recorded_by,
-        chw_name: referral.chw_name,
-        urgency: referral.urgency,
-        handoff_notes: referral.notes,
-      },
-    } as any);
-    if (aErr) {
-      toast({ title: "Warning", description: `Patient accepted but seeding assessment failed: ${aErr.message}`, variant: "destructive" });
-    } else {
-      toast({ title: "Referral Accepted", description: `${referral.patient_identifier} added to your patient list with the BCW session attached.` });
-    }
+    toast({
+      title: "Referral Accepted",
+      description: `${referral.patient_identifier} added to your patient list with the BCW session attached.`,
+    });
     setSelectedReferral(null);
     fetchData();
   };
+
 
   const statusBadge = (status: string, riskFlags: any) => {
     const hasRisk = riskFlags?.immediate_review;

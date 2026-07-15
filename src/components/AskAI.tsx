@@ -124,7 +124,7 @@ export function AskAI({ context, contextLabel }: AskAIProps) {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 rounded-full shadow-lg"
+        className="fixed bottom-20 right-4 rounded-full shadow-lg"
         size="lg"
       >
         <Brain className="mr-2 h-5 w-5" />
@@ -137,7 +137,7 @@ export function AskAI({ context, contextLabel }: AskAIProps) {
     return (
       <Button
         onClick={() => setIsMinimized(false)}
-        className="fixed bottom-4 right-4 shadow-lg"
+        className="fixed bottom-20 right-4 shadow-lg"
         variant="secondary"
       >
         <Brain className="mr-2 h-5 w-5" />
@@ -147,7 +147,7 @@ export function AskAI({ context, contextLabel }: AskAIProps) {
   }
 
   return (
-    <Card className="fixed bottom-4 right-4 w-96 h-[600px] shadow-2xl flex flex-col">
+    <Card className="fixed bottom-20 right-4 w-96 h-[600px] shadow-2xl flex flex-col">
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">
           <Brain className="h-5 w-5 text-primary" />
