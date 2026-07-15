@@ -441,6 +441,12 @@ export const PatientProfile = ({ patientId, onBack }: PatientProfileProps) => {
         </Button>
       </div>
 
+      {/* Aboriginal & Torres Strait Islander cultural safety banner */}
+      <ATSISafetyFlag
+        identifies={!!patient.metadata?.atsi_identifies}
+        identityLabel={patient.metadata?.atsi_identity_label}
+      />
+
       {/* Patient Info Card */}
       <Card>
         <CardHeader>
