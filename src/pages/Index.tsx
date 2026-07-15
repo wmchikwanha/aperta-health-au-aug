@@ -88,6 +88,7 @@ const Index = () => {
   const [currentAssessmentDate, setCurrentAssessmentDate] = useState<string>(new Date().toISOString());
   const [currentPatientData, setCurrentPatientData] = useState<any>(null);
   const [showPatientForm, setShowPatientForm] = useState(false);
+  const [patientListRefreshKey, setPatientListRefreshKey] = useState(0);
   const [selectedScreeningTool, setSelectedScreeningTool] = useState<string | null>(null);
   const [screeningPatientId, setScreeningPatientId] = useState<string | null>(null);
   const [screeningRefreshKey, setScreeningRefreshKey] = useState(0);
@@ -871,6 +872,7 @@ const Index = () => {
               <PatientList
                 onSelectPatient={(id) => setHubPatientId(id)}
                 onCreatePatient={() => setShowPatientForm(true)}
+                refreshKey={patientListRefreshKey}
               />
             )}
           </TabsContent>
@@ -920,7 +922,10 @@ const Index = () => {
               </DialogDescription>
             </DialogHeader>
             <PatientForm
-              onSuccess={() => setShowPatientForm(false)}
+              onSuccess={() => {
+                setShowPatientForm(false);
+                setPatientListRefreshKey((k) => k + 1);
+              }}
               onCancel={() => setShowPatientForm(false)}
             />
           </DialogContent>

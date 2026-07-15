@@ -15,6 +15,7 @@ import { z } from "zod";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { exportCaseSummaryToPDF } from "@/lib/caseSummaryPdfExport";
 import { getGenderLabel, getLanguageName } from "@/lib/languages";
+import { ATSISafetyFlag } from "@/components/ATSISafetyFlag";
 
 interface Patient {
   id: string;
@@ -24,6 +25,7 @@ interface Patient {
   language_preference: string | null;
   cultural_background: string | null;
   created_at: string;
+  metadata?: any;
 }
 
 interface Assessment {
@@ -438,6 +440,12 @@ export const PatientProfile = ({ patientId, onBack }: PatientProfileProps) => {
           Export Case Summary
         </Button>
       </div>
+
+      {/* Aboriginal & Torres Strait Islander cultural safety banner */}
+      <ATSISafetyFlag
+        identifies={!!patient.metadata?.atsi_identifies}
+        identityLabel={patient.metadata?.atsi_identity_label}
+      />
 
       {/* Patient Info Card */}
       <Card>
