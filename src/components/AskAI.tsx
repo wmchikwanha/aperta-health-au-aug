@@ -137,7 +137,7 @@ export function AskAI({ context, contextLabel }: AskAIProps) {
     return (
       <Button
         onClick={() => setIsMinimized(false)}
-        className="fixed bottom-4 right-4 shadow-lg"
+        className="fixed bottom-20 right-4 shadow-lg"
         variant="secondary"
       >
         <Brain className="mr-2 h-5 w-5" />
