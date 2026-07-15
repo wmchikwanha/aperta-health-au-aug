@@ -872,6 +872,7 @@ const Index = () => {
               <PatientList
                 onSelectPatient={(id) => setHubPatientId(id)}
                 onCreatePatient={() => setShowPatientForm(true)}
+                refreshKey={patientListRefreshKey}
               />
             )}
           </TabsContent>
