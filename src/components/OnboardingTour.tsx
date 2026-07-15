@@ -107,7 +107,7 @@ export const OnboardingTour = () => {
         variant="outline"
         size="sm"
         onClick={handleRestart}
-        className="fixed bottom-4 left-4 z-40 shadow-lg"
+        className="fixed bottom-20 left-4 z-40 shadow-lg"
       >
         Restart Tour
       </Button>
