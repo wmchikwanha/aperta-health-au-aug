@@ -925,7 +925,6 @@ const Index = () => {
               onSuccess={() => {
                 setShowPatientForm(false);
                 setPatientListRefreshKey((k) => k + 1);
-                loadPatients();
               }}
               onCancel={() => setShowPatientForm(false)}
             />
