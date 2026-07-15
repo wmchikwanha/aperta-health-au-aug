@@ -124,7 +124,7 @@ export function AskAI({ context, contextLabel }: AskAIProps) {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 rounded-full shadow-lg"
+        className="fixed bottom-20 right-4 rounded-full shadow-lg"
         size="lg"
       >
         <Brain className="mr-2 h-5 w-5" />
