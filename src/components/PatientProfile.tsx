@@ -15,6 +15,7 @@ import { z } from "zod";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { exportCaseSummaryToPDF } from "@/lib/caseSummaryPdfExport";
 import { getGenderLabel, getLanguageName } from "@/lib/languages";
+import { ATSISafetyFlag } from "@/components/ATSISafetyFlag";
 
 interface Patient {
   id: string;
@@ -24,6 +25,7 @@ interface Patient {
   language_preference: string | null;
   cultural_background: string | null;
   created_at: string;
+  metadata?: any;
 }
 
 interface Assessment {
