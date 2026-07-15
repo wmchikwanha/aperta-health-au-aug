@@ -88,6 +88,7 @@ const Index = () => {
   const [currentAssessmentDate, setCurrentAssessmentDate] = useState<string>(new Date().toISOString());
   const [currentPatientData, setCurrentPatientData] = useState<any>(null);
   const [showPatientForm, setShowPatientForm] = useState(false);
+  const [patientListRefreshKey, setPatientListRefreshKey] = useState(0);
   const [selectedScreeningTool, setSelectedScreeningTool] = useState<string | null>(null);
   const [screeningPatientId, setScreeningPatientId] = useState<string | null>(null);
   const [screeningRefreshKey, setScreeningRefreshKey] = useState(0);
