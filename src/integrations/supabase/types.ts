@@ -1298,6 +1298,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_upward_referral: {
+        Args: { _referral_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
