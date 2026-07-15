@@ -23,9 +23,10 @@ interface Patient {
 interface PatientListProps {
   onSelectPatient: (patientId: string) => void;
   onCreatePatient: () => void;
+  refreshKey?: number;
 }
 
-export const PatientList = ({ onSelectPatient, onCreatePatient }: PatientListProps) => {
+export const PatientList = ({ onSelectPatient, onCreatePatient, refreshKey }: PatientListProps) => {
   const { user, userRole } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
@@ -48,7 +49,7 @@ export const PatientList = ({ onSelectPatient, onCreatePatient }: PatientListPro
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, userRole]);
+  }, [user, userRole, refreshKey]);
 
   useEffect(() => {
     const filtered = patients.filter(patient =>
