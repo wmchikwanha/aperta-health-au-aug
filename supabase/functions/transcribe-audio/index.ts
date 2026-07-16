@@ -45,7 +45,16 @@ serve(async (req) => {
           content: [
             { 
               type: "text", 
-              text: `Transcribe this audio recording accurately and completely. Output ONLY the transcription text with no additional commentary, labels, or formatting.${languageHint}` 
+              text: `Transcribe this audio recording accurately and completely.${languageHint}
+
+Return ONLY valid JSON in this exact shape:
+{
+  "text": "verbatim transcript in the spoken language",
+  "translation": "English translation when the spoken language is not English; otherwise empty string",
+  "detectedLanguage": "short language name or code"
+}
+
+If the recording is already English, keep translation empty. Preserve clinically relevant idioms of distress in the transcript and translate their meaning in English.` 
             },
             { 
               type: "input_audio", 
@@ -55,7 +64,8 @@ serve(async (req) => {
               }
             }
           ]
-        }]
+        }],
+        response_format: { type: "json_object" }
       }),
     });
 
@@ -78,7 +88,19 @@ serve(async (req) => {
     console.log("Transcription response received");
 
     // Extract transcription from chat completion response
-    const transcribedText = result.choices?.[0]?.message?.content;
+    const content = result.choices?.[0]?.message?.content;
+    let transcribedText = "";
+    let translation = "";
+    let detectedLanguage = languageCode;
+
+    try {
+      const parsed = JSON.parse(content || "{}");
+      transcribedText = parsed.text || "";
+      translation = parsed.translation || "";
+      detectedLanguage = parsed.detectedLanguage || languageCode;
+    } catch (_) {
+      transcribedText = content || "";
+    }
     
     if (!transcribedText) {
       console.warn("No transcript found in response:", JSON.stringify(result));
@@ -87,7 +109,7 @@ serve(async (req) => {
 
     console.log("Transcription successful, length:", transcribedText.length);
 
-    return new Response(JSON.stringify({ text: transcribedText }), {
+    return new Response(JSON.stringify({ text: transcribedText, translation, detectedLanguage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
