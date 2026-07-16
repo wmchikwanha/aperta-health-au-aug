@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, Plus, ArrowUpRight, CheckCircle2, AlertTriangle, Play } from "lucide-react";
 import type { CHWSession } from "@/pages/CHWWorkspace";
 import type { CHWPatientGroup } from "./CHWPatientList";
+import { ATSISafetyFlag } from "@/components/ATSISafetyFlag";
 
 interface Props {
   patient: CHWPatientGroup;
@@ -87,6 +88,8 @@ export const CHWPatientDetail = ({
         </CardContent>
       </Card>
 
+      <ATSISafetyFlag identifies={patient.atsiIdentifies} identityLabel={patient.atsiIdentityLabel || undefined} />
+
       <div className="space-y-2">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Session history</h3>
         {patient.sessions.map(s => {
@@ -133,6 +136,22 @@ export const CHWPatientDetail = ({
                     </div>
                   )}
                 </div>
+                {(s.narrative_translation || s.narrative_text) && (
+                  <div className="mt-3 grid gap-2 text-sm md:grid-cols-2">
+                    {s.narrative_translation && (
+                      <div className="rounded-md border bg-muted/40 p-3">
+                        <p className="mb-1 text-xs font-medium text-muted-foreground">English translation</p>
+                        <p className="whitespace-pre-wrap text-muted-foreground">{s.narrative_translation}</p>
+                      </div>
+                    )}
+                    {s.narrative_text && (
+                      <div className="rounded-md border bg-muted/40 p-3">
+                        <p className="mb-1 text-xs font-medium text-muted-foreground">Original transcript / notes</p>
+                        <p className="whitespace-pre-wrap text-muted-foreground">{s.narrative_text}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           );
