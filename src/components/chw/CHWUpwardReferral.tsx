@@ -144,6 +144,17 @@ export const CHWUpwardReferral = ({ session, onDone, onCancel }: Props) => {
     }
     setSubmitting(true);
     try {
+      const { data: full } = await supabase
+        .from("chw_sessions")
+        .select("notes, narrative_text, narrative_translation, atsi_identifies, atsi_identity_label")
+        .eq("id", session.id)
+        .single();
+      const sessionNotes = (full as any)?.notes as string | null;
+      const originalTranscript = ((full as any)?.narrative_text || session.narrative_text) as string | null;
+      const englishTranslation = ((full as any)?.narrative_translation || session.narrative_translation) as string | null;
+      const atsiIdentifies = Boolean((full as any)?.atsi_identifies || session.atsi_identifies);
+      const atsiIdentityLabel = ((full as any)?.atsi_identity_label || session.atsi_identity_label) as string | null;
+
       // 1. Create or reuse a patients row owned by the CHW (pseudonym only)
       const { data: existing } = await supabase
         .from("patients")
@@ -159,7 +170,13 @@ export const CHWUpwardReferral = ({ session, onDone, onCancel }: Props) => {
             user_id: user.id,
             patient_identifier: session.patient_pseudonym,
             language_preference: session.language_code,
-            metadata: { age_band: session.age_band, source: "chw_session", chw_session_id: session.id },
+            metadata: {
+              age_band: session.age_band,
+              source: "chw_session",
+              chw_session_id: session.id,
+              atsi_identifies: atsiIdentifies,
+              atsi_identity_label: atsiIdentityLabel,
+            },
           }).select("id").single();
         if (pErr) throw pErr;
         patientId = newPatient.id;
@@ -178,15 +195,12 @@ export const CHWUpwardReferral = ({ session, onDone, onCancel }: Props) => {
           ? destClinician.id // user uuid so RLS "destination = auth.uid()::text" matches
           : null;
 
-      // Pull latest notes from the session row (not exposed on CHWSession type)
-      const { data: full } = await supabase
-        .from("chw_sessions").select("notes").eq("id", session.id).single();
-      const sessionNotes = (full as any)?.notes as string | null;
-
       const composedNotes = [
         extraNotes.trim(),
-        sessionNotes ? `\n--- CHW notes ---\n${sessionNotes}` : "",
-        session.narrative_text ? `\n--- Narrative ---\n${session.narrative_text}` : "",
+        atsiIdentifies ? `\n--- Cultural safety ---\nPatient identifies as ${atsiIdentityLabel || "Aboriginal and/or Torres Strait Islander"}. Use SEWB framing and consider 13YARN for crisis support.` : "",
+        englishTranslation ? `\n--- English translation for clinician ---\n${englishTranslation}` : "",
+        originalTranscript ? `\n--- Original transcript ---\n${originalTranscript}` : "",
+        sessionNotes ? `\n--- Bicultural Worker notes ---\n${sessionNotes}` : "",
         session.phq9_score != null ? `\n--- PHQ-9 ---\nScore: ${session.phq9_score} (${session.phq9_severity})${session.phq9_item9_flag ? " · Self-harm flag" : ""}` : "",
         destFacility ? `\n--- Destination ---\nFacility: ${destFacility.facility_name}${destFacility.region ? ` · ${destFacility.region}` : ""}` : "",
       ].join("");
