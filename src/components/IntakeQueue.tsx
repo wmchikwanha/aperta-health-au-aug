@@ -274,7 +274,7 @@ export function IntakeQueue() {
               </CardContent>
             </Card>
           ) : (
-            sortedReferrals.map(r => <ReferralCard key={r.id} referral={r} urgencyBadge={urgencyBadge} onView={() => setSelectedReferral(r)} />)
+            activeReferrals.map(r => <ReferralCard key={r.id} referral={r} urgencyBadge={urgencyBadge} onView={() => setSelectedReferral(r)} />)
           )}
         </TabsContent>
       </Tabs>
@@ -387,7 +387,7 @@ export function IntakeQueue() {
 
               {selectedReferral.notes && (
                 <div className="space-y-1">
-                  <h4 className="font-medium text-sm">Notes & Transcript</h4>
+                  <h4 className="font-medium text-sm">English handover, notes & transcript</h4>
                   <p className="text-sm text-muted-foreground p-3 rounded-lg border bg-muted/50 whitespace-pre-wrap">{selectedReferral.notes}</p>
                 </div>
               )}

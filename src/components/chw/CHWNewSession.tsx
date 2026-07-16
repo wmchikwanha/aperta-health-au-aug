@@ -15,11 +15,15 @@ import { scorePHQ9 } from "@/lib/screening/scoringUtils";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { Loader2, Mic, MicOff, Save, ArrowUpRight, AlertTriangle, Phone } from "lucide-react";
 import type { CHWSession } from "@/pages/CHWWorkspace";
+import { ATSISafetyFlag } from "@/components/ATSISafetyFlag";
 
 interface PatientContext {
   pseudonym: string;
   ageBand: string | null;
   language: string;
+  atsiIdentityResponse?: string | null;
+  atsiIdentifies?: boolean;
+  atsiIdentityLabel?: string | null;
 }
 
 interface Props {
@@ -67,6 +71,20 @@ const LANGUAGES = [
   { v: "rhg", label: "Rohingya" },
 ];
 const AGE_BANDS = ["Under 18", "18-25", "26-35", "36-50", "51-65", "Over 65"];
+const ATSI_OPTIONS = [
+  { value: "none", label: "No" },
+  { value: "aboriginal", label: "Yes, Aboriginal" },
+  { value: "torres_strait", label: "Yes, Torres Strait Islander" },
+  { value: "both", label: "Yes, both Aboriginal and Torres Strait Islander" },
+  { value: "not_stated", label: "Prefer not to say" },
+];
+const ATSI_LABELS: Record<string, { identifies: boolean; label: string | null }> = {
+  none: { identifies: false, label: null },
+  not_stated: { identifies: false, label: null },
+  aboriginal: { identifies: true, label: "Aboriginal" },
+  torres_strait: { identifies: true, label: "Torres Strait Islander" },
+  both: { identifies: true, label: "Aboriginal and Torres Strait Islander" },
+};
 
 export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward }: Props) => {
   const { user } = useAuth();
@@ -77,6 +95,10 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
   const [ageBand, setAgeBand] = useState(existing?.age_band ?? patientContext?.ageBand ?? "");
   const [language, setLanguage] = useState(existing?.language_code ?? patientContext?.language ?? "en");
   const [narrative, setNarrative] = useState(existing?.narrative_text ?? "");
+  const [narrativeTranslation, setNarrativeTranslation] = useState(existing?.narrative_translation ?? "");
+  const [atsiIdentity, setAtsiIdentity] = useState(
+    existing?.atsi_identity_response ?? patientContext?.atsiIdentityResponse ?? (patientContext?.atsiIdentifies ? "both" : "none")
+  );
   const [responses, setResponses] = useState<Record<number, number>>({});
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
@@ -88,7 +110,7 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
       if (!existing) return;
       const { data } = await supabase
         .from("chw_sessions")
-        .select("phq9_responses, notes")
+        .select("phq9_responses, notes, narrative_translation, atsi_identity_response")
         .eq("id", existing.id)
         .single();
       if (data?.phq9_responses && Array.isArray(data.phq9_responses)) {
@@ -97,6 +119,8 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
         setResponses(map);
       }
       if (data?.notes) setNotes(data.notes);
+      if ((data as any)?.narrative_translation) setNarrativeTranslation((data as any).narrative_translation);
+      if ((data as any)?.atsi_identity_response) setAtsiIdentity((data as any).atsi_identity_response);
     };
     loadExisting();
   }, [existing]);
@@ -126,7 +150,10 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
         if (error) throw error;
         if (data?.text) {
           setNarrative(prev => (prev ? prev + " " : "") + data.text);
-          toast({ title: "Transcribed" });
+          if (data.translation) {
+            setNarrativeTranslation(prev => (prev ? prev + "\n\n" : "") + data.translation);
+          }
+          toast({ title: data.translation ? "Transcribed and translated" : "Transcribed" });
         }
       } catch (e: any) {
         toast({ variant: "destructive", title: "Could not transcribe", description: e.message });
@@ -143,6 +170,7 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
     : null;
   const item9Flag = (responses[8] ?? 0) >= 1;
   const mustRefer = item9Flag || (phq9Result != null && phq9Result.totalScore >= 15);
+  const selectedAtsi = ATSI_LABELS[atsiIdentity || "none"] ?? ATSI_LABELS.none;
 
   const buildPayload = (status: "active" | "completed") => ({
     chw_id: user!.id,
@@ -150,11 +178,15 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
     age_band: ageBand || null,
     language_code: language,
     narrative_text: narrative || null,
+    narrative_translation: narrativeTranslation || null,
     phq9_responses: isPhq9Complete ? Array.from({ length: 9 }, (_, i) => responses[i]) : null,
     phq9_score: phq9Result?.totalScore ?? null,
     phq9_severity: phq9Result?.severityLevel ?? null,
     phq9_item9_flag: item9Flag,
     notes: notes || null,
+    atsi_identity_response: atsiIdentity || "none",
+    atsi_identifies: selectedAtsi.identifies,
+    atsi_identity_label: selectedAtsi.label,
     status,
     completed_at: status === "completed" ? new Date().toISOString() : null,
   });
@@ -254,6 +286,17 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
             </div>
 
             <div className="space-y-2">
+              <Label>Aboriginal and/or Torres Strait Islander origin</Label>
+              <Select value={atsiIdentity || "none"} onValueChange={setAtsiIdentity}>
+                <SelectTrigger><SelectValue placeholder="Select response" /></SelectTrigger>
+                <SelectContent>
+                  {ATSI_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <ATSISafetyFlag identifies={selectedAtsi.identifies} identityLabel={selectedAtsi.label || undefined} />
+            </div>
+
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>What is the person sharing?</Label>
                 {recorder.isRecording ? (
@@ -274,6 +317,18 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
                 placeholder="Type or speak what the person is telling you. Use plain language."
               />
             </div>
+
+            {(language !== "en" || narrativeTranslation) && (
+              <div className="space-y-2">
+                <Label>English translation for clinician handover</Label>
+                <Textarea
+                  rows={5}
+                  value={narrativeTranslation}
+                  onChange={e => setNarrativeTranslation(e.target.value)}
+                  placeholder="Recorded non-English speech will appear here in English after transcription."
+                />
+              </div>
+            )}
 
             <div className="flex justify-end">
               <Button onClick={() => setStep(2)} disabled={!pseudonym.trim()}>Next: Screen</Button>

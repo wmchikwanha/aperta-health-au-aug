@@ -8,6 +8,9 @@ export interface CHWPatientGroup {
   pseudonym: string;
   ageBand: string | null;
   language: string;
+  atsiIdentityResponse: string | null;
+  atsiIdentifies: boolean;
+  atsiIdentityLabel: string | null;
   sessions: CHWSession[];
   activeSession: CHWSession | null;
   lastContact: string;
@@ -31,6 +34,9 @@ export function groupSessionsByPatient(sessions: CHWSession[]): CHWPatientGroup[
       pseudonym: latest.patient_pseudonym,
       ageBand: latest.age_band,
       language: latest.language_code,
+      atsiIdentityResponse: latest.atsi_identity_response,
+      atsiIdentifies: sorted.some(s => s.atsi_identifies),
+      atsiIdentityLabel: latest.atsi_identity_label,
       sessions: sorted,
       activeSession: sorted.find(s => s.status === "active") ?? null,
       lastContact: latest.updated_at,
@@ -96,6 +102,7 @@ export const CHWPatientList = ({ patients, onOpen, onNewPatient, atCap }: Props)
                     <AlertTriangle className="h-3 w-3" /> Self-harm flag
                   </Badge>
                 )}
+                {p.atsiIdentifies && <Badge variant="outline">SEWB</Badge>}
               </div>
             </CardContent>
           </Card>

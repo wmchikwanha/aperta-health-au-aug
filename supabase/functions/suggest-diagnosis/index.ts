@@ -102,8 +102,10 @@ serve(async (req) => {
       ? `Use ICD-11 diagnostic codes exclusively (e.g., 6A70 MDD, 6B41 Complex PTSD).`
       : `Use DSM-5-TR diagnostic codes exclusively.`;
 
+    const frameworkLabel = framework === 'DSM-5' ? 'DSM-5-TR' : framework;
+
     const systemPrompt = `You are an expert psychiatric diagnostic consultant for Australian CALD / refugee mental-health.
-    Use ${framework} diagnostic criteria exclusively.
+    Use ${frameworkLabel} diagnostic criteria exclusively.
     ${frameworkInstructions}
 
     CULTURAL CONTEXT: Recognise idioms like ḍayqa ṣadr (Arabic), jigaram khun (Dari), suy nghĩ nhiều (Vietnamese).
@@ -145,7 +147,7 @@ serve(async (req) => {
 
     const result = {
       ...suggestions,
-      framework,
+      framework: frameworkLabel,
       generatedAt: new Date().toISOString(),
       disclaimer: 'AI-generated suggestion requiring clinical review. The final diagnosis is the responsibility of the treating clinician.',
     };

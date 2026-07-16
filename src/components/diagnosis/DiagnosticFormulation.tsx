@@ -266,7 +266,7 @@ export function DiagnosticFormulation({
                 <TabsList className="h-8">
                   <TabsTrigger value="ICD-10" className="text-xs px-3">ICD-10</TabsTrigger>
                   <TabsTrigger value="ICD-11" className="text-xs px-3">ICD-11</TabsTrigger>
-                  <TabsTrigger value="DSM-5" className="text-xs px-3">DSM-5</TabsTrigger>
+                  <TabsTrigger value="DSM-5" className="text-xs px-3">DSM-5-TR</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -274,9 +274,9 @@ export function DiagnosticFormulation({
         </CardHeader>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 2xl:grid-cols-5 gap-4">
         {/* Main Formulation Panel */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="2xl:col-span-3 space-y-4">
           {/* Primary Diagnosis */}
           <Card>
             <CardHeader className="pb-3">
@@ -458,7 +458,7 @@ export function DiagnosticFormulation({
         </div>
 
         {/* AI Suggestions Sidebar */}
-        <div className="lg:col-span-1">
+        <div className="2xl:col-span-2">
           <AIDiagnosticSuggestions
             framework={formulation.framework}
             screeningData={screeningData}

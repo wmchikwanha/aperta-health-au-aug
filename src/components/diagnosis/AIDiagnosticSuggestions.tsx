@@ -106,6 +106,7 @@ export function AIDiagnosticSuggestions({
   });
 
   const hasData = Object.keys(screeningData).length > 0 || Object.keys(mseFindings).length > 0;
+  const frameworkLabel = framework === 'DSM-5' ? 'DSM-5-TR' : framework;
 
   return (
     <Card>
@@ -116,7 +117,7 @@ export function AIDiagnosticSuggestions({
             AI Diagnostic Suggestions
           </CardTitle>
           <Badge variant="outline" className="text-xs">
-            {framework}
+            {frameworkLabel}
           </Badge>
         </div>
       </CardHeader>
@@ -131,7 +132,7 @@ export function AIDiagnosticSuggestions({
             ) : (
               <>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Generate AI-powered diagnostic suggestions based on clinical data
+                  Generate {frameworkLabel} diagnostic suggestions based on clinical data
                 </p>
                 <Button
                   onClick={generateSuggestions}

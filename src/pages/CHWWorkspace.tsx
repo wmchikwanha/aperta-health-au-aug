@@ -19,9 +19,13 @@ export interface CHWSession {
   age_band: string | null;
   language_code: string;
   narrative_text: string | null;
+  narrative_translation: string | null;
   phq9_score: number | null;
   phq9_severity: string | null;
   phq9_item9_flag: boolean;
+  atsi_identity_response: string | null;
+  atsi_identifies: boolean;
+  atsi_identity_label: string | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -206,6 +210,9 @@ const CHWWorkspace = () => {
                 pseudonym: view.patientCtx.pseudonym,
                 ageBand: view.patientCtx.ageBand,
                 language: view.patientCtx.language,
+                atsiIdentityResponse: view.patientCtx.atsiIdentityResponse,
+                atsiIdentifies: view.patientCtx.atsiIdentifies,
+                atsiIdentityLabel: view.patientCtx.atsiIdentityLabel,
               } : null}
               onSaved={handleSessionSaved}
               onReferUpward={(s) => setView({

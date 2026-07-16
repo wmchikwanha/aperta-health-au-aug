@@ -179,12 +179,16 @@ export type Database = {
       chw_sessions: {
         Row: {
           age_band: string | null
+          atsi_identifies: boolean
+          atsi_identity_label: string | null
+          atsi_identity_response: string | null
           chw_id: string
           completed_at: string | null
           created_at: string
           id: string
           language_code: string | null
           narrative_text: string | null
+          narrative_translation: string | null
           notes: string | null
           patient_pseudonym: string
           phq9_item9_flag: boolean | null
@@ -197,12 +201,16 @@ export type Database = {
         }
         Insert: {
           age_band?: string | null
+          atsi_identifies?: boolean
+          atsi_identity_label?: string | null
+          atsi_identity_response?: string | null
           chw_id: string
           completed_at?: string | null
           created_at?: string
           id?: string
           language_code?: string | null
           narrative_text?: string | null
+          narrative_translation?: string | null
           notes?: string | null
           patient_pseudonym: string
           phq9_item9_flag?: boolean | null
@@ -215,12 +223,16 @@ export type Database = {
         }
         Update: {
           age_band?: string | null
+          atsi_identifies?: boolean
+          atsi_identity_label?: string | null
+          atsi_identity_response?: string | null
           chw_id?: string
           completed_at?: string | null
           created_at?: string
           id?: string
           language_code?: string | null
           narrative_text?: string | null
+          narrative_translation?: string | null
           notes?: string | null
           patient_pseudonym?: string
           phq9_item9_flag?: boolean | null
