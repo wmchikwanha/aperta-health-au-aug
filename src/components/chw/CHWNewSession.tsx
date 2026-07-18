@@ -103,6 +103,7 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [currentId, setCurrentId] = useState<string | null>(existing?.id ?? null);
 
   // Load existing PHQ9 responses if editing
   useEffect(() => {
