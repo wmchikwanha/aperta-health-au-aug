@@ -131,6 +131,35 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
   const lastBlobRef = useRef<Blob | null>(null);
   const [transcribing, setTranscribing] = useState(false);
 
+  // Keep latest state in a ref so unmount cleanup can persist unsaved progress
+  const latestRef = useRef<{ pseudonym: string; payload: () => any; id: string | null }>({
+    pseudonym: "",
+    payload: () => ({}),
+    id: null,
+  });
+  useEffect(() => {
+    latestRef.current = {
+      pseudonym,
+      payload: () => buildPayload("active"),
+      id: currentId,
+    };
+  });
+
+  // Autosave draft on unmount (e.g. user clicks parent "← Back")
+  useEffect(() => {
+    return () => {
+      const { pseudonym: p, payload, id } = latestRef.current;
+      if (!user || !p.trim()) return;
+      const body = payload();
+      if (id) {
+        void supabase.from("chw_sessions").update(body).eq("id", id);
+      } else {
+        void supabase.from("chw_sessions").insert(body);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Auto-transcribe when audioBlob is finalised
   useEffect(() => {
     const blob = recorder.audioBlob;
