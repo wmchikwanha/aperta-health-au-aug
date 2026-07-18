@@ -247,9 +247,10 @@ export const AssessmentHistory = ({ patientId }: AssessmentHistoryProps = {}) =>
                           </Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
                         {assessment.narrative}
                       </p>
+                      <p className="text-[11px] text-primary mt-1">Click to view full assessment →</p>
                       {assessment.cultural_idioms_found &&
                         assessment.cultural_idioms_found.length > 0 && (
                           <div className="flex gap-1 mt-2">
