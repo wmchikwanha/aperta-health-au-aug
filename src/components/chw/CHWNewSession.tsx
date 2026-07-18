@@ -345,7 +345,10 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
             )}
 
             <div className="flex justify-end">
-              <Button onClick={() => setStep(2)} disabled={!pseudonym.trim()}>Next: Screen</Button>
+              <Button onClick={() => autosaveAndAdvance(2)} disabled={!pseudonym.trim() || saving}>
+                {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
+                Next: Screen
+              </Button>
             </div>
           </CardContent>
         </Card>
