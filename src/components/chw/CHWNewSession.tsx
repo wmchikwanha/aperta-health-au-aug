@@ -192,24 +192,37 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
     completed_at: status === "completed" ? new Date().toISOString() : null,
   });
 
-  const save = async (status: "active" | "completed"): Promise<CHWSession | null> => {
+  const save = async (status: "active" | "completed", opts: { silent?: boolean } = {}): Promise<CHWSession | null> => {
     if (!user) return null;
     if (!pseudonym.trim()) {
-      toast({ variant: "destructive", title: "Pseudonym required", description: "Use a code or initials, not a real name." });
+      if (!opts.silent) {
+        toast({ variant: "destructive", title: "Pseudonym required", description: "Use a code or initials, not a real name." });
+      }
       return null;
     }
     setSaving(true);
     const payload = buildPayload(status);
-    const { data, error } = existing
-      ? await supabase.from("chw_sessions").update(payload).eq("id", existing.id).select().single()
+    const targetId = currentId;
+    const { data, error } = targetId
+      ? await supabase.from("chw_sessions").update(payload).eq("id", targetId).select().single()
       : await supabase.from("chw_sessions").insert(payload).select().single();
     setSaving(false);
     if (error) {
-      toast({ variant: "destructive", title: "Could not save", description: error.message });
+      if (!opts.silent) toast({ variant: "destructive", title: "Could not save", description: error.message });
       return null;
     }
-    toast({ title: status === "completed" ? "Session completed" : "Session saved" });
+    if (data?.id && !currentId) setCurrentId(data.id);
+    if (!opts.silent) {
+      toast({ title: status === "completed" ? "Session completed" : "Session saved" });
+    }
     return data as CHWSession;
+  };
+
+  const autosaveAndAdvance = async (next: 1 | 2 | 3) => {
+    if (pseudonym.trim()) {
+      await save("active", { silent: true });
+    }
+    setStep(next);
   };
 
   const handleSaveDraft = async () => {
