@@ -217,7 +217,7 @@ export const AssessmentHistory = ({ patientId }: AssessmentHistoryProps = {}) =>
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[400px] pr-4">
+        <ScrollArea className="max-h-[600px] pr-4">
           {assessments.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
               No assessments yet. Process your first narrative to start building history.
@@ -247,9 +247,10 @@ export const AssessmentHistory = ({ patientId }: AssessmentHistoryProps = {}) =>
                           </Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
                         {assessment.narrative}
                       </p>
+                      <p className="text-[11px] text-primary mt-1">Click to view full assessment →</p>
                       {assessment.cultural_idioms_found &&
                         assessment.cultural_idioms_found.length > 0 && (
                           <div className="flex gap-1 mt-2">
@@ -269,7 +270,7 @@ export const AssessmentHistory = ({ patientId }: AssessmentHistoryProps = {}) =>
                         )}
                     </div>
                   </DialogTrigger>
-                  <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                  <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle className="flex items-center justify-between">
                         <span>Assessment Details</span>
