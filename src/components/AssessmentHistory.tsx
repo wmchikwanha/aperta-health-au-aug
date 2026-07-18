@@ -217,7 +217,7 @@ export const AssessmentHistory = ({ patientId }: AssessmentHistoryProps = {}) =>
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[400px] pr-4">
+        <ScrollArea className="max-h-[600px] pr-4">
           {assessments.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
               No assessments yet. Process your first narrative to start building history.
