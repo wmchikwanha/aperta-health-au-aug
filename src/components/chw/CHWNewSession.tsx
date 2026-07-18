@@ -399,8 +399,11 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
             )}
 
             <div className="flex justify-between">
-              <Button variant="ghost" onClick={() => setStep(1)}>Back</Button>
-              <Button onClick={() => setStep(3)}>Next: Decide</Button>
+              <Button variant="ghost" onClick={() => autosaveAndAdvance(1)} disabled={saving}>Back</Button>
+              <Button onClick={() => autosaveAndAdvance(3)} disabled={saving}>
+                {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
+                Next: Decide
+              </Button>
             </div>
           </CardContent>
         </Card>
