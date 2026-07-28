@@ -104,6 +104,12 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [currentId, setCurrentId] = useState<string | null>(existing?.id ?? null);
+  type SaveStatus = "idle" | "unsaved" | "saving" | "saved" | "error";
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>(existing ? "saved" : "idle");
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(existing ? new Date() : null);
+  const [lastError, setLastError] = useState<string | null>(null);
+  const hydratingRef = useRef(true);
+  useEffect(() => { const t = setTimeout(() => { hydratingRef.current = false; }, 300); return () => clearTimeout(t); }, []);
 
   // Load existing PHQ9 responses if editing
   useEffect(() => {
