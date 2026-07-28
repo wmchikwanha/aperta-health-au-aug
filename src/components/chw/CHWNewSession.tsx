@@ -321,6 +321,16 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
         <StepBadge n={3} label="Decide" active={step === 3} done={false} onClick={() => setStep(3)} />
       </div>
 
+      {/* Autosave indicator */}
+      <div className="flex items-center justify-end">
+        <SaveIndicator
+          status={saveStatus}
+          lastSavedAt={lastSavedAt}
+          onRetry={() => save("active")}
+        />
+      </div>
+
+
       {step === 1 && (
         <Card>
           <CardHeader>
