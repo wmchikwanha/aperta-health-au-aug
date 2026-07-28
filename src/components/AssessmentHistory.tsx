@@ -293,8 +293,8 @@ export const AssessmentHistory = ({ patientId }: AssessmentHistoryProps = {}) =>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <h4 className="font-semibold mb-2">Original Narrative</h4>
-                        <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
+                        <h4 className="font-semibold mb-2">Original Narrative (full)</h4>
+                        <p className="text-sm whitespace-pre-wrap break-words bg-muted p-3 rounded max-h-[50vh] overflow-y-auto">
                           {assessment.narrative}
                         </p>
                       </div>
@@ -306,27 +306,68 @@ export const AssessmentHistory = ({ patientId }: AssessmentHistoryProps = {}) =>
                           </Badge>
                         </div>
                       )}
+                      {assessment.metadata?.handoff_notes && (
+                        <div>
+                          <h4 className="font-semibold mb-2">Bicultural Worker Handoff Notes</h4>
+                          <p className="text-sm whitespace-pre-wrap break-words bg-muted p-3 rounded">
+                            {String(assessment.metadata.handoff_notes)}
+                          </p>
+                        </div>
+                      )}
+                      {assessment.metadata?.narrative_translation && (
+                        <div>
+                          <h4 className="font-semibold mb-2">English Translation</h4>
+                          <p className="text-sm whitespace-pre-wrap break-words bg-muted p-3 rounded max-h-[40vh] overflow-y-auto">
+                            {String(assessment.metadata.narrative_translation)}
+                          </p>
+                        </div>
+                      )}
+                      {assessment.cultural_idioms_found && assessment.cultural_idioms_found.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold mb-2">Cultural Idioms Detected</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {assessment.cultural_idioms_found.map((idiom, idx) => (
+                              <Badge key={idx} variant="outline" className="text-xs">{idiom}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       {assessment.processed_result && (
                         <div>
-                          <h4 className="font-semibold mb-2">Clinical Abstract</h4>
-                          <div className="text-sm space-y-2 bg-muted p-3 rounded">
+                          <h4 className="font-semibold mb-2">Clinical Abstract (full)</h4>
+                          <div className="text-sm space-y-3 bg-muted p-3 rounded">
                             {Object.entries(assessment.processed_result).map(
                               ([key, value]) => (
                                 <div key={key}>
-                                  <strong className="capitalize">
-                                    {key.replace(/_/g, " ")}:
-                                  </strong>{" "}
-                                  {typeof value === "object"
-                                    ? JSON.stringify(value)
-                                    : String(value)}
+                                  <div className="font-semibold capitalize mb-1">
+                                    {key.replace(/_/g, " ")}
+                                  </div>
+                                  {typeof value === "object" && value !== null ? (
+                                    <pre className="text-xs whitespace-pre-wrap break-words bg-background/60 p-2 rounded border">
+                                      {JSON.stringify(value, null, 2)}
+                                    </pre>
+                                  ) : (
+                                    <p className="whitespace-pre-wrap break-words">{String(value)}</p>
+                                  )}
                                 </div>
                               )
                             )}
                           </div>
                         </div>
                       )}
+                      {assessment.metadata && Object.keys(assessment.metadata).length > 0 && (
+                        <details className="text-xs">
+                          <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                            View full metadata
+                          </summary>
+                          <pre className="mt-2 whitespace-pre-wrap break-words bg-muted p-3 rounded border">
+                            {JSON.stringify(assessment.metadata, null, 2)}
+                          </pre>
+                        </details>
+                      )}
                     </div>
                   </DialogContent>
+
                 </Dialog>
               ))}
             </div>
