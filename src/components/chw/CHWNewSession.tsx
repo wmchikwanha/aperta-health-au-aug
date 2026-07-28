@@ -242,6 +242,7 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
       return null;
     }
     setSaving(true);
+    setSaveStatus("saving");
     const payload = buildPayload(status);
     const targetId = currentId;
     const { data, error } = targetId
@@ -249,10 +250,15 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
       : await supabase.from("chw_sessions").insert(payload).select().single();
     setSaving(false);
     if (error) {
+      setSaveStatus("error");
+      setLastError(error.message);
       if (!opts.silent) toast({ variant: "destructive", title: "Could not save", description: error.message });
       return null;
     }
     if (data?.id && !currentId) setCurrentId(data.id);
+    setSaveStatus("saved");
+    setLastSavedAt(new Date());
+    setLastError(null);
     if (!opts.silent) {
       toast({ title: status === "completed" ? "Session completed" : "Session saved" });
     }
@@ -261,7 +267,26 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
 
   const autosaveAndAdvance = async (next: 1 | 2 | 3) => {
     if (pseudonym.trim()) {
-      await save("active", { silent: true });
+      const saved = await save("active", { silent: true });
+      if (!saved) {
+        toast({
+          variant: "destructive",
+          title: "Autosave failed — progress not saved",
+          description: (lastError || "Check your connection.") + " Tap Retry to try again before moving on.",
+          action: (
+            <Button size="sm" variant="outline" onClick={async () => {
+              const retry = await save("active", { silent: true });
+              if (retry) {
+                toast({ title: "Progress saved" });
+                setStep(next);
+              }
+            }}>
+              <RefreshCw className="h-3 w-3 mr-1" /> Retry
+            </Button>
+          ) as any,
+        });
+        return;
+      }
     }
     setStep(next);
   };
