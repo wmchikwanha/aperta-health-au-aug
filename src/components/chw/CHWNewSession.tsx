@@ -151,6 +151,12 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
     };
   });
 
+  // Mark unsaved when any tracked field changes (after initial hydration)
+  useEffect(() => {
+    if (hydratingRef.current) return;
+    setSaveStatus((s) => (s === "saving" ? s : "unsaved"));
+  }, [pseudonym, ageBand, language, narrative, narrativeTranslation, atsiIdentity, responses, notes]);
+
   // Autosave draft on unmount (e.g. user clicks parent "← Back")
   useEffect(() => {
     return () => {
