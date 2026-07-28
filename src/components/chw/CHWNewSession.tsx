@@ -540,3 +540,45 @@ const StepBadge = ({ n, label, active, done, onClick }: { n: number; label: stri
     <span className={`text-[11px] ${active ? "text-foreground font-medium" : "text-muted-foreground"}`}>{label}</span>
   </button>
 );
+
+const SaveIndicator = ({
+  status,
+  lastSavedAt,
+  onRetry,
+}: {
+  status: "idle" | "unsaved" | "saving" | "saved" | "error";
+  lastSavedAt: Date | null;
+  onRetry: () => void;
+}) => {
+  const time = lastSavedAt ? lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : null;
+  if (status === "saving") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Loader2 className="h-3 w-3 animate-spin" /> Saving…
+      </span>
+    );
+  }
+  if (status === "saved") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-green-600 dark:text-green-500">
+        <Check className="h-3 w-3" /> Saved{time ? ` · ${time}` : ""}
+      </span>
+    );
+  }
+  if (status === "error") {
+    return (
+      <button onClick={onRetry} className="inline-flex items-center gap-1.5 text-xs text-destructive hover:underline">
+        <CloudOff className="h-3 w-3" /> Save failed — retry
+      </button>
+    );
+  }
+  if (status === "unsaved") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-500">
+        <CloudOff className="h-3 w-3" /> Unsaved changes
+      </span>
+    );
+  }
+  return <span className="text-xs text-muted-foreground">Not saved yet</span>;
+};
+
