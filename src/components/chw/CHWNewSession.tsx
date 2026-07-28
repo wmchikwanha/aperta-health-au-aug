@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { scorePHQ9 } from "@/lib/screening/scoringUtils";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
-import { Loader2, Mic, MicOff, Save, ArrowUpRight, AlertTriangle, Phone } from "lucide-react";
+import { Loader2, Mic, MicOff, Save, ArrowUpRight, AlertTriangle, Phone, Check, CloudOff, RefreshCw } from "lucide-react";
 import type { CHWSession } from "@/pages/CHWWorkspace";
 import { ATSISafetyFlag } from "@/components/ATSISafetyFlag";
 
@@ -104,6 +104,12 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [currentId, setCurrentId] = useState<string | null>(existing?.id ?? null);
+  type SaveStatus = "idle" | "unsaved" | "saving" | "saved" | "error";
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>(existing ? "saved" : "idle");
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(existing ? new Date() : null);
+  const [lastError, setLastError] = useState<string | null>(null);
+  const hydratingRef = useRef(true);
+  useEffect(() => { const t = setTimeout(() => { hydratingRef.current = false; }, 300); return () => clearTimeout(t); }, []);
 
   // Load existing PHQ9 responses if editing
   useEffect(() => {
@@ -144,6 +150,12 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
       id: currentId,
     };
   });
+
+  // Mark unsaved when any tracked field changes (after initial hydration)
+  useEffect(() => {
+    if (hydratingRef.current) return;
+    setSaveStatus((s) => (s === "saving" ? s : "unsaved"));
+  }, [pseudonym, ageBand, language, narrative, narrativeTranslation, atsiIdentity, responses, notes]);
 
   // Autosave draft on unmount (e.g. user clicks parent "← Back")
   useEffect(() => {
@@ -230,6 +242,7 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
       return null;
     }
     setSaving(true);
+    setSaveStatus("saving");
     const payload = buildPayload(status);
     const targetId = currentId;
     const { data, error } = targetId
@@ -237,10 +250,15 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
       : await supabase.from("chw_sessions").insert(payload).select().single();
     setSaving(false);
     if (error) {
+      setSaveStatus("error");
+      setLastError(error.message);
       if (!opts.silent) toast({ variant: "destructive", title: "Could not save", description: error.message });
       return null;
     }
     if (data?.id && !currentId) setCurrentId(data.id);
+    setSaveStatus("saved");
+    setLastSavedAt(new Date());
+    setLastError(null);
     if (!opts.silent) {
       toast({ title: status === "completed" ? "Session completed" : "Session saved" });
     }
@@ -249,7 +267,26 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
 
   const autosaveAndAdvance = async (next: 1 | 2 | 3) => {
     if (pseudonym.trim()) {
-      await save("active", { silent: true });
+      const saved = await save("active", { silent: true });
+      if (!saved) {
+        toast({
+          variant: "destructive",
+          title: "Autosave failed — progress not saved",
+          description: (lastError || "Check your connection.") + " Tap Retry to try again before moving on.",
+          action: (
+            <Button size="sm" variant="outline" onClick={async () => {
+              const retry = await save("active", { silent: true });
+              if (retry) {
+                toast({ title: "Progress saved" });
+                setStep(next);
+              }
+            }}>
+              <RefreshCw className="h-3 w-3 mr-1" /> Retry
+            </Button>
+          ) as any,
+        });
+        return;
+      }
     }
     setStep(next);
   };
@@ -283,6 +320,16 @@ export const CHWNewSession = ({ existing, patientContext, onSaved, onReferUpward
         <div className="flex-1 h-px bg-border mx-2" />
         <StepBadge n={3} label="Decide" active={step === 3} done={false} onClick={() => setStep(3)} />
       </div>
+
+      {/* Autosave indicator */}
+      <div className="flex items-center justify-end">
+        <SaveIndicator
+          status={saveStatus}
+          lastSavedAt={lastSavedAt}
+          onRetry={() => save("active")}
+        />
+      </div>
+
 
       {step === 1 && (
         <Card>
@@ -493,3 +540,45 @@ const StepBadge = ({ n, label, active, done, onClick }: { n: number; label: stri
     <span className={`text-[11px] ${active ? "text-foreground font-medium" : "text-muted-foreground"}`}>{label}</span>
   </button>
 );
+
+const SaveIndicator = ({
+  status,
+  lastSavedAt,
+  onRetry,
+}: {
+  status: "idle" | "unsaved" | "saving" | "saved" | "error";
+  lastSavedAt: Date | null;
+  onRetry: () => void;
+}) => {
+  const time = lastSavedAt ? lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : null;
+  if (status === "saving") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Loader2 className="h-3 w-3 animate-spin" /> Saving…
+      </span>
+    );
+  }
+  if (status === "saved") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-green-600 dark:text-green-500">
+        <Check className="h-3 w-3" /> Saved{time ? ` · ${time}` : ""}
+      </span>
+    );
+  }
+  if (status === "error") {
+    return (
+      <button onClick={onRetry} className="inline-flex items-center gap-1.5 text-xs text-destructive hover:underline">
+        <CloudOff className="h-3 w-3" /> Save failed — retry
+      </button>
+    );
+  }
+  if (status === "unsaved") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-500">
+        <CloudOff className="h-3 w-3" /> Unsaved changes
+      </span>
+    );
+  }
+  return <span className="text-xs text-muted-foreground">Not saved yet</span>;
+};
+
