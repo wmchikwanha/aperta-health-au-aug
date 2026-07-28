@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { scorePHQ9 } from "@/lib/screening/scoringUtils";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
-import { Loader2, Mic, MicOff, Save, ArrowUpRight, AlertTriangle, Phone } from "lucide-react";
+import { Loader2, Mic, MicOff, Save, ArrowUpRight, AlertTriangle, Phone, Check, CloudOff, RefreshCw } from "lucide-react";
 import type { CHWSession } from "@/pages/CHWWorkspace";
 import { ATSISafetyFlag } from "@/components/ATSISafetyFlag";
 
