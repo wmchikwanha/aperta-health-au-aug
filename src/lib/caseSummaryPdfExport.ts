@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { applyPilotWatermark } from "@/lib/pilot";
 import { format } from "date-fns";
 
 interface PatientData {
@@ -464,5 +465,6 @@ export const exportCaseSummaryToPDF = (data: CaseSummaryData) => {
 
   // Save the PDF
   const fileName = `case_summary_${data.patient.patient_identifier}_${format(new Date(), "yyyy-MM-dd")}.pdf`;
+  applyPilotWatermark(doc);
   doc.save(fileName);
 };

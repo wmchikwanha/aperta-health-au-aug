@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { applyPilotWatermark } from "@/lib/pilot";
 
 interface ScreeningPdfData {
   patientIdentifier: string;
@@ -128,5 +129,6 @@ export const exportScreeningToPDF = (data: ScreeningPdfData): void => {
 
   // Save the PDF
   const fileName = `Screening_${data.toolName}_${data.patientIdentifier}_${new Date().toISOString().split('T')[0]}.pdf`;
+  applyPilotWatermark(doc);
   doc.save(fileName);
 };

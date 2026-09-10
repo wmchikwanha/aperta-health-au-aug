@@ -19,6 +19,7 @@ import { RoleGuard } from "./components/RoleGuard";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
 import { bindOutboxAutoSync } from "./lib/offline/sync";
+import { PilotBanner } from "./components/PilotBanner";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => {
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <PilotBanner />
       <BrowserRouter>
         <AuthProvider>
           <Routes>
