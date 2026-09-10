@@ -1,72 +1,44 @@
+# Batch 0 — Standing Rules + Pilot Hardening
 
-## Problem
+One batch only. This installs the permanent architecture rules and makes it unmistakable that Aperta is running as a pilot on synthetic data.
 
-The scoring logic and reference data already exist but are invisible to users (and to an Australian review panel):
-- `src/lib/screening/refugeeScreening.ts` — scoring for RHS-15, HTQ-IV, WHODAS 2.0, GDS-15, plus ATS triage. **No forms, not in the tool selector.**
-- `src/lib/mbs/itemCatalogue.ts` — MBS Better Access item catalogue with rebates. **Only mentioned as a text label in `TreatmentPlanSuggestions.tsx`; no browsable UI.**
+## What you will see
 
-An assessor opening the app today sees only PHQ-9/GAD-7/PCL-5/MMSE/PSQ/PRIME-R-5 and no MBS anywhere.
+- A slim, always-visible strip on every screen: "PILOT DEMO — SYNTHETIC DATA ONLY — NOT FOR CLINICAL USE".
+- Every PDF export (case summary, treatment plan, screening, assessment) carries the same wording in the header and footer, and FHIR sandbox bundles carry a pilot label.
+- 15 demo clients seeded with realistic multilingual stories — Arabic (3), Farsi/Dari (3), Burmese (2), Tigrinya (2), Swahili (2), Vietnamese (1), Tamil (1), English (1) — including one suicide-risk case, one high trauma case, one Aboriginal social-and-emotional-wellbeing story, one child-safeguarding scenario, and one mixed-language story.
+- An admin-only "Reset demo data" button that wipes and reseeds the demo clients.
+- Appointment SMS reminders stay switched off while pilot mode is on; each suppressed message is recorded in the activity log.
 
-## Scope
+## Current state confirmed
 
-Frontend + one DB migration (tool_type check constraint). No changes to AI/edge functions, auth, or business rules.
+- No pilot settings table, and no "synthetic" marker on patients, worker sessions, assessments or screenings.
+- No audio recordings table exists; that item is skipped rather than invented.
+- `assessments` has no `updated_at`; `patients`, `chw_sessions`, `screening_assessments` have created/updated timestamps but no `created_by`.
+- AI-output tables carry no model or prompt provenance columns.
 
-## Changes
+## Database work
 
-### 1. Add refugee screening forms
-Create four new forms mirroring the existing pattern (`PHQ9Form.tsx` style: Likert grid → local scoring via `refugeeScreening.ts` → save to `screening_assessments` → show `ScreeningResults`):
+1. `pilot_config` — single row: `pilot_mode` (default true), `allow_real_data` (default false), `pilot_version`, `pilot_end_date`. Readable by all authenticated users, writable by admins only.
+2. Add `synthetic boolean not null default true` to `patients`, `chw_sessions`, `assessments`, `screening_assessments`. A `BEFORE INSERT` trigger forces `synthetic = true` whenever `pilot_mode` is on.
+3. Add missing `created_by uuid` and `updated_at` columns (plus the shared updated-at trigger) to the clinical tables above.
+4. Add provenance columns to AI-output tables (`assessments`, `diagnostic_formulations`, `treatment_notes`): `model_id`, `model_version`, `prompt_template_id`, `prompt_template_version`, `ai_generated boolean default true`, `provenance jsonb`. Values are populated by the edge functions in this batch where they are already known; the registry that manages them is Batch 2.
+5. Revoke UPDATE/DELETE from `authenticated` on `assessments`, `screening_assessments`, `treatment_notes`, `fhir_resources`, `audit_events`, `consents`; keep `service_role` full access and drop client-side update/delete policies that conflict.
+6. `reset_demo_data()` security-definer function, admin-only: deletes clinical rows for demo patients, reseeds the 15 synthetic clients, writes an `audit_events` row.
 
-- `src/components/screening/RHS15Form.tsx` — 14 × 0–4 Likert + distress thermometer 0–10, uses `scoreRHS15`.
-- `src/components/screening/HTQ4Form.tsx` — 16 × 1–4 Likert, uses `scoreHTQ4`.
-- `src/components/screening/WHODAS2Form.tsx` — 12 × 0–4 Likert, uses `scoreWHODAS2`.
-- `src/components/screening/GDS15Form.tsx` — 15 yes/no, uses `scoreGDS15`.
+## Application work
 
-### 2. Wire them into the selector and Index
-- `ScreeningToolSelector.tsx`: append four tiles — RHS-15 (Refugee Health Screener), HTQ-IV (Harvard Trauma), WHODAS 2.0 (Function/Disability), GDS-15 (Geriatric Depression). Group visually as "Refugee & CALD Battery" and "Older Adults".
-- `src/pages/Index.tsx`: add four `selectedScreeningTool === "…"` branches rendering the new forms.
-- `src/components/screening/ScreeningResults.tsx`: extend `TOOL_NAMES` and `maxScores` map for the new IDs, with a note that RHS-15/WHODAS are higher = worse and GDS-15 higher = worse (MMSE remains the sole "higher is better" case).
+- `PilotBanner` component mounted once in the app shell, non-dismissible, offset-aware so it never covers the header or floating buttons.
+- Shared `pilotWatermark` helper used by all four PDF exporters and by the FHIR sandbox bundle output.
+- `send-appointment-reminder` and `check-upcoming-appointments` read `pilot_config`; when pilot mode is on they skip the Twilio call and write `audit_events` with action `reminder_suppressed_pilot`.
+- Admin Dashboard gains a "Reset demo data" action with a confirm dialog, calling the RPC.
+- Seed data is written as a SQL seed inside the reset function so the same content is used at first install and on every reset.
+- Every AI output shown in the UI keeps the prefix "AI-generated suggestion requiring clinical review", and the same string is stored in the output metadata.
 
-### 3. DB migration — allow the new tool_type values
-Extend the check constraint on `public.screening_assessments.tool_type`:
+## Standing rules recorded
 
-```sql
-ALTER TABLE public.screening_assessments DROP CONSTRAINT IF EXISTS screening_assessments_tool_type_check;
-ALTER TABLE public.screening_assessments ADD CONSTRAINT screening_assessments_tool_type_check
-  CHECK (tool_type IN ('PHQ9','GAD7','PCL5','MMSE','PSQ','PRIMER5','RHS15','HTQ4','WHODAS2','GDS15'));
-```
+The seven architectural rules (RLS-enforced access, immutable clinical tables, full audit rows, AI calls only in edge functions, provenance on all AI output, deterministic scoring only, mandatory AI-review prefix) are saved to project memory so every later batch follows them without being re-stated.
 
-### 4. Make MBS visible
-- New `src/components/mbs/MBSItemCatalogue.tsx` — searchable/filter-by-provider table over `MBS_MENTAL_HEALTH_ITEMS` (item number, short name, provider, rebate AUD, telehealth, notes). Header states rebates are indicative (from the catalogue's own preamble) and to confirm against MBS Online.
-- New route/tab entry from the sidebar/nav (e.g. "MBS Reference") rendering that component.
-- In `TreatmentPlanSuggestions.tsx`, add a "Suggested MBS items" panel that shows the `RECOMMENDED_REFUGEE_MHTP_BUNDLE` items (2717 / 2712 / 80000 / 80125 / 715) with rebate and telehealth flags, so MBS is evident inside the clinical workflow — not only in a reference page.
+## Not in this batch
 
-### 5. Access control
-`canAccessFullScreening(userRole)` already gates the full battery; the four new tools inherit the same gate. Bicultural Workers keep the current PHQ-9-only view.
-
-## Out of scope
-
-- No changes to `process-narrative`, `generate-treatment-plan`, or `suggest-diagnosis` prompts (the prompts already reference these tools).
-- No changes to permissions/RBAC beyond the existing full-battery flag.
-- ATS triage derivation (`deriveATS`) is left for a follow-up — not requested here.
-
-## Technical notes
-
-- Forms follow the existing local-only scoring pattern: compute with `refugeeScreening.ts`, then `supabase.from('screening_assessments').insert({...})` with `tool_type`, `total_score`, `severity_level`, `interpretation`, `responses` (JSONB array), `patient_id`, `user_id`. RLS/GRANTs already in place for that table.
-- RHS-15 stores responses as `{ items: number[14], distressThermometer: number }`.
-- MBS component is pure client-side over the static catalogue — no query needed.
-
-## Files touched
-
-Created:
-- `src/components/screening/RHS15Form.tsx`
-- `src/components/screening/HTQ4Form.tsx`
-- `src/components/screening/WHODAS2Form.tsx`
-- `src/components/screening/GDS15Form.tsx`
-- `src/components/mbs/MBSItemCatalogue.tsx`
-- One Supabase migration extending the `tool_type` check constraint.
-
-Edited:
-- `src/components/screening/ScreeningToolSelector.tsx`
-- `src/components/screening/ScreeningResults.tsx`
-- `src/pages/Index.tsx` (form branches + MBS nav entry)
-- `src/components/TreatmentPlanSuggestions.tsx` (MBS bundle panel)
+Deterministic scoring engine and refugee instruments (Batch 1), model registry and drift monitoring (Batch 2).
