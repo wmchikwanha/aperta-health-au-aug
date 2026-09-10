@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { applyPilotWatermark } from "@/lib/pilot";
 
 interface TreatmentPlan {
   primary_interventions: Array<{
@@ -302,5 +303,6 @@ export const exportTreatmentPlanToPDF = (data: ExportData): void => {
 
   // Save the PDF
   const filename = `treatment-plan-${data.patientContext?.patient_identifier || 'patient'}-${new Date().toISOString().split('T')[0]}.pdf`;
+  applyPilotWatermark(doc);
   doc.save(filename);
 };

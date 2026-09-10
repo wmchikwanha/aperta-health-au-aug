@@ -72,42 +72,69 @@ export type Database = {
       }
       assessments: {
         Row: {
+          ai_generated: boolean
           assessment_date: string
           created_at: string
+          created_by: string | null
           cultural_idioms_found: string[] | null
           id: string
           language_detected: string | null
           metadata: Json | null
+          model_id: string | null
+          model_version: string | null
           narrative: string
           patient_id: string | null
           processed_result: Json
+          prompt_template_id: string | null
+          prompt_template_version: string | null
+          provenance: Json | null
           risk_level: string | null
+          synthetic: boolean
+          updated_at: string
           user_id: string
         }
         Insert: {
+          ai_generated?: boolean
           assessment_date?: string
           created_at?: string
+          created_by?: string | null
           cultural_idioms_found?: string[] | null
           id?: string
           language_detected?: string | null
           metadata?: Json | null
+          model_id?: string | null
+          model_version?: string | null
           narrative: string
           patient_id?: string | null
           processed_result: Json
+          prompt_template_id?: string | null
+          prompt_template_version?: string | null
+          provenance?: Json | null
           risk_level?: string | null
+          synthetic?: boolean
+          updated_at?: string
           user_id: string
         }
         Update: {
+          ai_generated?: boolean
           assessment_date?: string
           created_at?: string
+          created_by?: string | null
           cultural_idioms_found?: string[] | null
           id?: string
           language_detected?: string | null
           metadata?: Json | null
+          model_id?: string | null
+          model_version?: string | null
           narrative?: string
           patient_id?: string | null
           processed_result?: Json
+          prompt_template_id?: string | null
+          prompt_template_version?: string | null
+          provenance?: Json | null
           risk_level?: string | null
+          synthetic?: boolean
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -185,6 +212,7 @@ export type Database = {
           chw_id: string
           completed_at: string | null
           created_at: string
+          created_by: string | null
           id: string
           language_code: string | null
           narrative_text: string | null
@@ -197,6 +225,7 @@ export type Database = {
           phq9_severity: string | null
           referral_id: string | null
           status: string
+          synthetic: boolean
           updated_at: string
         }
         Insert: {
@@ -207,6 +236,7 @@ export type Database = {
           chw_id: string
           completed_at?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
           language_code?: string | null
           narrative_text?: string | null
@@ -219,6 +249,7 @@ export type Database = {
           phq9_severity?: string | null
           referral_id?: string | null
           status?: string
+          synthetic?: boolean
           updated_at?: string
         }
         Update: {
@@ -229,6 +260,7 @@ export type Database = {
           chw_id?: string
           completed_at?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
           language_code?: string | null
           narrative_text?: string | null
@@ -241,6 +273,7 @@ export type Database = {
           phq9_severity?: string | null
           referral_id?: string | null
           status?: string
+          synthetic?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -380,6 +413,7 @@ export type Database = {
       }
       diagnostic_formulations: {
         Row: {
+          ai_generated: boolean
           ai_suggestions: Json | null
           approved_at: string | null
           approved_by: string | null
@@ -392,15 +426,21 @@ export type Database = {
           differential_diagnoses: Json | null
           formulated_at: string | null
           id: string
+          model_id: string | null
+          model_version: string | null
           patient_id: string
           primary_diagnosis_code: string
           primary_diagnosis_name: string
+          prompt_template_id: string | null
+          prompt_template_version: string | null
+          provenance: Json | null
           status: string | null
           supporting_evidence: Json | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          ai_generated?: boolean
           ai_suggestions?: Json | null
           approved_at?: string | null
           approved_by?: string | null
@@ -413,15 +453,21 @@ export type Database = {
           differential_diagnoses?: Json | null
           formulated_at?: string | null
           id?: string
+          model_id?: string | null
+          model_version?: string | null
           patient_id: string
           primary_diagnosis_code: string
           primary_diagnosis_name: string
+          prompt_template_id?: string | null
+          prompt_template_version?: string | null
+          provenance?: Json | null
           status?: string | null
           supporting_evidence?: Json | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          ai_generated?: boolean
           ai_suggestions?: Json | null
           approved_at?: string | null
           approved_by?: string | null
@@ -434,9 +480,14 @@ export type Database = {
           differential_diagnoses?: Json | null
           formulated_at?: string | null
           id?: string
+          model_id?: string | null
+          model_version?: string | null
           patient_id?: string
           primary_diagnosis_code?: string
           primary_diagnosis_name?: string
+          prompt_template_id?: string | null
+          prompt_template_version?: string | null
+          provenance?: Json | null
           status?: string | null
           supporting_evidence?: Json | null
           updated_at?: string | null
@@ -849,6 +900,7 @@ export type Database = {
         Row: {
           contact_notes: string | null
           created_at: string
+          created_by: string | null
           cultural_background: string | null
           date_of_birth: string | null
           gender: string | null
@@ -856,12 +908,14 @@ export type Database = {
           language_preference: string | null
           metadata: Json | null
           patient_identifier: string
+          synthetic: boolean
           updated_at: string
           user_id: string
         }
         Insert: {
           contact_notes?: string | null
           created_at?: string
+          created_by?: string | null
           cultural_background?: string | null
           date_of_birth?: string | null
           gender?: string | null
@@ -869,12 +923,14 @@ export type Database = {
           language_preference?: string | null
           metadata?: Json | null
           patient_identifier: string
+          synthetic?: boolean
           updated_at?: string
           user_id: string
         }
         Update: {
           contact_notes?: string | null
           created_at?: string
+          created_by?: string | null
           cultural_background?: string | null
           date_of_birth?: string | null
           gender?: string | null
@@ -882,8 +938,39 @@ export type Database = {
           language_preference?: string | null
           metadata?: Json | null
           patient_identifier?: string
+          synthetic?: boolean
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      pilot_config: {
+        Row: {
+          allow_real_data: boolean
+          created_at: string
+          id: string
+          pilot_end_date: string | null
+          pilot_mode: boolean
+          pilot_version: string
+          updated_at: string
+        }
+        Insert: {
+          allow_real_data?: boolean
+          created_at?: string
+          id?: string
+          pilot_end_date?: string | null
+          pilot_mode?: boolean
+          pilot_version?: string
+          updated_at?: string
+        }
+        Update: {
+          allow_real_data?: boolean
+          created_at?: string
+          id?: string
+          pilot_end_date?: string | null
+          pilot_mode?: boolean
+          pilot_version?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1007,12 +1094,14 @@ export type Database = {
         Row: {
           administered_at: string
           created_at: string
+          created_by: string | null
           id: string
           interpretation: string | null
           notes: string | null
           patient_id: string
           responses: Json
           severity_level: string | null
+          synthetic: boolean
           tool_type: string
           total_score: number
           updated_at: string
@@ -1021,12 +1110,14 @@ export type Database = {
         Insert: {
           administered_at?: string
           created_at?: string
+          created_by?: string | null
           id?: string
           interpretation?: string | null
           notes?: string | null
           patient_id: string
           responses: Json
           severity_level?: string | null
+          synthetic?: boolean
           tool_type: string
           total_score: number
           updated_at?: string
@@ -1035,12 +1126,14 @@ export type Database = {
         Update: {
           administered_at?: string
           created_at?: string
+          created_by?: string | null
           id?: string
           interpretation?: string | null
           notes?: string | null
           patient_id?: string
           responses?: Json
           severity_level?: string | null
+          synthetic?: boolean
           tool_type?: string
           total_score?: number
           updated_at?: string
@@ -1248,30 +1341,54 @@ export type Database = {
       }
       treatment_notes: {
         Row: {
+          ai_generated: boolean
           content: string
           created_at: string
+          created_by: string | null
           id: string
           metadata: Json | null
+          model_id: string | null
+          model_version: string | null
           note_type: string
           patient_id: string
+          prompt_template_id: string | null
+          prompt_template_version: string | null
+          provenance: Json | null
+          updated_at: string
           user_id: string
         }
         Insert: {
+          ai_generated?: boolean
           content: string
           created_at?: string
+          created_by?: string | null
           id?: string
           metadata?: Json | null
+          model_id?: string | null
+          model_version?: string | null
           note_type: string
           patient_id: string
+          prompt_template_id?: string | null
+          prompt_template_version?: string | null
+          provenance?: Json | null
+          updated_at?: string
           user_id: string
         }
         Update: {
+          ai_generated?: boolean
           content?: string
           created_at?: string
+          created_by?: string | null
           id?: string
           metadata?: Json | null
+          model_id?: string | null
+          model_version?: string | null
           note_type?: string
           patient_id?: string
+          prompt_template_id?: string | null
+          prompt_template_version?: string | null
+          provenance?: Json | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -1330,6 +1447,7 @@ export type Database = {
           role: string
         }[]
       }
+      reset_demo_data: { Args: never; Returns: number }
     }
     Enums: {
       app_role:

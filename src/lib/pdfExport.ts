@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { applyPilotWatermark } from "@/lib/pilot";
 
 interface PatientData {
   patient_identifier?: string;
@@ -306,5 +307,6 @@ export const exportAssessmentToPDF = (assessment: AssessmentData) => {
 
   // Save the PDF
   const fileName = `assessment_${assessment.patient?.patient_identifier || "report"}_${new Date(assessment.assessment_date).toISOString().split("T")[0]}.pdf`;
+  applyPilotWatermark(doc);
   doc.save(fileName);
 };
