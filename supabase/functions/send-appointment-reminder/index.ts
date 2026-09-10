@@ -19,6 +19,33 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Pilot guardrail: never send real SMS while the pilot is running.
+    const { data: pilot } = await supabase
+      .from('pilot_config')
+      .select('pilot_mode, pilot_version')
+      .limit(1)
+      .maybeSingle();
+
+    if (pilot?.pilot_mode) {
+      await supabase.from('audit_events').insert({
+        actor_id: '00000000-0000-0000-0000-000000000000',
+        actor_role: 'system',
+        action: 'reminder_suppressed_pilot',
+        outcome: 'suppressed',
+        resource_type: 'appointment',
+        resource_id: appointmentId ?? null,
+        patient_id: patientId ?? null,
+        description: 'SMS appointment reminder suppressed because pilot mode is enabled.',
+        metadata: { scheduled_at: scheduledAt ?? null, pilot_version: pilot.pilot_version ?? null },
+        source: 'send-appointment-reminder',
+      });
+
+      return new Response(
+        JSON.stringify({ success: true, suppressed: true, reason: 'pilot_mode' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { data: patient, error: patientError } = await supabase
       .from('patients')
       .select('patient_identifier, contact_notes, metadata')
