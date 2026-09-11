@@ -339,6 +339,7 @@ export function buildSampleBundle(narrative: SampleNarrative) {
     meta: {
       tag: [
         { system: `${APERTA_BASE}/tags`, code: "sandbox", display: "Sandbox — not for clinical use" },
+        { system: `${APERTA_BASE}/tags`, code: "pilot", display: PILOT_WATERMARK },
       ],
     },
     entry: entries,
