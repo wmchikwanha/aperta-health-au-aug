@@ -58,6 +58,28 @@ export const AdminDashboard = () => {
   const [facilities, setFacilities] = useState<any[]>([]);
   const [facilityLoading, setFacilityLoading] = useState(false);
   const [facilityActionId, setFacilityActionId] = useState<string | null>(null);
+  const [resettingDemo, setResettingDemo] = useState(false);
+
+  const handleResetDemoData = async () => {
+    setResettingDemo(true);
+    try {
+      const { data, error } = await supabase.rpc("reset_demo_data" as any);
+      if (error) throw error;
+      toast({
+        title: "Demo data reset",
+        description: `${data ?? 0} synthetic demo clients seeded.`,
+      });
+      loadAuditLog();
+    } catch (err: any) {
+      toast({
+        title: "Reset failed",
+        description: err?.message ?? "Could not reset demo data.",
+        variant: "destructive",
+      });
+    } finally {
+      setResettingDemo(false);
+    }
+  };
   const [rejectionReason, setRejectionReason] = useState("");
 
   const loadTeamMembers = async () => {
@@ -307,6 +329,40 @@ export const AdminDashboard = () => {
           </Card>
         ))}
       </div>
+
+      {/* Pilot demo data */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Pilot demo data</CardTitle>
+          <CardDescription>
+            This deployment runs in pilot mode. All records are synthetic. Resetting clears every demo
+            client and reseeds 15 multilingual demo cases.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" disabled={resettingDemo}>
+                {resettingDemo ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                Reset demo data
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset demo data?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  All synthetic demo clients and their assessments, screenings and notes are deleted and
+                  replaced with a fresh set. This action is recorded in the activity log.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleResetDemoData}>Reset</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="team">
         <TabsList>
