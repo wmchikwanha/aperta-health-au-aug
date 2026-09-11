@@ -10,6 +10,7 @@
 
 import { SCREENING_INSTRUMENTS, LOINC_SYSTEM } from "@/lib/screening/scoringUtils";
 import type { SampleNarrative } from "./sampleNarratives";
+import { PILOT_WATERMARK } from "@/lib/pilot";
 
 const ICD10_AM = "http://terminology.hl7.org.au/CodeSystem/icd-10-am";
 const APERTA_BASE = "https://aperta-health.app/fhir";
