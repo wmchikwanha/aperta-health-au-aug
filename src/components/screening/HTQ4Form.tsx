@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { scoreHTQ4 } from "@/lib/screening/refugeeScreening";
 import { Loader2 } from "lucide-react";
+import { RULES_ENGINE_VERSION_ID } from "@/lib/clinical-rules-engine";
 
 interface Props { patientId: string; onComplete: () => void; }
 
@@ -43,6 +44,7 @@ export const HTQ4Form = ({ patientId, onComplete }: Props) => {
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
   const isComplete = Object.keys(responses).length === QUESTIONS.length;
+  const liveResult = isComplete ? scoreHTQ4(QUESTIONS.map((_, index) => responses[index])) : null;
 
   const handleSubmit = async () => {
     if (!isComplete) {
@@ -64,6 +66,7 @@ export const HTQ4Form = ({ patientId, onComplete }: Props) => {
         severity_level: result.severityLevel,
         interpretation: result.interpretation,
         notes: notes || null,
+        rules_version_id: RULES_ENGINE_VERSION_ID,
       });
       if (error) throw error;
       toast({
@@ -107,6 +110,7 @@ export const HTQ4Form = ({ patientId, onComplete }: Props) => {
             </RadioGroup>
           </div>
         ))}
+        {liveResult && <div className="rounded-md border bg-muted p-4"><p className="font-semibold">Live mean: {liveResult.totalScore} — {liveResult.severityLevel}</p><p className="text-sm text-muted-foreground">{liveResult.interpretation}</p></div>}
         <div className="space-y-2 pt-2">
           <Label htmlFor="notes">Clinical Notes (Optional)</Label>
           <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
