@@ -10,6 +10,7 @@ import { Sparkles, AlertTriangle, Clock, Users, Pill, Brain, BookOpen, Copy, Che
 import { Skeleton } from "@/components/ui/skeleton";
 import { exportTreatmentPlanToPDF } from "@/lib/treatmentPlanPdfExport";
 import { MBS_MENTAL_HEALTH_ITEMS, RECOMMENDED_REFUGEE_MHTP_BUNDLE } from "@/lib/mbs/itemCatalogue";
+import { containsMedicationDosage, selectMHGAPModule } from "@/lib/clinical-rules-engine";
 
 const AUD = new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" });
 
@@ -86,6 +87,8 @@ export const TreatmentPlanSuggestions = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+  const primaryScreen = screeningData[0];
+  const mhgapModule = selectMHGAPModule(primaryScreen?.severity_level ?? mseFindings?.risk ?? "distress", primaryScreen?.severity_level ?? "unspecified");
 
   const generateTreatmentPlan = async () => {
     setIsGenerating(true);
@@ -94,7 +97,10 @@ export const TreatmentPlanSuggestions = ({
         body: {
           screeningData,
           mseFindings,
-          patientContext
+          patientContext,
+          calculatedScores: Object.fromEntries(screeningData.map(screening => [screening.tool_type, { total: screening.total_score, severity: screening.severity_level, rulesVersionId: screening.rules_version_id }])),
+          diagnosticCategory: primaryScreen?.tool_type,
+          severity: primaryScreen?.severity_level,
         }
       });
 
@@ -108,6 +114,7 @@ export const TreatmentPlanSuggestions = ({
         throw error;
       }
 
+      if (!data?.treatmentPlan || containsMedicationDosage(data.treatmentPlan)) throw new Error("Treatment plan was blocked because medication dosage content was detected.");
       setTreatmentPlan(data.treatmentPlan);
       toast({
         title: "Treatment Plan Generated",

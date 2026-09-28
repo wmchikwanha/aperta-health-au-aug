@@ -1090,6 +1090,45 @@ export type Database = {
           },
         ]
       }
+      rules_engine_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          effective_date: string
+          id: string
+          instruments_version: string
+          mhgap_version: string
+          pathway_logic_hash: string
+          scoring_logic_hash: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          effective_date: string
+          id?: string
+          instruments_version: string
+          mhgap_version: string
+          pathway_logic_hash: string
+          scoring_logic_hash: string
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string
+          id?: string
+          instruments_version?: string
+          mhgap_version?: string
+          pathway_logic_hash?: string
+          scoring_logic_hash?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
       screening_assessments: {
         Row: {
           administered_at: string
@@ -1100,6 +1139,7 @@ export type Database = {
           notes: string | null
           patient_id: string
           responses: Json
+          rules_version_id: string
           severity_level: string | null
           synthetic: boolean
           tool_type: string
@@ -1116,6 +1156,7 @@ export type Database = {
           notes?: string | null
           patient_id: string
           responses: Json
+          rules_version_id?: string
           severity_level?: string | null
           synthetic?: boolean
           tool_type: string
@@ -1132,6 +1173,7 @@ export type Database = {
           notes?: string | null
           patient_id?: string
           responses?: Json
+          rules_version_id?: string
           severity_level?: string | null
           synthetic?: boolean
           tool_type?: string
@@ -1145,6 +1187,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "screening_assessments_rules_version_id_fkey"
+            columns: ["rules_version_id"]
+            isOneToOne: false
+            referencedRelation: "rules_engine_versions"
             referencedColumns: ["id"]
           },
         ]

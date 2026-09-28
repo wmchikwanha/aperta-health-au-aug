@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { scoreRHS15 } from "@/lib/screening/refugeeScreening";
 import { Loader2 } from "lucide-react";
+import { RULES_ENGINE_VERSION_ID } from "@/lib/clinical-rules-engine";
 
 interface Props {
   patientId: string;
@@ -48,6 +49,7 @@ export const RHS15Form = ({ patientId, onComplete }: Props) => {
   const { toast } = useToast();
 
   const isComplete = Object.keys(responses).length === 14;
+  const liveResult = isComplete ? scoreRHS15({ items: Array.from({ length: 14 }, (_, index) => responses[index] ?? 0), distressThermometer: thermo }) : null;
 
   const handleSubmit = async () => {
     if (!isComplete) {
@@ -69,6 +71,7 @@ export const RHS15Form = ({ patientId, onComplete }: Props) => {
         severity_level: result.severityLevel,
         interpretation: result.interpretation,
         notes: notes || null,
+        rules_version_id: RULES_ENGINE_VERSION_ID,
       });
       if (error) throw error;
       toast({
@@ -122,6 +125,7 @@ export const RHS15Form = ({ patientId, onComplete }: Props) => {
           <Slider value={[thermo]} min={0} max={10} step={1} onValueChange={(v) => setThermo(v[0])} />
           <p className="text-xs text-muted-foreground">0 = No distress · 10 = Extreme distress</p>
         </div>
+        {liveResult && <div className="rounded-md border bg-muted p-4"><p className="font-semibold">Live score: {liveResult.totalScore}/56 — {liveResult.severityLevel}</p><p className="text-sm text-muted-foreground">{liveResult.interpretation}</p></div>}
 
         <div className="space-y-2 pt-2">
           <Label htmlFor="notes">Clinical Notes (Optional)</Label>

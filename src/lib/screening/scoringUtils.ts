@@ -92,8 +92,17 @@ export interface ScoringResult {
   alerts?: string[];
 }
 
+import {
+  scoreGAD7 as calculateGAD7,
+  scorePHQ9 as calculatePHQ9,
+  scorePCL5 as calculatePCL5,
+  scorePSQ as calculatePSQ,
+  scorePRIMER5 as calculatePRIMER5,
+} from "@/lib/clinical-rules-engine";
+
 export const scoreGAD7 = (responses: number[]): ScoringResult => {
-  const totalScore = responses.reduce((sum, val) => sum + val, 0);
+  const result = calculateGAD7(responses);
+  const totalScore = result.total;
   
   let severityLevel = '';
   let interpretation = '';
@@ -116,11 +125,12 @@ export const scoreGAD7 = (responses: number[]): ScoringResult => {
 };
 
 export const scorePHQ9 = (responses: number[]): ScoringResult => {
-  const totalScore = responses.reduce((sum, val) => sum + val, 0);
+  const result = calculatePHQ9(responses);
+  const totalScore = result.total;
   const alerts: string[] = [];
   
   // Check for suicidality (question 9)
-  if (responses[8] >= 1) {
+  if (result.crisisTriggered) {
     alerts.push('SUICIDALITY ALERT: Patient endorsed thoughts of self-harm or suicide. Immediate safety assessment required.');
   }
   
@@ -148,7 +158,8 @@ export const scorePHQ9 = (responses: number[]): ScoringResult => {
 };
 
 export const scorePCL5 = (responses: number[]): ScoringResult => {
-  const totalScore = responses.reduce((sum, val) => sum + val, 0);
+  const result = calculatePCL5(responses);
+  const totalScore = result.total;
   const alerts: string[] = [];
   
   // Check DSM-5 cluster criteria
@@ -162,11 +173,11 @@ export const scorePCL5 = (responses: number[]): ScoringResult => {
   let severityLevel = '';
   let interpretation = '';
   
-  if (totalScore >= 31 && meetsDSMCriteria) {
+  if (result.provisionalPTSD && meetsDSMCriteria) {
     severityLevel = 'Provisional PTSD Diagnosis';
     interpretation = 'Total score ≥31 AND meets DSM-5 symptom cluster criteria. Provisional PTSD diagnosis. Comprehensive psychiatric evaluation recommended.';
     alerts.push('Patient meets provisional criteria for PTSD diagnosis.');
-  } else if (totalScore >= 31) {
+  } else if (result.provisionalPTSD) {
     severityLevel = 'High Symptoms';
     interpretation = 'High PTSD symptom severity but does not meet all DSM-5 cluster criteria. Further assessment recommended.';
   } else if (totalScore >= 21) {
@@ -200,8 +211,10 @@ export const scoreMMSE = (responses: number[]): ScoringResult => {
   return { totalScore, severityLevel, interpretation };
 };
 
-export const scorePSQ = (responses: { question: string; endorsed: boolean }[]): ScoringResult => {
-  const positiveScreens = responses.filter(r => r.endorsed).length;
+export const scorePSQ = (responses: { question: string; endorsed: boolean }[] | number[]): ScoringResult => {
+  const numericResponses = responses.map(response => typeof response === "number" ? response : response.endorsed ? 1 : 0);
+  const result = calculatePSQ(numericResponses);
+  const positiveScreens = result.total;
   const alerts: string[] = [];
   
   let severityLevel = '';
@@ -214,10 +227,14 @@ export const scorePSQ = (responses: { question: string; endorsed: boolean }[]): 
     severityLevel = 'Positive Screen - Single Item';
     interpretation = 'Single positive response. Consider further assessment for psychotic symptoms.';
     alerts.push('Positive screen for psychotic symptoms. Clinical interview recommended.');
-  } else {
+  } else if (positiveScreens < 3) {
     severityLevel = 'Positive Screen - Multiple Items';
-    interpretation = 'Multiple positive responses. Urgent psychiatric evaluation for psychosis required.';
-    alerts.push('URGENT: Multiple psychotic symptoms endorsed. Immediate psychiatric assessment required.');
+    interpretation = 'Multiple positive responses below the crisis threshold. Prompt psychiatric assessment is required.';
+    alerts.push('Positive psychosis screen. Prompt clinical assessment required.');
+  } else {
+    severityLevel = 'Crisis Threshold';
+    interpretation = 'Three or more positive responses. Immediate psychosis crisis pathway required.';
+    alerts.push('URGENT: PSQ crisis threshold reached. Immediate psychiatric assessment required.');
   }
   
   return { 
@@ -229,23 +246,24 @@ export const scorePSQ = (responses: { question: string; endorsed: boolean }[]): 
 };
 
 export const scorePRIMER5 = (responses: number[]): ScoringResult => {
-  const totalScore = responses.reduce((sum, val) => sum + val, 0);
+  const result = calculatePRIMER5(responses);
+  const totalScore = result.total;
   const alerts: string[] = [];
   
-  // Check for individual items scoring ≥4 (clinically significant)
+  // Any item scored 2 or above is a positive psychosis-risk screen.
   const highRiskItems = responses
     .map((score, index) => ({ score, item: index + 1 }))
-    .filter(item => item.score >= 4);
+    .filter(item => item.score >= 2);
   
   if (highRiskItems.length > 0) {
     const itemNumbers = highRiskItems.map(i => i.item).join(", ");
-    alerts.push(`Clinically significant scores (≥4) on item(s): ${itemNumbers}. These specific prodromal symptoms warrant detailed clinical evaluation.`);
+    alerts.push(`Positive psychosis-risk response (≥2) on item(s): ${itemNumbers}. Detailed clinical evaluation is required.`);
   }
   
   let severityLevel = '';
   let interpretation = '';
   
-  if (totalScore < 6) {
+  if (!result.psychosisRisk) {
     severityLevel = 'Low Risk';
     interpretation = 'Low prodromal symptoms. No immediate psychosis risk concern. Continue routine monitoring if clinically indicated.';
   } else if (totalScore < 10) {

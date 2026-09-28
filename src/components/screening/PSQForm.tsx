@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { scorePSQ } from "@/lib/screening/scoringUtils";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { Loader2, AlertTriangle, WifiOff } from "lucide-react";
+import { CrisisAcknowledgement } from "./CrisisAcknowledgement";
+import { RULES_ENGINE_VERSION_ID, determineCrisisPathway } from "@/lib/clinical-rules-engine";
 
 interface PSQFormProps {
   patientId: string;
@@ -28,6 +30,7 @@ export const PSQForm = ({ patientId, onComplete }: PSQFormProps) => {
   const [responses, setResponses] = useState<Record<number, string>>({});
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [crisisAcknowledged, setCrisisAcknowledged] = useState(false);
   const { toast } = useToast();
   const { enqueue, isOnline } = useOfflineQueue();
 
@@ -37,7 +40,8 @@ export const PSQForm = ({ patientId, onComplete }: PSQFormProps) => {
 
   const isComplete = Object.keys(responses).length === 5;
   const positiveScreens = Object.values(responses).filter(v => v === 'yes').length;
-  const hasMultiplePositives = positiveScreens > 1;
+  const hasMultiplePositives = positiveScreens >= 3;
+  const crisis = determineCrisisPathway({ psqTotal: positiveScreens });
 
   const handleSubmit = async () => {
     if (!isComplete) {
@@ -65,6 +69,7 @@ export const PSQForm = ({ patientId, onComplete }: PSQFormProps) => {
         severity_level: scoringResult.severityLevel,
         interpretation: scoringResult.interpretation,
         notes: notes || null,
+        rules_version_id: RULES_ENGINE_VERSION_ID,
       };
 
       if (!isOnline) {
@@ -116,12 +121,7 @@ export const PSQForm = ({ patientId, onComplete }: PSQFormProps) => {
       </CardHeader>
       <CardContent className="space-y-6">
         {hasMultiplePositives && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="font-semibold">
-              URGENT: Multiple psychotic symptoms endorsed. Immediate psychiatric assessment required.
-            </AlertDescription>
-          </Alert>
+          <CrisisAcknowledgement title="RED ALERT — psychosis crisis threshold reached" message="Three or more PSQ items are endorsed. Immediate clinical assessment and the psychosis crisis pathway are required before this screening can close." crisisNumber={crisis.crisisNumber} acknowledged={crisisAcknowledged} onAcknowledgedChange={setCrisisAcknowledged} />
         )}
 
         {PSQ_QUESTIONS.map((question, index) => (
@@ -166,7 +166,7 @@ export const PSQForm = ({ patientId, onComplete }: PSQFormProps) => {
         <div className="flex gap-2 pt-4">
           <Button
             onClick={handleSubmit}
-            disabled={!isComplete || isSubmitting}
+            disabled={!isComplete || isSubmitting || (hasMultiplePositives && !crisisAcknowledged)}
             className="flex-1"
           >
             {isSubmitting ? (
@@ -180,7 +180,7 @@ export const PSQForm = ({ patientId, onComplete }: PSQFormProps) => {
                 Save Offline
               </>
             ) : (
-              "Save Assessment"
+              hasMultiplePositives ? "Save & Open Crisis Pathway" : "Save Assessment"
             )}
           </Button>
         </div>

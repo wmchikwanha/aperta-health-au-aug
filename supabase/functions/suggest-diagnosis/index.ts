@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { normalizeCalculatedScores } from "../_shared/clinical-rules.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -84,6 +85,8 @@ interface DiagnosticRequest {
   mseFindings: MSEFindings;
   patientContext?: { age?: number; gender?: string; culturalBackground?: string; presentingComplaint?: string; };
   framework: 'ICD-10' | 'ICD-11' | 'DSM-5';
+  calculatedScores?: Record<string, unknown>;
+  extractedEntities?: Record<string, unknown>;
 }
 
 serve(async (req) => {
@@ -94,7 +97,8 @@ serve(async (req) => {
     if (authResult instanceof Response) return authResult;
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    const { screeningData, mseFindings, patientContext, framework }: DiagnosticRequest = await req.json();
+    const { screeningData, mseFindings, patientContext, framework, calculatedScores: submittedScores, extractedEntities }: DiagnosticRequest = await req.json();
+    const calculatedScores = normalizeCalculatedScores(submittedScores);
 
     const frameworkInstructions = framework === 'ICD-10'
       ? `Use ICD-10-AM (Australian Modification) Chapter V codes exclusively.`
@@ -111,6 +115,8 @@ serve(async (req) => {
     CULTURAL CONTEXT: Recognise idioms like ḍayqa ṣadr (Arabic), jigaram khun (Dari), suy nghĩ nhiều (Vietnamese).
     Apply the Social and Emotional Wellbeing (SEWB) framework for Indigenous patients.
 
+    Scores supplied in CALCULATED SCORES are deterministic and locked. Do not rescore, alter, or invent scores. Extracted entities are unverified documentation support. Never prescribe or suggest medication dosages. Flag uncertainty rather than filling gaps. Every suggestion requires clinician review.
+
     CRITICAL: You must return your response as a valid JSON object with the following structure:
     {
       "primaryDiagnosis": { "code": "", "name": "", "confidence": 0, "supportingEvidence": [], "reasoning": "" },
@@ -120,7 +126,7 @@ serve(async (req) => {
       "additionalAssessments": []
     }`;
 
-    const clinicalSummary = buildClinicalSummary(screeningData, mseFindings, patientContext);
+    const clinicalSummary = `${buildClinicalSummary(screeningData, mseFindings, patientContext)}\n### CALCULATED SCORES — LOCKED\n${JSON.stringify(calculatedScores)}\n### EXTRACTED ENTITIES — UNVERIFIED\n${JSON.stringify(extractedEntities ?? {})}`;
 
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -150,6 +156,7 @@ serve(async (req) => {
       framework: frameworkLabel,
       generatedAt: new Date().toISOString(),
       disclaimer: 'AI-generated suggestion requiring clinical review. The final diagnosis is the responsibility of the treating clinician.',
+      calculatedScores,
     };
 
     return new Response(JSON.stringify(result), {

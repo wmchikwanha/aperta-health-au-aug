@@ -43,13 +43,13 @@ import { ScreeningResults } from "@/components/screening/ScreeningResults";
 import { GAD7Form } from "@/components/screening/GAD7Form";
 import { PHQ9Form } from "@/components/screening/PHQ9Form";
 import { PCL5Form } from "@/components/screening/PCL5Form";
-import { MMSEForm } from "@/components/screening/MMSEForm";
 import { PSQForm } from "@/components/screening/PSQForm";
 import { PRIMER5Form } from "@/components/screening/PRIMER5Form";
 import { RHS15Form } from "@/components/screening/RHS15Form";
 import { HTQ4Form } from "@/components/screening/HTQ4Form";
 import { WHODAS2Form } from "@/components/screening/WHODAS2Form";
 import { GDS15Form } from "@/components/screening/GDS15Form";
+import { SEWBForm } from "@/components/screening/SEWBForm";
 import { MBSItemCatalogue } from "@/components/mbs/MBSItemCatalogue";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScreeningContext } from "@/components/ScreeningContext";
@@ -702,20 +702,6 @@ const Index = () => {
                         />
                       )}
                       
-                      {selectedScreeningTool === "MMSE" && (
-                        <MMSEForm
-                          patientId={screeningPatientId}
-                          onComplete={() => {
-                            setSelectedScreeningTool(null);
-                            setScreeningRefreshKey(k => k + 1);
-                            toast({
-                              title: "Assessment Saved",
-                              description: "MMSE assessment has been saved successfully."
-                            });
-                          }}
-                        />
-                      )}
-                      
                       {selectedScreeningTool === "PSQ" && (
                         <PSQForm
                           patientId={screeningPatientId}
@@ -775,6 +761,10 @@ const Index = () => {
                             toast({ title: "Assessment Saved", description: "WHODAS 2.0 saved successfully." });
                           }}
                         />
+                      )}
+
+                      {selectedScreeningTool === "SEWB" && (
+                        <SEWBForm patientId={screeningPatientId} onComplete={() => { setSelectedScreeningTool(null); setScreeningRefreshKey(k => k + 1); toast({ title: "Profile Saved", description: "SEWB profile saved for clinical review." }); }} />
                       )}
 
                       {selectedScreeningTool === "GDS15" && (

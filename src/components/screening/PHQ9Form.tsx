@@ -10,6 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { scorePHQ9 } from "@/lib/screening/scoringUtils";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { Loader2, AlertTriangle, WifiOff } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CrisisAcknowledgement } from "./CrisisAcknowledgement";
+import { RULES_ENGINE_VERSION_ID, determineCrisisPathway } from "@/lib/clinical-rules-engine";
 
 interface PHQ9FormProps {
   patientId: string;
@@ -39,6 +42,7 @@ export const PHQ9Form = ({ patientId, onComplete }: PHQ9FormProps) => {
   const [responses, setResponses] = useState<Record<number, number>>({});
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [crisisAcknowledged, setCrisisAcknowledged] = useState(false);
   const { toast } = useToast();
   const { enqueue, isOnline } = useOfflineQueue();
 
@@ -48,6 +52,7 @@ export const PHQ9Form = ({ patientId, onComplete }: PHQ9FormProps) => {
 
   const isComplete = Object.keys(responses).length === 9;
   const hasSuicidalThoughts = responses[8] >= 1;
+  const crisis = determineCrisisPathway({ phq9Item9: responses[8] });
 
   const handleSubmit = async () => {
     if (!isComplete) {
@@ -71,6 +76,7 @@ export const PHQ9Form = ({ patientId, onComplete }: PHQ9FormProps) => {
         severity_level: scoringResult.severityLevel,
         interpretation: scoringResult.interpretation,
         notes: notes || null,
+        rules_version_id: RULES_ENGINE_VERSION_ID,
       };
 
       if (!isOnline) {
@@ -124,12 +130,7 @@ export const PHQ9Form = ({ patientId, onComplete }: PHQ9FormProps) => {
       </CardHeader>
       <CardContent className="space-y-6">
         {hasSuicidalThoughts && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="font-semibold">
-              SUICIDALITY ALERT: Patient has endorsed thoughts of self-harm or suicide. Immediate safety assessment required.
-            </AlertDescription>
-          </Alert>
+          <CrisisAcknowledgement title="RED ALERT — suicidal thoughts endorsed" message="PHQ-9 Item 9 is positive. Immediate clinician-led safety assessment is required before this screening can close." crisisNumber={crisis.crisisNumber} acknowledged={crisisAcknowledged} onAcknowledgedChange={setCrisisAcknowledged} />
         )}
 
         {PHQ9_QUESTIONS.map((question, index) => (
@@ -172,7 +173,7 @@ export const PHQ9Form = ({ patientId, onComplete }: PHQ9FormProps) => {
         <div className="flex gap-2 pt-4">
           <Button
             onClick={handleSubmit}
-            disabled={!isComplete || isSubmitting}
+            disabled={!isComplete || isSubmitting || (hasSuicidalThoughts && !crisisAcknowledged)}
             className="flex-1"
           >
             {isSubmitting ? (
@@ -186,7 +187,7 @@ export const PHQ9Form = ({ patientId, onComplete }: PHQ9FormProps) => {
                 Save Offline
               </>
             ) : (
-              "Save Assessment"
+              hasSuicidalThoughts ? "Save & Open Crisis Pathway" : "Save Assessment"
             )}
           </Button>
         </div>
