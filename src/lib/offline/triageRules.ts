@@ -13,7 +13,6 @@ export interface ScreeningInput {
     | "PHQ9"
     | "GAD7"
     | "PCL5"
-    | "MMSE"
     | "PSQ"
     | "PRIMER5";
   totalScore: number;
@@ -103,22 +102,6 @@ export function computeOfflineTriage(inputs: ScreeningInput[]): TriageRecommenda
           modules.add("mhGAP: OTH — trauma pathway");
           pathway = "Trauma-focused care pathway";
           action = "Refer for trauma-focused psychological intervention. Avoid re-traumatising questioning.";
-        }
-        break;
-      }
-      case "MMSE": {
-        if (input.totalScore < 18) {
-          setUrgency("urgent");
-          reasoning.push(`MMSE = ${input.totalScore} → severe cognitive impairment.`);
-          modules.add("mhGAP: DEM (Dementia)");
-          pathway = "Urgent cognitive workup";
-          action = "Refer for neurological evaluation. Rule out reversible causes (delirium, B12, thyroid).";
-        } else if (input.totalScore < 24) {
-          setUrgency("routine");
-          reasoning.push(`MMSE = ${input.totalScore} → mild cognitive impairment.`);
-          modules.add("mhGAP: DEM (Dementia)");
-          pathway = "Routine cognitive assessment";
-          action = "Schedule full cognitive assessment; review medications for cognitive side effects.";
         }
         break;
       }

@@ -45,8 +45,18 @@ async function syncAudioTranscript(row: OutboxRow): Promise<void> {
     await supabase.from("assessments").insert({
       patient_id: row.patientId,
       user_id: userResp.user.id,
-      raw_input: text,
-      ai_analysis: null,
+      narrative: text || "Offline audio captured; transcription unavailable.",
+      processed_result: {
+        pending: true,
+        source: "offline_audio_sync",
+        note: "Awaiting clinician processing and review.",
+      },
+      assessment_date: new Date().toISOString(),
+      ai_generated: false,
+      provenance: {
+        source: "offline_audio_sync",
+        captured_at: row.queuedAt,
+      },
       metadata: {
         source: "offline_audio_sync",
         original_narrative: row.payload?.narrative ?? null,

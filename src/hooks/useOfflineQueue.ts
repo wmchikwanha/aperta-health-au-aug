@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { RULES_ENGINE_VERSION_ID } from "@/lib/clinical-rules-engine";
 
 const QUEUE_KEY = "aperta_health_offline_queue";
 
@@ -60,6 +61,7 @@ async function syncItem(item: QueuedItem, userId: string): Promise<boolean> {
         severity_level: item.data.severity_level,
         interpretation: item.data.interpretation,
         notes: item.data.notes,
+        rules_version_id: item.data.rules_version_id ?? RULES_ENGINE_VERSION_ID,
       });
       if (error) throw error;
       return true;

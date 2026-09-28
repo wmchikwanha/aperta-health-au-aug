@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { containsMedicationDosage, determineATSTriageLevel, determineCrisisPathway, determineDistressPathway, scoreGAD7, scoreHTQIV, scorePCL5, scorePHQ9, scorePRIMER5, scorePSQ, scoreRHS15, scoreSEWB, scoreWHODAS2, selectMHGAPModule } from "./clinical-rules-engine";
+import { containsMedicationDosage, determineATSTriageLevel, determineCrisisPathway, determineDistressPathway, scoreGAD7, scoreHTQIV, scorePCL5, scorePHQ9, scorePRIMER5, scorePSQ, scoreRHS15, scoreSEWB, scoreWHODAS2, selectMHGAPModule } from "../src/lib/clinical-rules-engine";
 
 describe("clinical rules engine", () => {
   test("scores PHQ-9 boundaries and item 9 crisis", () => {

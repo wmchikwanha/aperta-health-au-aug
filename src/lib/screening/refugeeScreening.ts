@@ -15,6 +15,13 @@
  */
 
 import type { ScoringResult } from "./scoringUtils";
+import {
+  determineATSTriageLevel,
+  determineCrisisPathway,
+  scoreHTQIV,
+  scoreRHS15 as calculateRHS15,
+  scoreWHODAS2 as calculateWHODAS2,
+} from "@/lib/clinical-rules-engine";
 
 // ============================================================================
 // RHS-15 — Refugee Health Screener
@@ -32,7 +39,8 @@ export interface RHS15Input {
 }
 
 export const scoreRHS15 = (input: RHS15Input): ScoringResult => {
-  const sum = input.items.slice(0, 14).reduce((s, v) => s + (v || 0), 0);
+  const calculated = calculateRHS15([...input.items.slice(0, 14), input.distressThermometer]);
+  const sum = calculated.total;
   const thermo = input.distressThermometer ?? 0;
   const positive = sum >= 12 || thermo >= 5;
   const alerts: string[] = [];
@@ -69,16 +77,9 @@ export const scoreRHS15 = (input: RHS15Input): ScoringResult => {
 // ============================================================================
 
 export const scoreHTQ4 = (responses: number[]): ScoringResult => {
-  const valid = responses.filter(r => typeof r === "number" && r > 0);
-  if (valid.length === 0) {
-    return {
-      totalScore: 0,
-      severityLevel: "Incomplete",
-      interpretation: "Insufficient responses to score.",
-    };
-  }
-  const mean = valid.reduce((s, v) => s + v, 0) / valid.length;
-  const score = Number(mean.toFixed(2));
+  const calculated = scoreHTQIV(responses);
+  const mean = calculated.meanScore;
+  const score = calculated.meanScore;
   const alerts: string[] = [];
 
   let severityLevel: string;
@@ -107,18 +108,22 @@ export const scoreHTQ4 = (responses: number[]): ScoringResult => {
 // ============================================================================
 
 export const scoreWHODAS2 = (responses: number[]): ScoringResult => {
-  const total = responses.reduce((s, v) => s + (v || 0), 0);
+  const calculated = calculateWHODAS2(responses);
+  const total = calculated.total;
   let severityLevel: string;
   let interpretation: string;
 
-  if (total <= 12) {
-    severityLevel = "No / Mild Disability";
+  if (calculated.disabilityLevel === "none") {
+    severityLevel = "No Disability";
     interpretation = "Minimal functional impairment across domains.";
-  } else if (total <= 24) {
+  } else if (calculated.disabilityLevel === "mild") {
+    severityLevel = "Mild Disability";
+    interpretation = "Mild functional impairment. Monitor and address affected domains.";
+  } else if (calculated.disabilityLevel === "moderate") {
     severityLevel = "Moderate Disability";
     interpretation =
       "Moderate functional impairment. Consider allied-health referral (psychology, OT) and MBS care plan.";
-  } else if (total <= 36) {
+  } else if (calculated.disabilityLevel === "severe") {
     severityLevel = "Severe Disability";
     interpretation =
       "Severe functional impairment. Multidisciplinary care plan recommended; consider NDIS access pathway if eligible.";
@@ -205,13 +210,13 @@ export function deriveATS(signals: {
   activeSuicidePlan?: boolean;
   recentSelfHarm?: boolean;
 }): ATSResult {
-  let cat: ATSCategory = 5;
-
-  if (signals.activeSuicidePlan || signals.recentSelfHarm) cat = 1;
-  else if ((signals.phq9Item9 ?? 0) >= 2 || (signals.psqEndorsed ?? 0) >= 3) cat = 2;
-  else if ((signals.phq9Item9 ?? 0) >= 1 || (signals.psqEndorsed ?? 0) >= 1) cat = 3;
-  else if ((signals.rhs15Sum ?? 0) >= 24 || (signals.rhs15Thermo ?? 0) >= 8 || (signals.htq4Mean ?? 0) >= 2.5) cat = 3;
-  else if ((signals.rhs15Sum ?? 0) >= 12 || (signals.rhs15Thermo ?? 0) >= 5 || (signals.htq4Mean ?? 0) >= 2.0) cat = 4;
+  const crisis = determineCrisisPathway({
+    phq9Item9: signals.phq9Item9,
+    psqTotal: signals.psqEndorsed,
+    rhs15Positive: (signals.rhs15Sum ?? 0) >= 12 || (signals.rhs15Thermo ?? 0) >= 5,
+    narrativeFlags: signals.activeSuicidePlan || signals.recentSelfHarm ? ["suicidal plan"] : [],
+  });
+  const cat = determineATSTriageLevel({ crisisPathway: crisis }).atsLevel;
 
   return { category: cat, ...ATS_CATEGORIES[cat] };
 }

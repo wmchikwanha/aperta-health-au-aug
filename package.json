@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:clinical-rules": "bun test src/lib/clinical-rules-engine.test.ts"
+    "test:clinical-rules": "bun test tests/clinical-rules-engine.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
