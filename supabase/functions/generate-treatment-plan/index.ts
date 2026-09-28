@@ -1,12 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { containsMedicationDosage, normalizeCalculatedScores, selectMHGAPModule } from "../_shared/clinical-rules.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function buildClinicalContext(screeningData: any[], mseFindings: any, patientContext: any): string {
+function buildClinicalContext(screeningData: any[], mseFindings: any, patientContext: any, calculatedScores: Record<string, unknown>, mhgapModule: ReturnType<typeof selectMHGAPModule>): string {
   let context = "CLINICAL ASSESSMENT SUMMARY — generate an evidence-based treatment plan.\n\n";
 
   if (patientContext) {
@@ -32,6 +33,7 @@ function buildClinicalContext(screeningData: any[], mseFindings: any, patientCon
     }
     context += "\n";
   }
+  context += `## Locked deterministic inputs\n- Calculated scores: ${JSON.stringify(calculatedScores)}\n- mhGAP module: ${mhgapModule.moduleCode} — ${mhgapModule.moduleName}\n- Required interventions: ${mhgapModule.interventions.join("; ")}\n\n`;
 
   return context;
 }
@@ -55,13 +57,15 @@ serve(async (req) => {
       });
     }
 
-    const { screeningData, mseFindings, patientContext } = await req.json();
+    const { screeningData, mseFindings, patientContext, calculatedScores: submittedScores, diagnosticCategory, severity } = await req.json();
+    const calculatedScores = normalizeCalculatedScores(submittedScores);
+    const mhgapModule = selectMHGAPModule(String(diagnosticCategory ?? "distress"), String(severity ?? "unspecified"));
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const systemPrompt = `You are an expert clinical strategist for Australian CALD / refugee mental-health.
-Produce an evidence-based treatment plan aligned with RANZCP / APS / Phoenix Australia / RACGP Refugee Health and the MBS Better Access pathway.
-Never prescribe specific medication dosages. Always frame outputs as decision support requiring clinician review.
+Produce an evidence-based treatment-plan draft aligned with RANZCP / APS / Phoenix Australia / RACGP Refugee Health, MBS Better Access, and the locked deterministic mhGAP module supplied below.
+Do not change or infer calculated scores or the mhGAP module. Never prescribe, repeat, or suggest medication dosages. Medication classes only. Always frame outputs as AI-generated decision support requiring clinician review.
 
 Return ONLY a valid JSON object with this exact shape:
 {
@@ -74,7 +78,7 @@ Return ONLY a valid JSON object with this exact shape:
   "patient_education_points": []
 }`;
 
-    const clinicalSummary = buildClinicalContext(screeningData, mseFindings, patientContext);
+    const clinicalSummary = buildClinicalContext(screeningData, mseFindings, patientContext, calculatedScores, mhgapModule);
 
     async function callModel(model: string) {
       const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -124,10 +128,15 @@ Return ONLY a valid JSON object with this exact shape:
       console.error("Failed to parse AI JSON:", content);
       throw new Error("AI returned invalid JSON");
     }
+    if (containsMedicationDosage(treatmentPlan)) {
+      return new Response(JSON.stringify({ error: "Treatment plan rejected because medication dosage content was detected. Please regenerate." }), { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     return new Response(
       JSON.stringify({
         treatmentPlan,
+        calculatedScores,
+        mhgapModule,
         generatedAt: new Date().toISOString(),
         disclaimer: "AI-generated suggestion requiring clinical review.",
       }),

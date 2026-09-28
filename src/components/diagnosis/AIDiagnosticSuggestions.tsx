@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DiagnosticCode } from '@/lib/diagnosis/diagnosticCodes';
+import { RULES_ENGINE_VERSION } from '@/lib/clinical-rules-engine';
 
 interface AISuggestion {
   code: string;
@@ -62,7 +63,7 @@ export function AIDiagnosticSuggestions({
 
     try {
       const { data, error: invokeError } = await supabase.functions.invoke('suggest-diagnosis', {
-        body: { screeningData, mseFindings, patientContext, framework },
+        body: { screeningData, mseFindings, patientContext, framework, calculatedScores: screeningData, extractedEntities: mseFindings?.extracted_entities ?? {}, rulesVersion: RULES_ENGINE_VERSION },
       });
 
       if (invokeError) {
