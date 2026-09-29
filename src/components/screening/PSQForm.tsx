@@ -16,6 +16,7 @@ import { RULES_ENGINE_VERSION_ID, determineCrisisPathway } from "@/lib/clinical-
 interface PSQFormProps {
   patientId: string;
   onComplete: () => void;
+  onCrisis?: () => void;
 }
 
 const PSQ_QUESTIONS = [
@@ -26,7 +27,7 @@ const PSQ_QUESTIONS = [
   "Do you ever feel that there is a conspiracy against you?"
 ];
 
-export const PSQForm = ({ patientId, onComplete }: PSQFormProps) => {
+export const PSQForm = ({ patientId, onComplete, onCrisis }: PSQFormProps) => {
   const [responses, setResponses] = useState<Record<number, string>>({});
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,7 +97,7 @@ export const PSQForm = ({ patientId, onComplete }: PSQFormProps) => {
         variant: scoringResult.alerts ? "destructive" : "default"
       });
 
-      onComplete();
+      if (hasMultiplePositives) onCrisis?.(); else onComplete();
     } catch (error) {
       console.error("Error saving PSQ:", error);
       const responseArray = PSQ_QUESTIONS.map((question, i) => ({ question, endorsed: responses[i] === 'yes' }));
