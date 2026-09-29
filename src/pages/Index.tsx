@@ -75,6 +75,7 @@ import {
   isAdmin,
   getRoleLabel,
 } from "@/lib/permissions";
+import { determineCrisisPathway, RULES_ENGINE_VERSION, selectMHGAPModule } from "@/lib/clinical-rules-engine";
 
 const Index = () => {
   const [narrative, setNarrative] = useState("");
@@ -233,7 +234,7 @@ const Index = () => {
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
       let buf = "";
-      let data = null;
+      let data: any = null;
 
       outer: while (true) {
         const { done, value } = await reader.read();
@@ -256,7 +257,21 @@ const Index = () => {
       }
 
       if (!data) throw new Error("No result received from server");
-
+      const phq9 = patientScreeningData.find(screening => screening.tool_type === "PHQ9");
+      const psq = patientScreeningData.find(screening => screening.tool_type === "PSQ");
+      const crisisPathway = determineCrisisPathway({
+        phq9Item9: Array.isArray(phq9?.responses) ? Number(phq9.responses[8] ?? 0) : 0,
+        psqTotal: Number(psq?.total_score ?? 0),
+        narrativeFlags: Array.isArray(data?.extracted_entities?.risk_phrases) ? data.extracted_entities.risk_phrases : [],
+        isATSI: Boolean(currentPatientData?.metadata?.atsi_identifies),
+      });
+      data = {
+        ...data,
+        crisis_pathway: crisisPathway,
+        hasRedAlert: crisisPathway.pathwayType !== "none",
+        alertMessage: crisisPathway.pathwayType !== "none" ? `${crisisPathway.pathwayType.replace(/-/g, " ")} pathway requires ${crisisPathway.urgency} clinical action.` : "",
+        risk_level: crisisPathway.urgency === "routine" ? "none" : crisisPathway.urgency,
+      };
       setResult(data);
       setCurrentAssessmentDate(new Date().toISOString());
       
@@ -264,14 +279,14 @@ const Index = () => {
       if (selectedPatientForAssessment) {
         const { data: patientData } = await supabase
           .from("patients")
-          .select("patient_identifier, age_band, gender, cultural_background, language_preference")
+          .select("patient_identifier, age_band, gender, cultural_background, language_preference, metadata")
           .eq("id", selectedPatientForAssessment)
           .maybeSingle();
         setCurrentPatientData(patientData);
       }
 
       // Save assessment to database
-      const { error: saveError } = await supabase.from("assessments").insert({
+      const assessmentInsert = {
         user_id: user!.id,
         patient_id: selectedPatientForAssessment,
         narrative,
@@ -282,8 +297,17 @@ const Index = () => {
         metadata: {
           processing_time: new Date().toISOString(),
           version: "1.0",
+          rules_engine_version: RULES_ENGINE_VERSION,
+          mhgap_module: selectMHGAPModule(crisisPathway.pathwayType, crisisPathway.urgency),
         },
-      });
+        model_id: data.model_id,
+        model_version: "2.5-pro",
+        prompt_template_id: data.prompt_template_id,
+        prompt_template_version: data.prompt_template_version,
+        ai_generated: true,
+        provenance: { source: "process-narrative", extraction_only: true, rules_engine_version: RULES_ENGINE_VERSION },
+      } as any;
+      const { error: saveError } = await supabase.from("assessments").insert(assessmentInsert);
 
       if (saveError) {
         console.error("Error saving assessment:", saveError);
@@ -677,6 +701,7 @@ const Index = () => {
                       {selectedScreeningTool === "PHQ9" && (
                         <PHQ9Form
                           patientId={screeningPatientId}
+                          onCrisis={() => { setSelectedScreeningTool(null); setScreeningRefreshKey(k => k + 1); setActiveTab("firstaid"); toast({ title: "Crisis Pathway Opened", description: "Complete and document the immediate safety response.", variant: "destructive" }); }}
                           onComplete={() => {
                             setSelectedScreeningTool(null);
                             setScreeningRefreshKey(k => k + 1);
@@ -705,6 +730,7 @@ const Index = () => {
                       {selectedScreeningTool === "PSQ" && (
                         <PSQForm
                           patientId={screeningPatientId}
+                          onCrisis={() => { setSelectedScreeningTool(null); setScreeningRefreshKey(k => k + 1); setActiveTab("firstaid"); toast({ title: "Crisis Pathway Opened", description: "Complete and document the immediate psychosis safety response.", variant: "destructive" }); }}
                           onComplete={() => {
                             setSelectedScreeningTool(null);
                             setScreeningRefreshKey(k => k + 1);

@@ -28,7 +28,12 @@ const TOOL_NAMES: Record<string, string> = {
   PCL5: "PCL-5",
   MMSE: "MMSE",
   PSQ: "PSQ",
-  PRIMER5: "PRIME-R-5"
+  PRIMER5: "PRIME-R-5",
+  RHS15: "RHS-15",
+  HTQ4: "HTQ-IV",
+  WHODAS2: "WHODAS 2.0",
+  GDS15: "GDS-15",
+  SEWB: "SEWB",
 };
 
 const getSeverityColor = (severity: string) => {
@@ -113,7 +118,7 @@ const generateMSEContext = (screenings: ScreeningAssessment[]): string => {
   // PSQ → Perception & Thought Content
   const psq = screenings.find(s => s.tool_type === "PSQ");
   if (psq) {
-    if (psq.total_score >= 2) {
+    if (psq.total_score >= 3) {
       sections.push("\nThought Content & Perception: PSQ positive for multiple psychotic symptoms (score: " + psq.total_score + "/5). Patient endorses experiences consistent with perceptual disturbances and/or thought content abnormalities. Urgent psychiatric evaluation indicated to rule out primary psychotic disorder or psychosis secondary to other condition.");
     } else if (psq.total_score >= 1) {
       sections.push("\nThought Content & Perception: PSQ positive for psychotic symptoms (score: " + psq.total_score + "/5). Patient reports experiences suggesting possible perceptual disturbances. Requires further detailed assessment of psychotic symptoms.");
@@ -121,6 +126,15 @@ const generateMSEContext = (screenings: ScreeningAssessment[]): string => {
       sections.push("\nThought Content & Perception: PSQ screening negative for psychotic symptoms (score: " + psq.total_score + "/5). No hallucinations or delusions reported.");
     }
   }
+
+  const rhs15 = screenings.find(s => s.tool_type === "RHS15");
+  if (rhs15) sections.push(`\nRefugee Health: RHS-15 score ${rhs15.total_score}/56 (${rhs15.severity_level}). ${rhs15.interpretation}`);
+  const htq4 = screenings.find(s => s.tool_type === "HTQ4");
+  if (htq4) sections.push(`\nTrauma Context: HTQ-IV mean ${htq4.total_score} (${htq4.severity_level}). ${htq4.interpretation}`);
+  const whodas = screenings.find(s => s.tool_type === "WHODAS2");
+  if (whodas) sections.push(`\nFunction: WHODAS 2.0 score ${whodas.total_score}/48 (${whodas.severity_level}). ${whodas.interpretation}`);
+  const sewb = screenings.find(s => s.tool_type === "SEWB");
+  if (sewb) sections.push(`\nSEWB: strengths-based profile ${sewb.total_score}/32 (${sewb.severity_level}). ${sewb.interpretation}`);
   
   // PRIME-R-5 → Prodromal Psychosis Risk
   const primer5 = screenings.find(s => s.tool_type === "PRIMER5");

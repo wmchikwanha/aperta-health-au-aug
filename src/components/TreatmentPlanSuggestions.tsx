@@ -247,6 +247,12 @@ export const TreatmentPlanSuggestions = ({
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <Alert className="mb-4">
+            <BookOpen className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Locked pathway: {mhgapModule.moduleCode} — {mhgapModule.moduleName}.</strong> Selected by the deterministic rules engine; AI cannot change it. No medication dosages are permitted.
+            </AlertDescription>
+          </Alert>
           <Button onClick={generateTreatmentPlan} className="w-full">
             <Sparkles className="h-4 w-4 mr-2" />
             Generate Treatment Plan
@@ -287,6 +293,10 @@ export const TreatmentPlanSuggestions = ({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          <Alert>
+            <BookOpen className="h-4 w-4" />
+            <AlertDescription className="text-xs"><strong>Locked mhGAP module: {mhgapModule.moduleCode} — {mhgapModule.moduleName}.</strong> AI cannot rescore assessments or change this deterministic pathway.</AlertDescription>
+          </Alert>
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription className="text-xs">

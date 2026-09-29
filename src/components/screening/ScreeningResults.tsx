@@ -36,6 +36,7 @@ const TOOL_NAMES = {
   HTQ4: "HTQ-IV",
   WHODAS2: "WHODAS 2.0",
   GDS15: "GDS-15",
+  SEWB: "SEWB",
 };
 
 const getSeverityColor = (severity: string) => {
@@ -142,7 +143,7 @@ export const ScreeningResults = ({ patientId }: ScreeningResultsProps) => {
       return assessment.responses[8] >= 1; // Suicidality question
     }
     if (assessment.tool_type === "PSQ") {
-      return assessment.total_score > 1; // Multiple positive screens
+      return assessment.total_score >= 3; // Deterministic crisis threshold
     }
     return false;
   };
@@ -159,6 +160,7 @@ export const ScreeningResults = ({ patientId }: ScreeningResultsProps) => {
       HTQ4: 4,
       WHODAS2: 48,
       GDS15: 15,
+      SEWB: 32,
     };
 
     exportScreeningToPDF({

@@ -17,6 +17,7 @@ import { RULES_ENGINE_VERSION_ID, determineCrisisPathway } from "@/lib/clinical-
 interface PHQ9FormProps {
   patientId: string;
   onComplete: () => void;
+  onCrisis?: () => void;
 }
 
 const PHQ9_QUESTIONS = [
@@ -38,7 +39,7 @@ const RESPONSE_OPTIONS = [
   { value: "3", label: "Nearly every day" }
 ];
 
-export const PHQ9Form = ({ patientId, onComplete }: PHQ9FormProps) => {
+export const PHQ9Form = ({ patientId, onComplete, onCrisis }: PHQ9FormProps) => {
   const [responses, setResponses] = useState<Record<number, number>>({});
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,7 +82,7 @@ export const PHQ9Form = ({ patientId, onComplete }: PHQ9FormProps) => {
 
       if (!isOnline) {
         enqueue({ type: "screening", toolType: "PHQ9", patientId, data: assessmentData });
-        onComplete();
+        if (hasSuicidalThoughts) onCrisis?.(); else onComplete();
         return;
       }
 
@@ -103,7 +104,7 @@ export const PHQ9Form = ({ patientId, onComplete }: PHQ9FormProps) => {
         variant: scoringResult.alerts ? "destructive" : "default"
       });
 
-      onComplete();
+      if (hasSuicidalThoughts) onCrisis?.(); else onComplete();
     } catch (error) {
       console.error("Error saving PHQ-9:", error);
       // Fallback to offline queue on network errors
@@ -112,9 +113,9 @@ export const PHQ9Form = ({ patientId, onComplete }: PHQ9FormProps) => {
       enqueue({ type: "screening",
         toolType: "PHQ9",
         patientId,
-        data: { responses: responseArray, total_score: scoringResult.totalScore, severity_level: scoringResult.severityLevel, interpretation: scoringResult.interpretation, notes: notes || null },
+        data: { responses: responseArray, total_score: scoringResult.totalScore, severity_level: scoringResult.severityLevel, interpretation: scoringResult.interpretation, notes: notes || null, rules_version_id: RULES_ENGINE_VERSION_ID },
       });
-      onComplete();
+      if (hasSuicidalThoughts) onCrisis?.(); else onComplete();
     } finally {
       setIsSubmitting(false);
     }
