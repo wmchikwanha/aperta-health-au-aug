@@ -115,7 +115,7 @@ export const scoreGAD7 = (responses: number[]): ScoringResult => {
     interpretation = 'Mild anxiety. Watchful waiting recommended. Consider lifestyle interventions.';
   } else if (totalScore <= 14) {
     severityLevel = 'Moderate';
-    interpretation = 'Moderate anxiety. Treatment plan recommended. Consider psychotherapy or pharmacotherapy.';
+    interpretation = 'Moderate anxiety. Clinician-reviewed treatment planning is recommended; consider evidence-based psychological intervention.';
   } else {
     severityLevel = 'Severe';
     interpretation = 'Severe anxiety. Active treatment warranted. Recommend psychiatric evaluation and intervention.';
@@ -142,13 +142,13 @@ export const scorePHQ9 = (responses: number[]): ScoringResult => {
     interpretation = 'Minimal depression. No treatment required, continue monitoring.';
   } else if (totalScore <= 9) {
     severityLevel = 'Mild';
-    interpretation = 'Mild depression. Watchful waiting. Consider psychotherapy if symptoms persist.';
+    interpretation = 'Mild depression. Watchful waiting and psychological support may be considered if symptoms persist.';
   } else if (totalScore <= 14) {
     severityLevel = 'Moderate';
-    interpretation = 'Moderate depression. Treatment plan recommended. Psychotherapy and/or antidepressant medication.';
+    interpretation = 'Moderate depression. Clinician-reviewed treatment planning and evidence-based psychological intervention are recommended.';
   } else if (totalScore <= 19) {
     severityLevel = 'Moderately Severe';
-    interpretation = 'Moderately severe depression. Active treatment required. Psychotherapy and antidepressant medication recommended.';
+    interpretation = 'Moderately severe depression. Prompt clinician-led treatment planning and close monitoring are required.';
   } else {
     severityLevel = 'Severe';
     interpretation = 'Severe depression. Immediate intervention required. Consider intensive treatment options and close monitoring.';

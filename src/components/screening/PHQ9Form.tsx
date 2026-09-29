@@ -82,7 +82,7 @@ export const PHQ9Form = ({ patientId, onComplete, onCrisis }: PHQ9FormProps) => 
 
       if (!isOnline) {
         enqueue({ type: "screening", toolType: "PHQ9", patientId, data: assessmentData });
-        onComplete();
+        if (hasSuicidalThoughts) onCrisis?.(); else onComplete();
         return;
       }
 
@@ -113,9 +113,9 @@ export const PHQ9Form = ({ patientId, onComplete, onCrisis }: PHQ9FormProps) => 
       enqueue({ type: "screening",
         toolType: "PHQ9",
         patientId,
-        data: { responses: responseArray, total_score: scoringResult.totalScore, severity_level: scoringResult.severityLevel, interpretation: scoringResult.interpretation, notes: notes || null },
+        data: { responses: responseArray, total_score: scoringResult.totalScore, severity_level: scoringResult.severityLevel, interpretation: scoringResult.interpretation, notes: notes || null, rules_version_id: RULES_ENGINE_VERSION_ID },
       });
-      onComplete();
+      if (hasSuicidalThoughts) onCrisis?.(); else onComplete();
     } finally {
       setIsSubmitting(false);
     }

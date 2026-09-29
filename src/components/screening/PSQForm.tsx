@@ -75,7 +75,7 @@ export const PSQForm = ({ patientId, onComplete, onCrisis }: PSQFormProps) => {
 
       if (!isOnline) {
         enqueue({ type: "screening", toolType: "PSQ", patientId, data: assessmentData });
-        onComplete();
+        if (hasMultiplePositives) onCrisis?.(); else onComplete();
         return;
       }
 
@@ -104,9 +104,9 @@ export const PSQForm = ({ patientId, onComplete, onCrisis }: PSQFormProps) => {
       const scoringResult = scorePSQ(responseArray);
       enqueue({ type: "screening",
         toolType: "PSQ", patientId,
-        data: { responses: responseArray, total_score: scoringResult.totalScore, severity_level: scoringResult.severityLevel, interpretation: scoringResult.interpretation, notes: notes || null },
+        data: { responses: responseArray, total_score: scoringResult.totalScore, severity_level: scoringResult.severityLevel, interpretation: scoringResult.interpretation, notes: notes || null, rules_version_id: RULES_ENGINE_VERSION_ID },
       });
-      onComplete();
+      if (hasMultiplePositives) onCrisis?.(); else onComplete();
     } finally {
       setIsSubmitting(false);
     }

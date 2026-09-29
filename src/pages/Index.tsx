@@ -269,7 +269,7 @@ const Index = () => {
         ...data,
         crisis_pathway: crisisPathway,
         hasRedAlert: crisisPathway.pathwayType !== "none",
-        alertMessage: crisisPathway.pathwayType !== "none" ? `${crisisPathway.pathwayType.replaceAll("-", " ")} pathway requires ${crisisPathway.urgency} clinical action.` : "",
+        alertMessage: crisisPathway.pathwayType !== "none" ? `${crisisPathway.pathwayType.replace(/-/g, " ")} pathway requires ${crisisPathway.urgency} clinical action.` : "",
         risk_level: crisisPathway.urgency === "routine" ? "none" : crisisPathway.urgency,
       };
       setResult(data);
@@ -286,7 +286,7 @@ const Index = () => {
       }
 
       // Save assessment to database
-      const { error: saveError } = await supabase.from("assessments").insert({
+      const assessmentInsert = {
         user_id: user!.id,
         patient_id: selectedPatientForAssessment,
         narrative,
@@ -306,7 +306,8 @@ const Index = () => {
         prompt_template_version: data.prompt_template_version,
         ai_generated: true,
         provenance: { source: "process-narrative", extraction_only: true, rules_engine_version: RULES_ENGINE_VERSION },
-      });
+      } as any;
+      const { error: saveError } = await supabase.from("assessments").insert(assessmentInsert);
 
       if (saveError) {
         console.error("Error saving assessment:", saveError);
