@@ -14,6 +14,206 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_confidence_log: {
+        Row: {
+          calibrated_confidence: number | null
+          clinician_id: string | null
+          clinician_override: boolean
+          clinician_override_reason: string | null
+          created_at: string
+          encounter_id: string | null
+          error: boolean
+          function_name: string
+          id: string
+          language_of_input: string | null
+          model_version_id: string | null
+          override_note: string | null
+          patient_id: string | null
+          prompt_template_id: string | null
+          raw_confidence: number | null
+        }
+        Insert: {
+          calibrated_confidence?: number | null
+          clinician_id?: string | null
+          clinician_override?: boolean
+          clinician_override_reason?: string | null
+          created_at?: string
+          encounter_id?: string | null
+          error?: boolean
+          function_name: string
+          id?: string
+          language_of_input?: string | null
+          model_version_id?: string | null
+          override_note?: string | null
+          patient_id?: string | null
+          prompt_template_id?: string | null
+          raw_confidence?: number | null
+        }
+        Update: {
+          calibrated_confidence?: number | null
+          clinician_id?: string | null
+          clinician_override?: boolean
+          clinician_override_reason?: string | null
+          created_at?: string
+          encounter_id?: string | null
+          error?: boolean
+          function_name?: string
+          id?: string
+          language_of_input?: string | null
+          model_version_id?: string | null
+          override_note?: string | null
+          patient_id?: string | null
+          prompt_template_id?: string | null
+          raw_confidence?: number | null
+        }
+        Relationships: []
+      }
+      ai_drift_metrics: {
+        Row: {
+          avg_confidence: number | null
+          created_at: string
+          error_rate: number | null
+          flag_reason: string | null
+          flagged: boolean
+          function_name: string
+          id: string
+          language: string
+          language_breakdown: Json
+          override_rate: number | null
+          period_end: string
+          period_start: string
+          total_invocations: number
+        }
+        Insert: {
+          avg_confidence?: number | null
+          created_at?: string
+          error_rate?: number | null
+          flag_reason?: string | null
+          flagged?: boolean
+          function_name: string
+          id?: string
+          language?: string
+          language_breakdown?: Json
+          override_rate?: number | null
+          period_end: string
+          period_start: string
+          total_invocations?: number
+        }
+        Update: {
+          avg_confidence?: number | null
+          created_at?: string
+          error_rate?: number | null
+          flag_reason?: string | null
+          flagged?: boolean
+          function_name?: string
+          id?: string
+          language?: string
+          language_breakdown?: Json
+          override_rate?: number | null
+          period_end?: string
+          period_start?: string
+          total_invocations?: number
+        }
+        Relationships: []
+      }
+      ai_model_cards: {
+        Row: {
+          bias_assessment: Json
+          capabilities: Json
+          ethical_considerations: string | null
+          id: string
+          intended_use: string
+          last_updated: string
+          limitations: Json
+          model_name: string
+          model_version: string
+          model_version_id: string | null
+          out_of_scope_uses: Json
+          performance_metrics: Json
+          provider: string
+          reviewed_by: string | null
+          training_data_summary: string | null
+        }
+        Insert: {
+          bias_assessment?: Json
+          capabilities?: Json
+          ethical_considerations?: string | null
+          id?: string
+          intended_use: string
+          last_updated?: string
+          limitations?: Json
+          model_name: string
+          model_version: string
+          model_version_id?: string | null
+          out_of_scope_uses?: Json
+          performance_metrics?: Json
+          provider: string
+          reviewed_by?: string | null
+          training_data_summary?: string | null
+        }
+        Update: {
+          bias_assessment?: Json
+          capabilities?: Json
+          ethical_considerations?: string | null
+          id?: string
+          intended_use?: string
+          last_updated?: string
+          limitations?: Json
+          model_name?: string
+          model_version?: string
+          model_version_id?: string | null
+          out_of_scope_uses?: Json
+          performance_metrics?: Json
+          provider?: string
+          reviewed_by?: string | null
+          training_data_summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_model_cards_model_version_id_fkey"
+            columns: ["model_version_id"]
+            isOneToOne: false
+            referencedRelation: "model_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_safety_preambles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          effective_until: string | null
+          id: string
+          is_current: boolean
+          preamble_hash: string
+          preamble_text: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_until?: string | null
+          id?: string
+          is_current?: boolean
+          preamble_hash: string
+          preamble_text: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_until?: string | null
+          id?: string
+          is_current?: boolean
+          preamble_hash?: string
+          preamble_text?: string
+          version?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           appointment_type: string
@@ -510,6 +710,54 @@ export type Database = {
           },
         ]
       }
+      eval_results: {
+        Row: {
+          eval_suite_version: string
+          id: string
+          model_version_id: string
+          passed: boolean
+          prompt_template_id: string | null
+          run_by: string | null
+          score: Json
+          test_date: string
+        }
+        Insert: {
+          eval_suite_version: string
+          id?: string
+          model_version_id: string
+          passed: boolean
+          prompt_template_id?: string | null
+          run_by?: string | null
+          score?: Json
+          test_date?: string
+        }
+        Update: {
+          eval_suite_version?: string
+          id?: string
+          model_version_id?: string
+          passed?: boolean
+          prompt_template_id?: string | null
+          run_by?: string | null
+          score?: Json
+          test_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eval_results_model_version_id_fkey"
+            columns: ["model_version_id"]
+            isOneToOne: false
+            referencedRelation: "model_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eval_results_prompt_template_id_fkey"
+            columns: ["prompt_template_id"]
+            isOneToOne: false
+            referencedRelation: "prompt_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       facilities: {
         Row: {
           accepts_referrals: boolean
@@ -671,6 +919,45 @@ export type Database = {
           },
         ]
       }
+      golden_cases: {
+        Row: {
+          active: boolean
+          clinician_reviewed: boolean
+          created_at: string
+          expected_output_schema: Json
+          expects_idiom_flag: boolean
+          function_name: string
+          id: string
+          input_text: string
+          language: string
+          reviewer_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          clinician_reviewed?: boolean
+          created_at?: string
+          expected_output_schema?: Json
+          expects_idiom_flag?: boolean
+          function_name: string
+          id?: string
+          input_text: string
+          language: string
+          reviewer_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          clinician_reviewed?: boolean
+          created_at?: string
+          expected_output_schema?: Json
+          expects_idiom_flag?: boolean
+          function_name?: string
+          id?: string
+          input_text?: string
+          language?: string
+          reviewer_id?: string | null
+        }
+        Relationships: []
+      }
       idiom_submissions: {
         Row: {
           clinical_context: string | null
@@ -704,6 +991,45 @@ export type Database = {
           patient_utterance?: string
           status?: string
           submitted_by?: string
+        }
+        Relationships: []
+      }
+      model_versions: {
+        Row: {
+          created_at: string
+          id: string
+          model_id: string
+          model_version_label: string
+          notes: string | null
+          pinned_at: string
+          provider: string
+          slot: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          model_id: string
+          model_version_label: string
+          notes?: string | null
+          pinned_at?: string
+          provider: string
+          slot: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          model_id?: string
+          model_version_label?: string
+          notes?: string | null
+          pinned_at?: string
+          provider?: string
+          slot?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -995,6 +1321,39 @@ export type Database = {
           full_name?: string
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      prompt_templates: {
+        Row: {
+          created_at: string
+          function_name: string
+          id: string
+          model_slot: string
+          safety_preamble_hash: string
+          status: string
+          system_prompt: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          function_name: string
+          id?: string
+          model_slot: string
+          safety_preamble_hash: string
+          status?: string
+          system_prompt: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          function_name?: string
+          id?: string
+          model_slot?: string
+          safety_preamble_hash?: string
+          status?: string
+          system_prompt?: string
+          version?: string
         }
         Relationships: []
       }
@@ -1495,6 +1854,10 @@ export type Database = {
           id: string
           role: string
         }[]
+      }
+      promote_model_version: {
+        Args: { _model_version_id: string }
+        Returns: string
       }
       reset_demo_data: { Args: never; Returns: number }
     }
