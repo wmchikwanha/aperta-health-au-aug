@@ -2,7 +2,7 @@
 // Every clinical AI call reads its active model, prompt template and safety preamble
 // from the database. If any piece is missing or the preamble hash does not match,
 // the call is refused — nothing is hardcoded.
-import { createClient } from "npm:@supabase/supabase-js@2.58.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 
 export type AIFunctionName =
   | "process-narrative" | "transcribe-audio" | "process-document"

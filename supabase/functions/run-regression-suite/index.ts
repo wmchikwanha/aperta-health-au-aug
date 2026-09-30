@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2.58.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { serviceClient, sha256Hex } from "../_shared/ai-registry.ts";
 import { checkCaseOutput, summariseRun, EVAL_SUITE_VERSION, type CaseCheck } from "../_shared/governance.ts";
 
