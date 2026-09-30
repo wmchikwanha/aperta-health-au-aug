@@ -1,3 +1,4 @@
+import { loadAIConfig } from "../_shared/ai-registry.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -323,6 +324,7 @@ serve(async (req) => {
       if (session.narrative_text && riskLevel !== "CRISIS") {
         try {
           const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+          const aiConfig = await loadAIConfig("self-assess");
           if (LOVABLE_API_KEY) {
             const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
               method: "POST",
@@ -331,10 +333,10 @@ serve(async (req) => {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                model: "google/gemini-2.5-flash",
+                model: aiConfig.model,
                 messages: [{
                   role: "system",
-                  content: `You are a mental health triage assistant. Analyse the following self-reported narrative for risk indicators. You must NOT diagnose. Output ONLY valid JSON with this structure:
+                  content: `${aiConfig.systemPrompt}\n\nRUNTIME: Identify explicit risk indicators only. Analyse the following self-reported narrative for risk indicators. You must NOT diagnose. Output ONLY valid JSON with this structure:
 {"risk_level": "LOW|MODERATE|HIGH|CRISIS", "risk_indicators": ["indicator1"], "recommended_services": ["service1"], "urgency_note": "brief note"}
 If the person mentions self-harm, suicide, or harm to others, set risk_level to CRISIS.`
                 }, {
@@ -352,7 +354,7 @@ If the person mentions self-harm, suicide, or harm to others, set risk_level to 
                 if (parsed.risk_level === "CRISIS" || parsed.risk_level === "HIGH") {
                   riskLevel = parsed.risk_level;
                 }
-                triageResult = { ...triageResult, ...parsed, risk_level: riskLevel };
+                triageResult = { ...triageResult, ...parsed, risk_level: riskLevel, ai_provenance: aiConfig.provenance };
               } catch { /* fall back */ }
             }
           }

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { containsMedicationDosage, normalizeCalculatedScores, selectMHGAPModule } from "../_shared/clinical-rules.ts";
+import { loadAIConfig, AIConfigError, logConfidence } from "../_shared/ai-registry.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,14 +58,21 @@ serve(async (req) => {
       });
     }
 
-    const { screeningData, mseFindings, patientContext, calculatedScores: submittedScores, diagnosticCategory, severity } = await req.json();
+    const { screeningData, mseFindings, patientContext, calculatedScores: submittedScores, diagnosticCategory, severity, patientId, languageOfInput } = await req.json();
+    const { data: roleRows } = await createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!).from("user_roles").select("role").eq("user_id", user.id);
+    if (!roleRows?.some((r: any) => ["admin", "psychiatrist", "clinical_nurse"].includes(r.role))) {
+      return new Response(JSON.stringify({ error: "Forbidden — clinician role required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    let config;
+    try { config = await loadAIConfig("generate-treatment-plan"); } catch (e) { if (e instanceof AIConfigError) return new Response(JSON.stringify({ error: e.message }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }); throw e; }
     const calculatedScores = normalizeCalculatedScores(submittedScores);
     const mhgapModule = selectMHGAPModule(String(diagnosticCategory ?? "distress"), String(severity ?? "unspecified"));
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const systemPrompt = `You are an expert clinical strategist for Australian CALD / refugee mental-health.
-Produce an evidence-based treatment-plan draft aligned with RANZCP / APS / Phoenix Australia / RACGP Refugee Health, MBS Better Access, and the locked deterministic mhGAP module supplied below.
+    const systemPrompt = `${config.systemPrompt}
+
+RUNTIME: Produce an evidence-based treatment-plan draft aligned with RANZCP / APS / Phoenix Australia / RACGP Refugee Health, MBS Better Access, and the locked deterministic mhGAP module supplied below.
 Do not change or infer calculated scores or the mhGAP module. Never prescribe, repeat, or suggest medication dosages. Medication classes only. Always frame outputs as AI-generated decision support requiring clinician review.
 
 Return ONLY a valid JSON object with this exact shape:
@@ -75,7 +83,8 @@ Return ONLY a valid JSON object with this exact shape:
   "monitoring_plan": {"follow_up_frequency": "", "outcome_measures": [], "red_flags": [], "review_timeline": ""},
   "referral_criteria": [{"trigger": "", "specialist_type": "", "urgency": "immediate|urgent|routine"}],
   "cultural_adaptations": [],
-  "patient_education_points": []
+  "patient_education_points": [],
+  "confidence": 0.0
 }`;
 
     const clinicalSummary = buildClinicalContext(screeningData, mseFindings, patientContext, calculatedScores, mhgapModule);
@@ -99,7 +108,7 @@ Return ONLY a valid JSON object with this exact shape:
       return r;
     }
 
-    let aiResponse = await callModel("google/gemini-2.5-flash");
+    let aiResponse = await callModel(config.model);
     if (!aiResponse.ok) {
       const errText = await aiResponse.text();
       console.error("AI Gateway error:", aiResponse.status, errText);
@@ -111,14 +120,6 @@ Return ONLY a valid JSON object with this exact shape:
 
     let aiData = await aiResponse.json();
     let content = aiData?.choices?.[0]?.message?.content;
-    if (!content) {
-      console.warn("Flash returned empty content, retrying with gemini-2.5-pro");
-      const retry = await callModel("google/gemini-2.5-pro");
-      if (retry.ok) {
-        aiData = await retry.json();
-        content = aiData?.choices?.[0]?.message?.content;
-      }
-    }
     if (!content) throw new Error("AI returned empty response");
 
     let treatmentPlan: any;
@@ -132,9 +133,13 @@ Return ONLY a valid JSON object with this exact shape:
       return new Response(JSON.stringify({ error: "Treatment plan rejected because medication dosage content was detected. Please regenerate." }), { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    const confidence = typeof treatmentPlan?.confidence === "number" ? treatmentPlan.confidence : null;
+    await logConfidence({ function_name: "generate-treatment-plan", clinician_id: user.id, raw_confidence: confidence, patient_id: patientId ?? null, language_of_input: languageOfInput ?? null, provenance: config.provenance });
     return new Response(
       JSON.stringify({
         treatmentPlan,
+        confidence,
+        provenance: config.provenance,
         calculatedScores,
         mhgapModule,
         generatedAt: new Date().toISOString(),

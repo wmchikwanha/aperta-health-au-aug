@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { loadAIConfig, AIConfigError } from "../_shared/ai-registry.ts";
 
 const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
 const CLINICAL_ROLES = ["admin", "psychiatrist", "clinical_nurse"];
@@ -17,17 +18,6 @@ async function authenticate(req: Request) {
   return { userId: data.user.id, role: roles[0].role };
 }
 
-const SYSTEM_PROMPT = `You are a clinical information extraction and translation aid for Australian refugee, CALD, and Aboriginal and Torres Strait Islander mental-health services.
-STRICT SCOPE:
-- Extract only facts explicitly stated. Never infer a diagnosis, severity, triage level, screening score, treatment, medication, or crisis decision.
-- Do not complete absent MSE information. Use "Not stated in narrative".
-- Preserve uncertainty and attribute statements to the speaker.
-- Translate non-English speech into English while preserving important original-language phrases.
-- Identify cultural idioms and explain possible cultural meaning without mapping them to a disorder.
-- Never generate medication dosages. This is documentation support only and requires clinician review.
-Return only JSON:
-{"review_notice":"AI-generated suggestion requiring clinical review","language_detected":"","translation":"","cultural_idioms_found":[],"culturalNotes":[],"appearance":"explicit observations only","speech":"explicit observations only","mood":"patient-reported or observed facts only","perception":"explicitly reported facts only","risk":"explicit risk statements only; no classification","extracted_entities":{"symptoms":[],"reported_experiences":[],"protective_factors":[],"psychosocial_stressors":[],"medication_mentions":[],"risk_phrases":[],"uncertainties":[]}}`;
-
 serve(async req => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
@@ -36,16 +26,18 @@ serve(async req => {
     const body = await req.json().catch(() => null);
     const narrative = typeof body?.narrative === "string" ? body.narrative.trim() : "";
     if (!narrative || narrative.length > 30000) return jsonResponse({ error: "Narrative must contain between 1 and 30,000 characters" }, 400);
+    let config;
+    try { config = await loadAIConfig("process-narrative"); } catch (e) { if (e instanceof AIConfigError) return jsonResponse({ error: e.message }, 503); throw e; }
     const key = Deno.env.get("LOVABLE_API_KEY");
     if (!key) return jsonResponse({ error: "AI service is not configured" }, 500);
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, body: JSON.stringify({ model: "google/gemini-2.5-pro", messages: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: narrative }], response_format: { type: "json_object" } }) });
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, body: JSON.stringify({ model: config.model, messages: [{ role: "system", content: config.systemPrompt }, { role: "user", content: narrative }], response_format: { type: "json_object" } }) });
     if (!aiResponse.ok) return jsonResponse({ error: `AI service error: ${aiResponse.status}` }, aiResponse.status === 402 || aiResponse.status === 429 ? aiResponse.status : 500);
     const aiData = await aiResponse.json();
     const content = aiData?.choices?.[0]?.message?.content;
     const result = typeof content === "string" ? JSON.parse(content) : content;
     if (!result?.extracted_entities || typeof result.language_detected !== "string") return jsonResponse({ error: "AI returned an invalid extraction" }, 502);
     delete result.hasRedAlert; delete result.risk_level; delete result.clinical_impressions;
-    const output = { ...result, ai_generated: true, model_id: "google/gemini-2.5-pro", prompt_template_id: "narrative-extraction", prompt_template_version: "1.0.0-batch1" };
+    const output = { ...result, ai_generated: true, ...config.provenance };
     return new Response(`data: ${JSON.stringify({ result: output })}\n\ndata: [DONE]\n\n`, { headers: { ...corsHeaders, "Content-Type": "text/event-stream", "Cache-Control": "no-cache" } });
   } catch (error) {
     console.error("process-narrative error", error);
