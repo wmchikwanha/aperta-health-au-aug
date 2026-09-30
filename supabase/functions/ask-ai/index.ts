@@ -1,21 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { loadAIConfig, AIConfigError } from "../_shared/ai-registry.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-const SYSTEM_PROMPT = `You are the Aperta Health AI Clinical Assistant — embedded within a clinical decision support application used by Refugee Health Nurses, Bicultural Workers, GPs (MBS Mental Health Treatment Plan), Clinical Psychologists and Psychiatrists serving CALD and refugee populations in Australia.
-
-Provide concise, evidence-based, culturally-aware guidance aligned with RACGP Refugee Health, RANZCP, APS, Phoenix Australia PTSD Guidelines, MBS Better Access, ICD-10-AM (default in AU) and WHO mhGAP as a secondary humanitarian reference.
-
-Non-negotiable constraints:
-- Never suggest specific medication dosages
-- Never provide a definitive diagnosis — support clinical reasoning only
-- Always recommend clinician review of AI output
-- Flag high-risk presentations (suicidal ideation, psychosis, self-harm) immediately
-- "AI suggests, clinician decides"`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -50,6 +40,11 @@ serve(async (req) => {
       ? `Context from current session:\n${context}\n\nQuestion: ${question}`
       : question;
 
+    let config;
+    try { config = await loadAIConfig("ask-ai"); } catch (e) {
+      if (e instanceof AIConfigError) return new Response(JSON.stringify({ error: e.message }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      throw e;
+    }
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -60,9 +55,9 @@ serve(async (req) => {
         "Authorization": `Bearer ${LOVABLE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model: config.model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: config.systemPrompt },
           { role: "user", content: userContent },
         ],
         stream: true,
@@ -83,7 +78,7 @@ serve(async (req) => {
 
     // Lovable AI gateway already streams in OpenAI-compatible SSE format — pass through.
     return new Response(aiResponse.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      headers: { ...corsHeaders, "Content-Type": "text/event-stream", "X-Aperta-Model": config.provenance.model_id, "X-Aperta-Prompt-Version": config.provenance.prompt_template_version, "Access-Control-Expose-Headers": "X-Aperta-Model, X-Aperta-Prompt-Version" },
     });
   } catch (error) {
     console.error("ask-ai error:", error);

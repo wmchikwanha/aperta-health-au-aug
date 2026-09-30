@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { normalizeCalculatedScores } from "../_shared/clinical-rules.ts";
+import { loadAIConfig, AIConfigError, logConfidence } from "../_shared/ai-registry.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -97,7 +98,9 @@ serve(async (req) => {
     if (authResult instanceof Response) return authResult;
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    const { screeningData, mseFindings, patientContext, framework, calculatedScores: submittedScores, extractedEntities }: DiagnosticRequest = await req.json();
+    const { screeningData, mseFindings, patientContext, framework, calculatedScores: submittedScores, extractedEntities, patientId, languageOfInput }: DiagnosticRequest & { patientId?: string; languageOfInput?: string } = await req.json();
+    let config;
+    try { config = await loadAIConfig('suggest-diagnosis'); } catch (e) { if (e instanceof AIConfigError) return new Response(JSON.stringify({ error: e.message }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }); throw e; }
     const calculatedScores = normalizeCalculatedScores(submittedScores);
 
     const frameworkInstructions = framework === 'ICD-10'
@@ -108,8 +111,9 @@ serve(async (req) => {
 
     const frameworkLabel = framework === 'DSM-5' ? 'DSM-5-TR' : framework;
 
-    const systemPrompt = `You are an expert psychiatric diagnostic consultant for Australian CALD / refugee mental-health.
-    Use ${frameworkLabel} diagnostic criteria exclusively.
+    const systemPrompt = `${config.systemPrompt}
+
+    RUNTIME FRAMEWORK: Use ${frameworkLabel} diagnostic criteria exclusively.
     ${frameworkInstructions}
 
     CULTURAL CONTEXT: Recognise idioms like ḍayqa ṣadr (Arabic), jigaram khun (Dari), suy nghĩ nhiều (Vietnamese).
@@ -135,7 +139,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-pro',
+        model: config.model,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: clinicalSummary }
@@ -151,8 +155,12 @@ serve(async (req) => {
     const aiData = await aiResponse.json();
     const suggestions = JSON.parse(aiData.choices[0].message.content);
 
+    const confidence = typeof suggestions.confidence === 'number' ? suggestions.confidence : suggestions.primaryDiagnosis?.confidence ?? null;
+    await logConfidence({ function_name: 'suggest-diagnosis', clinician_id: authResult.userId, raw_confidence: confidence, patient_id: patientId ?? null, language_of_input: languageOfInput ?? null, provenance: config.provenance });
     const result = {
       ...suggestions,
+      confidence,
+      provenance: config.provenance,
       framework: frameworkLabel,
       generatedAt: new Date().toISOString(),
       disclaimer: 'AI-generated suggestion requiring clinical review. The final diagnosis is the responsibility of the treating clinician.',
