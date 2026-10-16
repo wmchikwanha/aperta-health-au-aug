@@ -26,7 +26,7 @@ export const AboutDialog = () => {
           </DialogTitle>
           <DialogDescription className="text-left space-y-4 pt-4">
             <p className="text-foreground font-medium">
-              Mental Health Decision Support for refugee and CALD communities in Australia
+              Documentation-support research prototype for refugee and CALD mental health care in Australia
             </p>
 
             <div className="space-y-4 text-sm">
@@ -107,15 +107,15 @@ export const AboutDialog = () => {
                 <p className="text-muted-foreground">
                   All AI-generated content follows the principle "AI suggests, clinician decides."
                   Clinicians retain editorial control with full audit trails. FHIR R4 data
-                  architecture supports interoperability. No PII is stored. No medication dosages
+                  architecture supports interoperability. Demonstration data are synthetic. No medication dosages
                   are prescribed.
                 </p>
               </div>
 
               <div>
-                <p className="font-semibold text-foreground mb-1">Standards &amp; compliance</p>
+                <p className="font-semibold text-foreground mb-1">Standards referenced</p>
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                  {["FHIR R4 (AU Base)", "ICD-10", "ICD-11", "DSM-5", "MBS Better Access", "Privacy Act 1988 (APPs)", "TGA Class I CDSS", "LOINC"].map(tag => (
+                  {["FHIR R4 (AU Base)", "ICD-10", "ICD-11", "DSM-5", "MBS Better Access", "LOINC"].map(tag => (
                     <Badge key={tag} variant="outline" className="text-xs font-normal">{tag}</Badge>
                   ))}
                 </div>
@@ -123,7 +123,7 @@ export const AboutDialog = () => {
 
               <div className="pt-2 border-t">
                 <p className="text-xs text-muted-foreground italic">
-                  <strong>Important:</strong> Aperta Health is a Clinical Decision Support System (TGA Class I).
+                  <strong>Important:</strong> Aperta Health is a research prototype. It has not been clinically evaluated, is not included in the ARTG, and is not supplied for clinical use; its regulatory status has not been formally assessed.
                   Outputs assist documentation and clinical reasoning but do not replace professional
                   judgement. All AI-generated content requires registered-practitioner review before
                   clinical action.
