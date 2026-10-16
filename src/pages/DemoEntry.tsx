@@ -147,7 +147,7 @@ const DemoEntry = () => {
               Aperta Health
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Culturally responsive mental health decision support for refugee and CALD communities.
+              Culturally responsive mental health documentation support for refugee and CALD communities (research prototype).
               Choose a role below to step straight into that workspace.
             </p>
             <p className="text-[11px] text-muted-foreground italic max-w-xl mx-auto">
