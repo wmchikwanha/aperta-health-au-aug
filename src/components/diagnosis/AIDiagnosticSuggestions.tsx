@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DiagnosticCode } from '@/lib/diagnosis/diagnosticCodes';
 import { RULES_ENGINE_VERSION } from '@/lib/clinical-rules-engine';
+import { AIConfidencePanel } from '@/components/governance/AIConfidencePanel';
 
 interface AISuggestion {
   code: string;
@@ -40,6 +41,8 @@ interface SuggestionsResult {
   clinicalAlerts: string[];
   additionalAssessments?: string[];
   disclaimer: string;
+  confidence?: number | null;
+  provenance?: any;
 }
 
 export function AIDiagnosticSuggestions({
@@ -63,7 +66,7 @@ export function AIDiagnosticSuggestions({
 
     try {
       const { data, error: invokeError } = await supabase.functions.invoke('suggest-diagnosis', {
-        body: { screeningData, mseFindings, patientContext, framework, calculatedScores: screeningData, extractedEntities: mseFindings?.extracted_entities ?? {}, rulesVersion: RULES_ENGINE_VERSION },
+        body: { screeningData, mseFindings, patientContext, framework, calculatedScores: screeningData, extractedEntities: mseFindings?.extracted_entities ?? {}, rulesVersion: RULES_ENGINE_VERSION, patientId: (patientContext as any)?.patientId ?? null, languageOfInput: (patientContext as any)?.language ?? null },
       });
 
       if (invokeError) {
@@ -192,6 +195,8 @@ export function AIDiagnosticSuggestions({
                 </Alert>
               )}
 
+              <AIConfidencePanel functionName="suggest-diagnosis" confidence={suggestions.confidence ?? suggestions.primaryDiagnosis?.confidence} provenance={suggestions.provenance} patientId={(patientContext as any)?.patientId} language={(patientContext as any)?.language} />
+
               {/* Primary Diagnosis */}
               <div className="border rounded-lg p-3 bg-primary/5">
                 <div className="flex items-center justify-between mb-2">
@@ -199,7 +204,7 @@ export function AIDiagnosticSuggestions({
                     Primary Diagnosis Suggestion
                   </p>
                   <Badge className={getConfidenceColor(suggestions.primaryDiagnosis.confidence)}>
-                    {suggestions.primaryDiagnosis.confidence}% confidence
+                    {Math.round((suggestions.primaryDiagnosis.confidence ?? 0) <= 1 ? (suggestions.primaryDiagnosis.confidence ?? 0) * 100 : suggestions.primaryDiagnosis.confidence)}% confidence
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 mb-2">

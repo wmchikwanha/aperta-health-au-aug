@@ -301,11 +301,11 @@ const Index = () => {
           mhgap_module: selectMHGAPModule(crisisPathway.pathwayType, crisisPathway.urgency),
         },
         model_id: data.model_id,
-        model_version: "2.5-pro",
+        model_version: data.model_version ?? null,
         prompt_template_id: data.prompt_template_id,
         prompt_template_version: data.prompt_template_version,
         ai_generated: true,
-        provenance: { source: "process-narrative", extraction_only: true, rules_engine_version: RULES_ENGINE_VERSION },
+        provenance: { source: "process-narrative", extraction_only: true, rules_engine_version: RULES_ENGINE_VERSION, model_version_id: data.model_version_id, safety_preamble_version: data.safety_preamble_version, safety_preamble_hash: data.safety_preamble_hash },
       } as any;
       const { error: saveError } = await supabase.from("assessments").insert(assessmentInsert);
 
