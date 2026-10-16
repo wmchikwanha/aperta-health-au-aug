@@ -359,7 +359,7 @@ const Index = () => {
                   Aperta Health
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  Mental Health Decision Support · Refugee &amp; CALD clinical workflows · Hosted in Australia
+                  Documentation-support research prototype · Refugee &amp; CALD mental health · Synthetic data only
                 </p>
               </div>
               <span className="hidden md:inline-flex items-center gap-1.5 ml-2 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-medium border border-primary/20">
