@@ -179,7 +179,7 @@ const Auth = () => {
               Aperta Health
             </CardTitle>
             <CardDescription className="text-center">
-              Mental Health Decision Support System           </CardDescription>
+              Documentation-Support Research Prototype           </CardDescription>
             <p className="text-[11px] text-center text-muted-foreground italic px-2">
               We acknowledge the Traditional Owners of the lands on which this tool is used and pay
               our respects to Elders past, present and emerging.
