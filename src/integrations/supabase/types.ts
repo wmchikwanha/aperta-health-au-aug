@@ -116,6 +116,114 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_incidents: {
+        Row: {
+          capa_notes: string | null
+          closed_at: string | null
+          created_at: string
+          description: string
+          function_name: string | null
+          id: string
+          incident_type: string
+          linked_ai_output_id: string | null
+          linked_patient_id: string | null
+          metadata: Json
+          reported_by: string | null
+          reviewer_id: string | null
+          severity: string
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          capa_notes?: string | null
+          closed_at?: string | null
+          created_at?: string
+          description: string
+          function_name?: string | null
+          id?: string
+          incident_type: string
+          linked_ai_output_id?: string | null
+          linked_patient_id?: string | null
+          metadata?: Json
+          reported_by?: string | null
+          reviewer_id?: string | null
+          severity?: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          capa_notes?: string | null
+          closed_at?: string | null
+          created_at?: string
+          description?: string
+          function_name?: string | null
+          id?: string
+          incident_type?: string
+          linked_ai_output_id?: string | null
+          linked_patient_id?: string | null
+          metadata?: Json
+          reported_by?: string | null
+          reviewer_id?: string | null
+          severity?: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_inference_events: {
+        Row: {
+          actor_id: string | null
+          attempts: number
+          created_at: string
+          cultural_flags: Json
+          dosage_blocked: boolean
+          failure_reason: string | null
+          function_name: string
+          id: string
+          injection_detected: boolean
+          injection_patterns: Json
+          input_chars: number | null
+          model_id: string | null
+          prompt_template_id: string | null
+          schema_valid: boolean
+        }
+        Insert: {
+          actor_id?: string | null
+          attempts?: number
+          created_at?: string
+          cultural_flags?: Json
+          dosage_blocked?: boolean
+          failure_reason?: string | null
+          function_name: string
+          id?: string
+          injection_detected?: boolean
+          injection_patterns?: Json
+          input_chars?: number | null
+          model_id?: string | null
+          prompt_template_id?: string | null
+          schema_valid: boolean
+        }
+        Update: {
+          actor_id?: string | null
+          attempts?: number
+          created_at?: string
+          cultural_flags?: Json
+          dosage_blocked?: boolean
+          failure_reason?: string | null
+          function_name?: string
+          id?: string
+          injection_detected?: boolean
+          injection_patterns?: Json
+          input_chars?: number | null
+          model_id?: string | null
+          prompt_template_id?: string | null
+          schema_valid?: boolean
+        }
+        Relationships: []
+      }
       ai_model_cards: {
         Row: {
           bias_assessment: Json
@@ -610,6 +718,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cultural_idioms: {
+        Row: {
+          created_at: string
+          do_not_pathologise: boolean
+          guidance: string | null
+          id: string
+          idiom: string
+          language_code: string
+          literal_translation: string
+          match_terms: string[]
+          updated_at: string
+          validation_status: string
+        }
+        Insert: {
+          created_at?: string
+          do_not_pathologise?: boolean
+          guidance?: string | null
+          id: string
+          idiom: string
+          language_code: string
+          literal_translation: string
+          match_terms?: string[]
+          updated_at?: string
+          validation_status?: string
+        }
+        Update: {
+          created_at?: string
+          do_not_pathologise?: boolean
+          guidance?: string | null
+          id?: string
+          idiom?: string
+          language_code?: string
+          literal_translation?: string
+          match_terms?: string[]
+          updated_at?: string
+          validation_status?: string
+        }
+        Relationships: []
       }
       diagnostic_formulations: {
         Row: {
@@ -1171,6 +1318,7 @@ export type Database = {
           status: string
           tier: string
           token: string
+          token_used_at: string | null
         }
         Insert: {
           ai_intake_summary?: Json | null
@@ -1191,6 +1339,7 @@ export type Database = {
           status?: string
           tier?: string
           token: string
+          token_used_at?: string | null
         }
         Update: {
           ai_intake_summary?: Json | null
@@ -1211,6 +1360,7 @@ export type Database = {
           status?: string
           tier?: string
           token?: string
+          token_used_at?: string | null
         }
         Relationships: [
           {
@@ -1329,6 +1479,7 @@ export type Database = {
           created_at: string
           function_name: string
           id: string
+          max_input_chars: number
           model_slot: string
           safety_preamble_hash: string
           status: string
@@ -1339,6 +1490,7 @@ export type Database = {
           created_at?: string
           function_name: string
           id?: string
+          max_input_chars?: number
           model_slot: string
           safety_preamble_hash: string
           status?: string
@@ -1349,11 +1501,75 @@ export type Database = {
           created_at?: string
           function_name?: string
           id?: string
+          max_input_chars?: number
           model_slot?: string
           safety_preamble_hash?: string
           status?: string
           system_prompt?: string
           version?: string
+        }
+        Relationships: []
+      }
+      public_rate_limits: {
+        Row: {
+          bucket: string
+          hits: number
+          key_hash: string
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          hits?: number
+          key_hash: string
+          window_start: string
+        }
+        Update: {
+          bucket?: string
+          hits?: number
+          key_hash?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      red_team_cases: {
+        Row: {
+          active: boolean
+          adversarial: boolean
+          attack_type: string
+          clinician_reviewed: boolean
+          created_at: string
+          expected_output_schema: Json
+          forbidden_strings: Json
+          function_name: string
+          id: string
+          input_text: string
+          language: string
+        }
+        Insert: {
+          active?: boolean
+          adversarial?: boolean
+          attack_type: string
+          clinician_reviewed?: boolean
+          created_at?: string
+          expected_output_schema?: Json
+          forbidden_strings?: Json
+          function_name?: string
+          id?: string
+          input_text: string
+          language: string
+        }
+        Update: {
+          active?: boolean
+          adversarial?: boolean
+          attack_type?: string
+          clinician_reviewed?: boolean
+          created_at?: string
+          expected_output_schema?: Json
+          forbidden_strings?: Json
+          function_name?: string
+          id?: string
+          input_text?: string
+          language?: string
         }
         Relationships: []
       }
@@ -1838,6 +2054,15 @@ export type Database = {
       accept_upward_referral: {
         Args: { _referral_id: string }
         Returns: string
+      }
+      check_rate_limit: {
+        Args: {
+          _bucket: string
+          _key_hash: string
+          _limit: number
+          _window_seconds: number
+        }
+        Returns: boolean
       }
       has_role: {
         Args: {
