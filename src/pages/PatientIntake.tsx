@@ -538,7 +538,7 @@ export default function PatientIntake() {
 
       {/* Footer */}
       <footer className="border-t mt-auto py-4 px-4 text-center text-xs text-muted-foreground">
-        <p>Aperta Health Clinical Decision Support • AI-generated outputs require clinical review</p>
+        <p>Aperta Health research prototype • AI-generated outputs require clinical review • Not for clinical use</p>
       </footer>
     </div>
   );
