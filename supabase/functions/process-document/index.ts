@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { loadAIConfig, AIConfigError } from "../_shared/ai-registry.ts";
+import { guardInput } from "../_shared/input-guard.ts";
+import { logInference } from "../_shared/output-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,6 +25,7 @@ serve(async (req) => {
 
     const { document, fileName, mimeType } = await req.json();
     if (!document || typeof document !== "string") return json({ error: "No document data provided" }, 400);
+    if (document.length > 14_000_000) return json({ error: "Document too large (max ~10 MB)" }, 413);
 
     if (WORD_TYPES.includes(mimeType)) {
       return json({ error: "Word documents (.doc/.docx) cannot be processed directly. Please save as PDF or paste the text into the narrative field." }, 422);
@@ -64,7 +67,10 @@ serve(async (req) => {
 
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content || "";
-    return json({ text, fileName, provenance: config.provenance });
+    // Strip system-prompt markers and instruction text from extracted document text before it reaches any clinical AI.
+    const guard = guardInput(text, 200000);
+    if (guard.detections.length) await logInference({ function_name: "process-document", model_id: config.provenance.model_id, schema_valid: true, injection_patterns: guard.detections, input_chars: text.length });
+    return json({ text: guard.text, fileName, provenance: config.provenance, safety: { injection_detected: guard.detections.length > 0, injection_patterns: guard.detections, truncated: guard.truncated } });
   } catch (error) {
     console.error("Error processing document:", error);
     return json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
