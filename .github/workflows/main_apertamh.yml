@@ -4,9 +4,7 @@
 name: Build and deploy Node.js app to Azure Web App - ApertaMH
 
 on:
-  push:
-    branches:
-      - main
+  # Auto-deploy on push disabled (Oct 2026). Run manually from the Actions tab if needed.
   workflow_dispatch:
 
 jobs:
