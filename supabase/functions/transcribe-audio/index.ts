@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { loadAIConfig, AIConfigError } from "../_shared/ai-registry.ts";
+import { guardInput } from "../_shared/input-guard.ts";
+import { logInference } from "../_shared/output-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,6 +18,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) return json({ error: "AI service is not configured" }, 500);
     if (!audio || typeof audio !== "string") return json({ error: "No audio data provided" }, 400);
+    if (audio.length > 15_000_000) return json({ error: "Audio chunk too large" }, 413);
 
     let config;
     try { config = await loadAIConfig("transcribe-audio"); } catch (e) {
@@ -65,7 +68,12 @@ serve(async (req) => {
     }
     if (!text) return json({ error: "No speech detected in audio" }, 422);
 
-    return json({ text, translation, detectedLanguage, provenance: config.provenance });
+    // Transcripts are later fed to other AI functions; neutralise spoken injection attempts here too.
+    const tGuard = guardInput(text, 60000);
+    const trGuard = guardInput(translation, 60000);
+    const detections = [...new Set([...tGuard.detections, ...trGuard.detections])];
+    if (detections.length) await logInference({ function_name: "transcribe-audio", model_id: config.provenance.model_id, schema_valid: true, injection_patterns: detections });
+    return json({ text: tGuard.text, translation: trGuard.text, detectedLanguage, provenance: config.provenance, safety: { injection_detected: detections.length > 0, injection_patterns: detections } });
   } catch (error) {
     console.error("Error in transcribe-audio function:", error);
     return json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
