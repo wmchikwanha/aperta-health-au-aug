@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { containsMedicationDosage, normalizeCalculatedScores, selectMHGAPModule } from "../_shared/clinical-rules.ts";
 import { loadAIConfig, AIConfigError, logConfidence } from "../_shared/ai-registry.ts";
+import { guardInput, wrapUserContent } from "../_shared/input-guard.ts";
+import { callWithValidation, logInference, SCHEMAS, FAIL_SAFE_MESSAGE, findCulturalFlags, loadDoNotPathologise } from "../_shared/output-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -89,6 +91,7 @@ Return ONLY a valid JSON object with this exact shape:
 
     const clinicalSummary = buildClinicalContext(screeningData, mseFindings, patientContext, calculatedScores, mhgapModule);
 
+    const guard = guardInput(clinicalSummary, 30000);
     async function callModel(model: string) {
       const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -100,7 +103,7 @@ Return ONLY a valid JSON object with this exact shape:
           model,
           messages: [
             { role: "system", content: systemPrompt },
-            { role: "user", content: clinicalSummary },
+            { role: "user", content: wrapUserContent(guard.text, "clinical_summary") },
           ],
           response_format: { type: "json_object" },
         }),
@@ -108,30 +111,17 @@ Return ONLY a valid JSON object with this exact shape:
       return r;
     }
 
-    let aiResponse = await callModel(config.model);
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      console.error("AI Gateway error:", aiResponse.status, errText);
-      return new Response(JSON.stringify({ error: `AI Gateway error: ${aiResponse.status}` }), {
-        status: aiResponse.status === 429 || aiResponse.status === 402 ? aiResponse.status : 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const outcome = await callWithValidation<any>(() => callModel(config.model), SCHEMAS["generate-treatment-plan"], undefined, (p: any) => p?.treatmentPlan ?? p);
+    const base = { function_name: "generate-treatment-plan", actor_id: user.id, model_id: config.provenance.model_id, prompt_template_id: config.provenance.prompt_template_id, attempts: outcome.attempts, injection_patterns: guard.detections, input_chars: clinicalSummary.length };
+    if (outcome.gatewayStatus) return new Response(JSON.stringify({ error: `AI Gateway error: ${outcome.gatewayStatus}` }), { status: outcome.gatewayStatus, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!outcome.ok) {
+      await logInference({ ...base, schema_valid: false, dosage_blocked: outcome.dosageBlocked, failure_reason: outcome.reason });
+      await logConfidence({ function_name: "generate-treatment-plan", clinician_id: user.id, raw_confidence: null, patient_id: patientId ?? null, language_of_input: languageOfInput ?? null, provenance: config.provenance, error: true });
+      return new Response(JSON.stringify({ error: FAIL_SAFE_MESSAGE, failSafe: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-
-    let aiData = await aiResponse.json();
-    let content = aiData?.choices?.[0]?.message?.content;
-    if (!content) throw new Error("AI returned empty response");
-
-    let treatmentPlan: any;
-    try {
-      treatmentPlan = typeof content === "string" ? JSON.parse(content) : content;
-    } catch (e) {
-      console.error("Failed to parse AI JSON:", content);
-      throw new Error("AI returned invalid JSON");
-    }
-    if (containsMedicationDosage(treatmentPlan)) {
-      return new Response(JSON.stringify({ error: "Treatment plan rejected because medication dosage content was detected. Please regenerate." }), { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
+    const treatmentPlan = outcome.value;
+    const culturalFlags = findCulturalFlags(clinicalSummary, JSON.stringify(treatmentPlan), await loadDoNotPathologise());
+    await logInference({ ...base, schema_valid: true, cultural_flags: culturalFlags });
 
     const confidence = typeof treatmentPlan?.confidence === "number" ? treatmentPlan.confidence : null;
     await logConfidence({ function_name: "generate-treatment-plan", clinician_id: user.id, raw_confidence: confidence, patient_id: patientId ?? null, language_of_input: languageOfInput ?? null, provenance: config.provenance });
@@ -140,6 +130,7 @@ Return ONLY a valid JSON object with this exact shape:
         treatmentPlan,
         confidence,
         provenance: config.provenance,
+        safety: { injection_detected: guard.detections.length > 0, injection_patterns: guard.detections, cultural_flags: culturalFlags },
         calculatedScores,
         mhgapModule,
         generatedAt: new Date().toISOString(),

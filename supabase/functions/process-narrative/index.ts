@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { loadAIConfig, AIConfigError } from "../_shared/ai-registry.ts";
+import { guardInput, wrapUserContent } from "../_shared/input-guard.ts";
+import { callWithValidation, logInference, SCHEMAS, FAIL_SAFE_MESSAGE, findCulturalFlags, loadDoNotPathologise } from "../_shared/output-guard.ts";
 
 const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
 const CLINICAL_ROLES = ["admin", "psychiatrist", "clinical_nurse"];
@@ -30,14 +32,20 @@ serve(async req => {
     try { config = await loadAIConfig("process-narrative"); } catch (e) { if (e instanceof AIConfigError) return jsonResponse({ error: e.message }, 503); throw e; }
     const key = Deno.env.get("LOVABLE_API_KEY");
     if (!key) return jsonResponse({ error: "AI service is not configured" }, 500);
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, body: JSON.stringify({ model: config.model, messages: [{ role: "system", content: config.systemPrompt }, { role: "user", content: narrative }], response_format: { type: "json_object" } }) });
-    if (!aiResponse.ok) return jsonResponse({ error: `AI service error: ${aiResponse.status}` }, aiResponse.status === 402 || aiResponse.status === 429 ? aiResponse.status : 500);
-    const aiData = await aiResponse.json();
-    const content = aiData?.choices?.[0]?.message?.content;
-    const result = typeof content === "string" ? JSON.parse(content) : content;
-    if (!result?.extracted_entities || typeof result.language_detected !== "string") return jsonResponse({ error: "AI returned an invalid extraction" }, 502);
+    const guard = guardInput(narrative, 30000);
+    const call = () => fetch("https://ai.gateway.lovable.dev/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, body: JSON.stringify({ model: config.model, messages: [{ role: "system", content: config.systemPrompt }, { role: "user", content: wrapUserContent(guard.text, "patient_narrative") }], response_format: { type: "json_object" } }) });
+    const outcome = await callWithValidation<any>(call, SCHEMAS["process-narrative"]);
+    const base = { function_name: "process-narrative", actor_id: auth.userId, model_id: config.provenance.model_id, prompt_template_id: config.provenance.prompt_template_id, attempts: outcome.attempts, injection_patterns: guard.detections, input_chars: narrative.length };
+    if (outcome.gatewayStatus) return jsonResponse({ error: `AI service error: ${outcome.gatewayStatus}` }, outcome.gatewayStatus);
+    if (!outcome.ok) {
+      await logInference({ ...base, schema_valid: false, dosage_blocked: outcome.dosageBlocked, failure_reason: outcome.reason });
+      return jsonResponse({ error: FAIL_SAFE_MESSAGE, failSafe: true }, 422);
+    }
+    const result = outcome.value;
     delete result.hasRedAlert; delete result.risk_level; delete result.clinical_impressions;
-    const output = { ...result, ai_generated: true, ...config.provenance };
+    const culturalFlags = findCulturalFlags(narrative, JSON.stringify(result), await loadDoNotPathologise());
+    await logInference({ ...base, schema_valid: true, cultural_flags: culturalFlags });
+    const output = { ...result, ai_generated: true, ...config.provenance, safety: { injection_detected: guard.detections.length > 0, injection_patterns: guard.detections, cultural_flags: culturalFlags } };
     return new Response(`data: ${JSON.stringify({ result: output })}\n\ndata: [DONE]\n\n`, { headers: { ...corsHeaders, "Content-Type": "text/event-stream", "Cache-Control": "no-cache" } });
   } catch (error) {
     console.error("process-narrative error", error);
