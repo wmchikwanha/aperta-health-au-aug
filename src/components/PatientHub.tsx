@@ -87,10 +87,11 @@ export const PatientHub = ({
     if (!user) return;
     setIsGeneratingLink(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-intake-token`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-        body: JSON.stringify({ action: "generate_link", patient_id: patient.id, clinician_id: user.id, tier: linkTier }),
+        headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${session?.access_token ?? ""}` },
+        body: JSON.stringify({ action: "generate_link", patient_id: patient.id, tier: linkTier }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
