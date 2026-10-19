@@ -172,15 +172,15 @@ export function ModelGovernance() {
 
           <TabsContent value="evals">
             <Table>
-              <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Model</TableHead><TableHead>Result</TableHead><TableHead>Cases</TableHead><TableHead>Schema</TableHead><TableHead>No dosage</TableHead><TableHead>Idiom flags</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Model</TableHead><TableHead>Result</TableHead><TableHead>Cases</TableHead><TableHead>Schema</TableHead><TableHead>No dosage</TableHead><TableHead>Idiom flags</TableHead><TableHead>Red-team resisted</TableHead></TableRow></TableHeader>
               <TableBody>
-                {evals.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">No regression runs yet.</TableCell></TableRow>}
+                {evals.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">No regression runs yet.</TableCell></TableRow>}
                 {evals.map(e => (
                   <TableRow key={e.id}>
                     <TableCell className="text-xs">{new Date(e.test_date).toLocaleString("en-AU")}</TableCell>
                     <TableCell className="text-xs font-mono">{models.find(m => m.id === e.model_version_id)?.model_id}</TableCell>
                     <TableCell><Badge variant={e.passed ? "default" : "destructive"}>{e.passed ? "Passed" : "Failed"}</Badge></TableCell>
-                    <TableCell>{e.score?.cases}</TableCell><TableCell>{pct(e.score?.schema_rate)}</TableCell><TableCell>{pct(e.score?.no_dosage_rate)}</TableCell><TableCell>{pct(e.score?.idiom_flag_rate)}</TableCell>
+                    <TableCell>{e.score?.cases}</TableCell><TableCell>{pct(e.score?.schema_rate)}</TableCell><TableCell>{pct(e.score?.no_dosage_rate)}</TableCell><TableCell>{pct(e.score?.idiom_flag_rate)}</TableCell><TableCell>{e.score?.red_team_cases ? `${pct(e.score?.red_team_resist_rate)} of ${e.score.red_team_cases}` : "—"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

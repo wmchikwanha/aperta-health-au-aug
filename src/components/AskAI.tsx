@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Brain, Send, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ReportAIIssueButton } from "@/components/governance/AISafetyNotices";
 
 interface Message {
   role: "user" | "assistant";
@@ -159,6 +160,7 @@ export function AskAI({ context, contextLabel }: AskAIProps) {
           </div>
         </div>
         <div className="flex gap-1">
+          {messages.length > 0 && <ReportAIIssueButton functionName="ask-ai" />}
           {messages.length > 0 && (
             <Button variant="ghost" size="sm" onClick={handleClearChat} className="text-xs">
               Clear
