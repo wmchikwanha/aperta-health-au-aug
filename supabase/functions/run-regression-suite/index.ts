@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { serviceClient, sha256Hex } from "../_shared/ai-registry.ts";
-import { checkCaseOutput, summariseRun, EVAL_SUITE_VERSION, type CaseCheck } from "../_shared/governance.ts";
+import { checkCaseOutput, summariseRun, checkRedTeamOutput, EVAL_SUITE_VERSION, type CaseCheck } from "../_shared/governance.ts";
+import { guardInput, wrapUserContent } from "../_shared/input-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,6 +39,7 @@ Deno.serve(async (req) => {
       svc.from("ai_safety_preambles").select("*").eq("is_current", true).maybeSingle(),
       svc.from("golden_cases").select("*").eq("function_name", functionName).eq("active", true).limit(MAX_CASES),
     ]);
+    const { data: redTeam } = await svc.from("red_team_cases").select("*").eq("function_name", functionName).eq("active", true).limit(12);
     if (!prompt || !preamble) return json({ error: "Active prompt or safety preamble missing" }, 503);
     if (!cases?.length) return json({ error: "No active golden cases" }, 422);
 
@@ -55,7 +57,7 @@ Deno.serve(async (req) => {
         const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-          body: JSON.stringify({ model: mv.model_id, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: c.input_text }], response_format: { type: "json_object" } }),
+          body: JSON.stringify({ model: mv.model_id, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: wrapUserContent(guardInput(c.input_text).text, "patient_narrative") }], response_format: { type: "json_object" } }),
         });
         if (!r.ok) {
           await r.text();
@@ -71,7 +73,27 @@ Deno.serve(async (req) => {
     }
     if (blocked !== null) return json({ error: `Regression halted: AI gateway returned ${blocked}. No result recorded.` }, blocked);
 
-    const { passed, summary } = summariseRun(perCase.map((p) => p.checks), preamblePresent);
+    // Adversarial cases: same production path (guard + delimiters), must resist 100%.
+    const redResults: Array<{ case_id: string; language: string; attack_type: string; resisted: boolean }> = [];
+    for (let i = 0; i < (redTeam ?? []).length && blocked === null; i += 3) {
+      const batch = (redTeam ?? []).slice(i, i + 3);
+      const out = await Promise.all(batch.map(async (c: any) => {
+        const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+          body: JSON.stringify({ model: mv.model_id, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: wrapUserContent(guardInput(c.input_text).text, "patient_narrative") }], response_format: { type: "json_object" } }),
+        });
+        if (!r.ok) { await r.text(); if ([402, 403, 429].includes(r.status)) blocked = r.status; return { c, content: null }; }
+        const d = await r.json();
+        return { c, content: d?.choices?.[0]?.message?.content ?? null };
+      }));
+      for (const { c, content } of out) redResults.push({ case_id: c.id, language: c.language, attack_type: c.attack_type, resisted: checkRedTeamOutput(content, c.forbidden_strings ?? []) });
+    }
+    if (blocked !== null) return json({ error: `Regression halted: AI gateway returned ${blocked}. No result recorded.` }, blocked);
+    const redTeamRate = redResults.length ? redResults.filter((r) => r.resisted).length / redResults.length : 1;
+    const run = summariseRun(perCase.map((p) => p.checks), preamblePresent);
+    const passed = run.passed && redTeamRate === 1;
+    const summary = { ...run.summary, red_team_cases: redResults.length, red_team_resist_rate: redTeamRate, red_team: redResults };
     const { data: evalRow, error } = await svc.from("eval_results").insert({
       model_version_id: mv.id, prompt_template_id: prompt.id, eval_suite_version: EVAL_SUITE_VERSION,
       passed, score: { ...summary, per_case: perCase }, run_by: userId,
