@@ -1,4 +1,6 @@
 import { loadAIConfig } from "../_shared/ai-registry.ts";
+import { clientIpHash, rateLimit, logAnomaly, UNIFORM_NOT_FOUND } from "../_shared/public-guard.ts";
+import { guardInput, wrapUserContent } from "../_shared/input-guard.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -51,8 +53,17 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
+    const ipHash = await clientIpHash(req);
+    if (!(await rateLimit("selfassess-ip", ipHash, 120, 300))) {
+      await logAnomaly("self-assess", "ip_rate_limited", ipHash);
+      return json({ error: "Too many requests. Please wait a few minutes and try again." }, 429);
+    }
     const body = await req.json();
     const { action, session_token } = body;
+    if (action === "start" && !(await rateLimit("selfassess-start", ipHash, 10, 3600))) {
+      await logAnomaly("self-assess", "start_flood", ipHash);
+      return json({ error: "Too many new assessments from this connection. Please try later." }, 429);
+    }
 
     // ── START SESSION ──────────────────────────────────────────
     if (action === "start") {
@@ -93,6 +104,10 @@ serve(async (req) => {
     if (action === "lookup" || action === "post_message" || action === "add_contact") {
       const { referral_code, pin } = body;
       if (!referral_code || !pin) return json({ error: "Referral code and PIN required" }, 400);
+      if (!(await rateLimit("selfassess-lookup", ipHash, 10, 900))) {
+        await logAnomaly("self-assess", "lookup_rate_limited", ipHash);
+        return json({ error: "Too many attempts. Please try again later." }, 429);
+      }
 
       const { data: session, error } = await supabase
         .from("self_assessment_sessions")
@@ -100,7 +115,7 @@ serve(async (req) => {
         .eq("referral_code", referral_code)
         .maybeSingle();
 
-      if (error || !session) return json({ error: "Referral not found" }, 404);
+      if (error || !session) { await logAnomaly("self-assess", "unknown_referral", ipHash); return json({ error: "Referral code or PIN is incorrect." }, 401); }
 
       // Brute-force lockout
       if (session.pin_locked_until && new Date(session.pin_locked_until) > new Date()) {
@@ -115,7 +130,7 @@ serve(async (req) => {
           .from("self_assessment_sessions")
           .update({ pin_failed_attempts: attempts, pin_locked_until: lockUntil })
           .eq("id", session.id);
-        return json({ error: "Incorrect PIN" }, 401);
+        return json({ error: "Referral code or PIN is incorrect." }, 401);
       }
 
       // Reset failure counter on success
@@ -209,10 +224,10 @@ serve(async (req) => {
       .eq("session_token", session_token)
       .single();
 
-    if (sessionErr || !session) return json({ error: "Session not found" }, 404);
-    if (new Date(session.expires_at) < new Date()) {
-      await supabase.from("self_assessment_sessions").update({ status: "expired" }).eq("id", session.id);
-      return json({ error: "This session has expired" }, 410);
+    if (sessionErr || !session) { await logAnomaly("self-assess", "unknown_session_token", ipHash); return json({ error: UNIFORM_NOT_FOUND }, 404); }
+    if (new Date(session.expires_at) < new Date() || session.status === "completed") {
+      if (session.status !== "completed") await supabase.from("self_assessment_sessions").update({ status: "expired" }).eq("id", session.id);
+      return json({ error: UNIFORM_NOT_FOUND }, 404);
     }
 
     // ── SAVE CONSENTS ──────────────────────────────────────────
@@ -341,7 +356,7 @@ serve(async (req) => {
 If the person mentions self-harm, suicide, or harm to others, set risk_level to CRISIS.`
                 }, {
                   role: "user",
-                  content: session.narrative_text,
+                  content: wrapUserContent(guardInput(session.narrative_text, 20000).text, "self_report"),
                 }],
               }),
             });

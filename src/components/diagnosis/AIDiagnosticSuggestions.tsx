@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { DiagnosticCode } from '@/lib/diagnosis/diagnosticCodes';
 import { RULES_ENGINE_VERSION } from '@/lib/clinical-rules-engine';
 import { AIConfidencePanel } from '@/components/governance/AIConfidencePanel';
+import { AISafetyBanners, ReportAIIssueButton, FailSafeNotice } from '@/components/governance/AISafetyNotices';
 
 interface AISuggestion {
   code: string;
@@ -43,6 +44,7 @@ interface SuggestionsResult {
   disclaimer: string;
   confidence?: number | null;
   provenance?: any;
+  safety?: any;
 }
 
 export function AIDiagnosticSuggestions({
@@ -57,12 +59,14 @@ export function AIDiagnosticSuggestions({
   const [processingTokens, setProcessingTokens] = useState(0);
   const [suggestions, setSuggestions] = useState<SuggestionsResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [failSafe, setFailSafe] = useState(false);
   const { toast } = useToast();
 
   const generateSuggestions = async () => {
     setIsLoading(true);
     setProcessingTokens(0);
     setError(null);
+    setFailSafe(false);
 
     try {
       const { data, error: invokeError } = await supabase.functions.invoke('suggest-diagnosis', {
@@ -72,6 +76,7 @@ export function AIDiagnosticSuggestions({
       if (invokeError) {
         throw new Error(invokeError.message || 'Failed to reach diagnostic service');
       }
+      if ((data as any)?.failSafe) { setFailSafe(true); setSuggestions(null); return; }
       if (!data || (data as any).error) {
         throw new Error((data as any)?.error || 'No result received from server');
       }
@@ -126,6 +131,7 @@ export function AIDiagnosticSuggestions({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {failSafe && <FailSafeNotice />}
         {/* Generate Button */}
         {!suggestions && (
           <div className="text-center py-4">
@@ -195,6 +201,8 @@ export function AIDiagnosticSuggestions({
                 </Alert>
               )}
 
+              <AISafetyBanners safety={suggestions.safety} />
+              <div className="flex justify-end"><ReportAIIssueButton functionName="suggest-diagnosis" patientId={(patientContext as any)?.patientId} /></div>
               <AIConfidencePanel functionName="suggest-diagnosis" confidence={suggestions.confidence ?? suggestions.primaryDiagnosis?.confidence} provenance={suggestions.provenance} patientId={(patientContext as any)?.patientId} language={(patientContext as any)?.language} />
 
               {/* Primary Diagnosis */}

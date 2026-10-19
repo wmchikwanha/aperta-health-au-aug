@@ -24,6 +24,7 @@ import {
 import { Users, Activity, Shield, RefreshCw, UserX, UserCheck, Trash2, Mail, Building2, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { TeamInvitations } from "@/components/TeamInvitations";
 import { ModelGovernance } from "@/components/governance/ModelGovernance";
+import { AIIncidents } from "@/components/governance/AIIncidents";
 
 interface TeamMember {
   id: string;
@@ -380,6 +381,7 @@ export const AdminDashboard = () => {
             Invitations
           </TabsTrigger>
           <TabsTrigger value="ai-governance">AI Governance</TabsTrigger>
+          <TabsTrigger value="ai-incidents">AI Safety Incidents</TabsTrigger>
           <TabsTrigger value="facilities">
             <Building2 className="h-4 w-4 mr-2" />
             Facilities
@@ -390,6 +392,10 @@ export const AdminDashboard = () => {
             )}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="ai-incidents">
+          <AIIncidents />
+        </TabsContent>
 
         <TabsContent value="ai-governance">
           <ModelGovernance />

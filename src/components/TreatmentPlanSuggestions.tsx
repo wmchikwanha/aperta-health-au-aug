@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { exportTreatmentPlanToPDF } from "@/lib/treatmentPlanPdfExport";
 import { MBS_MENTAL_HEALTH_ITEMS, RECOMMENDED_REFUGEE_MHTP_BUNDLE } from "@/lib/mbs/itemCatalogue";
 import { AIConfidencePanel } from "@/components/governance/AIConfidencePanel";
+import { AISafetyBanners, ReportAIIssueButton, FailSafeNotice } from "@/components/governance/AISafetyNotices";
 import { containsMedicationDosage, selectMHGAPModule } from "@/lib/clinical-rules-engine";
 
 const AUD = new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" });
@@ -87,7 +88,8 @@ export const TreatmentPlanSuggestions = ({
   const [treatmentPlan, setTreatmentPlan] = useState<TreatmentPlan | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [aiMeta, setAiMeta] = useState<{ confidence: number | null; provenance: any } | null>(null);
+  const [aiMeta, setAiMeta] = useState<{ confidence: number | null; provenance: any; safety?: any } | null>(null);
+  const [failSafe, setFailSafe] = useState(false);
   const { toast } = useToast();
   const primaryScreen = screeningData[0];
   const mhgapModule = selectMHGAPModule(primaryScreen?.severity_level ?? mseFindings?.risk ?? "distress", primaryScreen?.severity_level ?? "unspecified");
@@ -118,9 +120,11 @@ export const TreatmentPlanSuggestions = ({
         throw error;
       }
 
+      if (data?.failSafe) { setFailSafe(true); setTreatmentPlan(null); toast({ title: "AI suggestion unavailable", description: "Clinical review required. The event was logged.", variant: "destructive" }); return; }
+      setFailSafe(false);
       if (!data?.treatmentPlan || containsMedicationDosage(data.treatmentPlan)) throw new Error("Treatment plan was blocked because medication dosage content was detected.");
       setTreatmentPlan(data.treatmentPlan);
-      setAiMeta({ confidence: data.confidence ?? null, provenance: data.provenance ?? null });
+      setAiMeta({ confidence: data.confidence ?? null, provenance: data.provenance ?? null, safety: data.safety ?? null });
       toast({
         title: "Treatment Plan Generated",
         description: "Evidence-based recommendations are ready for review."
@@ -298,6 +302,8 @@ export const TreatmentPlanSuggestions = ({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          <AISafetyBanners safety={aiMeta?.safety} />
+          <div className="flex justify-end"><ReportAIIssueButton functionName="generate-treatment-plan" patientId={patientContext?.id ?? primaryScreen?.patient_id} /></div>
           {aiMeta && <AIConfidencePanel functionName="generate-treatment-plan" confidence={aiMeta.confidence} provenance={aiMeta.provenance} patientId={patientContext?.id ?? primaryScreen?.patient_id} language={patientContext?.language_preference} />}
           <Alert>
             <BookOpen className="h-4 w-4" />
