@@ -187,6 +187,8 @@ export type Database = {
           injection_patterns: Json
           input_chars: number | null
           model_id: string | null
+          pii_spans_detected: number
+          pii_types: Json
           prompt_template_id: string | null
           schema_valid: boolean
         }
@@ -203,6 +205,8 @@ export type Database = {
           injection_patterns?: Json
           input_chars?: number | null
           model_id?: string | null
+          pii_spans_detected?: number
+          pii_types?: Json
           prompt_template_id?: string | null
           schema_valid: boolean
         }
@@ -219,6 +223,8 @@ export type Database = {
           injection_patterns?: Json
           input_chars?: number | null
           model_id?: string | null
+          pii_spans_detected?: number
+          pii_types?: Json
           prompt_template_id?: string | null
           schema_valid?: boolean
         }
@@ -755,6 +761,72 @@ export type Database = {
           match_terms?: string[]
           updated_at?: string
           validation_status?: string
+        }
+        Relationships: []
+      }
+      data_processing_records: {
+        Row: {
+          data_types: string[]
+          dpa_status: string
+          id: string
+          last_reviewed: string
+          legal_basis: string
+          location: string
+          processor: string
+          purpose: string
+        }
+        Insert: {
+          data_types?: string[]
+          dpa_status?: string
+          id?: string
+          last_reviewed?: string
+          legal_basis: string
+          location: string
+          processor: string
+          purpose: string
+        }
+        Update: {
+          data_types?: string[]
+          dpa_status?: string
+          id?: string
+          last_reviewed?: string
+          legal_basis?: string
+          location?: string
+          processor?: string
+          purpose?: string
+        }
+        Relationships: []
+      }
+      data_retention_policies: {
+        Row: {
+          auto_action: string
+          data_type: string
+          id: string
+          is_active: boolean
+          last_run_affected: number | null
+          last_run_at: string | null
+          legal_basis: string
+          retention_period_days: number
+        }
+        Insert: {
+          auto_action: string
+          data_type: string
+          id?: string
+          is_active?: boolean
+          last_run_affected?: number | null
+          last_run_at?: string | null
+          legal_basis: string
+          retention_period_days: number
+        }
+        Update: {
+          auto_action?: string
+          data_type?: string
+          id?: string
+          is_active?: boolean
+          last_run_affected?: number | null
+          last_run_at?: string | null
+          legal_basis?: string
+          retention_period_days?: number
         }
         Relationships: []
       }
@@ -1450,6 +1522,36 @@ export type Database = {
         }
         Relationships: []
       }
+      privacy_compliance: {
+        Row: {
+          app_principle: string
+          compliance_status: string
+          evidence_reference: string | null
+          id: string
+          last_reviewed: string
+          reviewed_by: string | null
+          title: string
+        }
+        Insert: {
+          app_principle: string
+          compliance_status?: string
+          evidence_reference?: string | null
+          id?: string
+          last_reviewed?: string
+          reviewed_by?: string | null
+          title: string
+        }
+        Update: {
+          app_principle?: string
+          compliance_status?: string
+          evidence_reference?: string | null
+          id?: string
+          last_reviewed?: string
+          reviewed_by?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -2085,6 +2187,7 @@ export type Database = {
         Returns: string
       }
       reset_demo_data: { Args: never; Returns: number }
+      run_data_retention: { Args: never; Returns: number }
     }
     Enums: {
       app_role:
