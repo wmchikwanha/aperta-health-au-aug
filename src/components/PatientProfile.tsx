@@ -16,6 +16,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { exportCaseSummaryToPDF } from "@/lib/caseSummaryPdfExport";
 import { getGenderLabel, getLanguageName } from "@/lib/languages";
 import { ATSISafetyFlag } from "@/components/ATSISafetyFlag";
+import { AIConsentCard } from "@/components/AIConsentCard";
 
 interface Patient {
   id: string;
@@ -446,6 +447,8 @@ export const PatientProfile = ({ patientId, onBack }: PatientProfileProps) => {
         identifies={!!patient.metadata?.atsi_identifies}
         identityLabel={patient.metadata?.atsi_identity_label}
       />
+
+      <AIConsentCard patientId={patient.id} languagePreference={patient.language_preference} />
 
       {/* Patient Info Card */}
       <Card>
