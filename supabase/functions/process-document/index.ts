@@ -69,8 +69,8 @@ serve(async (req) => {
     const text = data.choices?.[0]?.message?.content || "";
     // Strip system-prompt markers and instruction text from extracted document text before it reaches any clinical AI.
     const guard = guardInput(text, 200000);
-    if (guard.detections.length) await logInference({ function_name: "process-document", model_id: config.provenance.model_id, schema_valid: true, injection_patterns: guard.detections, input_chars: text.length });
-    return json({ text: guard.text, fileName, provenance: config.provenance, safety: { injection_detected: guard.detections.length > 0, injection_patterns: guard.detections, truncated: guard.truncated } });
+    if (guard.detections.length || guard.pii.count) await logInference({ pii: guard.pii, function_name: "process-document", model_id: config.provenance.model_id, schema_valid: true, injection_patterns: guard.detections, input_chars: text.length });
+    return json({ text: guard.text, fileName, provenance: config.provenance, safety: { pii_scrubbed: guard.pii, injection_detected: guard.detections.length > 0, injection_patterns: guard.detections, truncated: guard.truncated } });
   } catch (error) {
     console.error("Error processing document:", error);
     return json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);

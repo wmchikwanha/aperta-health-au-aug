@@ -141,7 +141,7 @@ serve(async (req) => {
       body: JSON.stringify({ model: config.model, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: wrapUserContent(guard.text, 'clinical_summary') }], response_format: { type: "json_object" } }),
     });
     const outcome = await callWithValidation<any>(call, SCHEMAS['suggest-diagnosis']);
-    const base = { function_name: 'suggest-diagnosis', actor_id: authResult.userId, model_id: config.provenance.model_id, prompt_template_id: config.provenance.prompt_template_id, attempts: outcome.attempts, injection_patterns: guard.detections, input_chars: clinicalSummary.length };
+    const base = { function_name: 'suggest-diagnosis', actor_id: authResult.userId, model_id: config.provenance.model_id, prompt_template_id: config.provenance.prompt_template_id, attempts: outcome.attempts, injection_patterns: guard.detections, pii: guard.pii, input_chars: clinicalSummary.length };
     if (outcome.gatewayStatus) return new Response(JSON.stringify({ error: `AI Gateway error: ${outcome.gatewayStatus}` }), { status: outcome.gatewayStatus, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     if (!outcome.ok) {
       await logInference({ ...base, schema_valid: false, dosage_blocked: outcome.dosageBlocked, failure_reason: outcome.reason });
@@ -158,7 +158,7 @@ serve(async (req) => {
       ...suggestions,
       confidence,
       provenance: config.provenance,
-      safety: { injection_detected: guard.detections.length > 0, injection_patterns: guard.detections, cultural_flags: culturalFlags },
+      safety: { pii_scrubbed: guard.pii, injection_detected: guard.detections.length > 0, injection_patterns: guard.detections, cultural_flags: culturalFlags },
       framework: frameworkLabel,
       generatedAt: new Date().toISOString(),
       disclaimer: 'AI-generated suggestion requiring clinical review. The final diagnosis is the responsibility of the treating clinician.',
