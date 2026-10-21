@@ -31,7 +31,7 @@ const RULES: Array<[PiiType, RegExp]> = [
   ["PHONE", /(?:\+?61[\s-]?\(?[2378]\)?|\(?0[2378]\)?)[\s-]?\d{4}[\s-]?\d{4}\b/g],
   ["PHONE", /\+\d{2,3}[\s-]?\d{2,4}[\s-]?\d{3,4}[\s-]?\d{3,4}\b/g],
   // DOB / dates
-  ["DATE", /\b(?:DOB|D\.O\.B\.?|born(?:\s+on)?|date\s+of\s+birth)\s*[:\-]?\s*[^\n,;]{4,20}/gi],
+  ["DATE", /\b(?:DOB|D\.O\.B\.?|born\s+on|date\s+of\s+birth)\s*[:\-]?\s*[^\n,;]{4,20}/gi],
   ["DATE", /\b\d{1,2}[\/.-]\d{1,2}[\/.-](?:19|20)\d{2}\b/g],
   // Street addresses
   ["ADDRESS", /\b\d{1,5}[A-Za-z]?(?:\/\d{1,5})?\s+(?:[A-Z][a-z]+\s){1,3}(?:Street|St|Road|Rd|Avenue|Ave|Drive|Dr|Court|Ct|Place|Pl|Crescent|Cres|Parade|Pde|Lane|Ln|Way|Highway|Hwy|Close|Terrace|Tce|Boulevard|Blvd)\b\.?/g],

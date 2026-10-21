@@ -1,4 +1,5 @@
 // Multilingual prompt-injection guard (Batch 3). Pure, no I/O — tested in input-guard_test.ts.
+import { scrubPii, type PiiType } from "./pii-scrub.ts";
 // Detected instruction text is replaced with [redacted-instruction]; the clinical content is kept.
 
 export interface GuardResult {
@@ -6,6 +7,7 @@ export interface GuardResult {
   detections: string[];
   truncated: boolean;
   tooLong: boolean;
+  pii: { count: number; types: PiiType[] };
 }
 
 const P = (id: string, re: RegExp) => ({ id, re });
@@ -59,7 +61,8 @@ export function normalise(input: string): string {
 export function guardInput(raw: unknown, maxChars = 30000): GuardResult {
   const original = typeof raw === "string" ? raw : "";
   const tooLong = original.length > maxChars;
-  let text = normalise(original.slice(0, maxChars));
+  const scrubbed = scrubPii(normalise(original.slice(0, maxChars)));
+  let text = scrubbed.text;
   const detections: string[] = [];
   for (const { id, re } of INJECTION_PATTERNS) {
     re.lastIndex = 0;
@@ -69,7 +72,7 @@ export function guardInput(raw: unknown, maxChars = 30000): GuardResult {
       text = text.replace(re, "[redacted-instruction]");
     }
   }
-  return { text, detections, truncated: tooLong, tooLong };
+  return { text, detections, truncated: tooLong, tooLong, pii: { count: scrubbed.count, types: scrubbed.types } };
 }
 
 /** Wrap guarded user text in delimiters the safety preamble tells the model never to obey. */
