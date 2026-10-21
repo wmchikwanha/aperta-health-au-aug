@@ -112,7 +112,7 @@ Return ONLY a valid JSON object with this exact shape:
     }
 
     const outcome = await callWithValidation<any>(() => callModel(config.model), SCHEMAS["generate-treatment-plan"], undefined, (p: any) => p?.treatmentPlan ?? p);
-    const base = { function_name: "generate-treatment-plan", actor_id: user.id, model_id: config.provenance.model_id, prompt_template_id: config.provenance.prompt_template_id, attempts: outcome.attempts, injection_patterns: guard.detections, input_chars: clinicalSummary.length };
+    const base = { function_name: "generate-treatment-plan", actor_id: user.id, model_id: config.provenance.model_id, prompt_template_id: config.provenance.prompt_template_id, attempts: outcome.attempts, injection_patterns: guard.detections, pii: guard.pii, input_chars: clinicalSummary.length };
     if (outcome.gatewayStatus) return new Response(JSON.stringify({ error: `AI Gateway error: ${outcome.gatewayStatus}` }), { status: outcome.gatewayStatus, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     if (!outcome.ok) {
       await logInference({ ...base, schema_valid: false, dosage_blocked: outcome.dosageBlocked, failure_reason: outcome.reason });
@@ -130,7 +130,7 @@ Return ONLY a valid JSON object with this exact shape:
         treatmentPlan,
         confidence,
         provenance: config.provenance,
-        safety: { injection_detected: guard.detections.length > 0, injection_patterns: guard.detections, cultural_flags: culturalFlags },
+        safety: { pii_scrubbed: guard.pii, injection_detected: guard.detections.length > 0, injection_patterns: guard.detections, cultural_flags: culturalFlags },
         calculatedScores,
         mhgapModule,
         generatedAt: new Date().toISOString(),

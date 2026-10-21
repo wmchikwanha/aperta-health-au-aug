@@ -109,7 +109,7 @@ serve(async (req) => {
       },
       flush(controller) {
         if (!blocked && buffer) controller.enqueue(encoder.encode(buffer));
-        logInference({ function_name: "ask-ai", actor_id: user.id, model_id: config.provenance.model_id, prompt_template_id: config.provenance.prompt_template_id, schema_valid: !blocked, dosage_blocked: blocked, injection_patterns: detections, failure_reason: blocked ? "medication dosage detected" : null, input_chars: String(question).length });
+        logInference({ function_name: "ask-ai", actor_id: user.id, model_id: config.provenance.model_id, prompt_template_id: config.provenance.prompt_template_id, schema_valid: !blocked, dosage_blocked: blocked, injection_patterns: detections, pii: { count: qGuard.pii.count + cGuard.pii.count, types: [...new Set([...qGuard.pii.types, ...cGuard.pii.types])] }, failure_reason: blocked ? "medication dosage detected" : null, input_chars: String(question).length });
       },
     });
     if (detections.length) logInference({ function_name: "ask-ai", actor_id: user.id, model_id: config.provenance.model_id, schema_valid: true, injection_patterns: detections });

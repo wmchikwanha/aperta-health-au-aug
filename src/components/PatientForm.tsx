@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { scrubPii } from "@/lib/pii-scrub";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SUPPORTED_LANGUAGES, FHIR_GENDERS } from "@/lib/languages";
 
 const patientSchema = z.object({
@@ -18,6 +21,7 @@ const patientSchema = z.object({
   gender: z.string().optional(),
   language_preference: z.string().optional(), // stored as BCP-47 code (e.g. "sn", "nd")
   cultural_background: z.string().optional(),
+  contact_notes: z.string().max(1000).optional(),
   atsi_identity: z.enum(["none", "aboriginal", "torres_strait", "both", "not_stated"]).optional(),
 });
 
@@ -44,6 +48,8 @@ const ageBands = [
 export const PatientForm = ({ onSuccess, onCancel }: PatientFormProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [piiWarning, setPiiWarning] = useState<string[] | null>(null);
+  const [piiAcknowledged, setPiiAcknowledged] = useState(false);
   const { toast } = useToast();
 
   const {
@@ -73,6 +79,11 @@ export const PatientForm = ({ onSuccess, onCancel }: PatientFormProps) => {
   };
 
   const onSubmit = async (data: PatientFormData) => {
+    const scan = scrubPii([data.patient_identifier, data.cultural_background, data.contact_notes].filter(Boolean).join("\n"));
+    if (scan.count > 0 && !piiAcknowledged) {
+      setPiiWarning(scan.types);
+      return;
+    }
     setLoading(true);
     try {
       const atsi = ATSI_LABELS[data.atsi_identity || "none"] ?? ATSI_LABELS.none;
@@ -83,16 +94,25 @@ export const PatientForm = ({ onSuccess, onCancel }: PatientFormProps) => {
         metadata.atsi_identifies = atsi.identifies;
         if (atsi.label) metadata.atsi_identity_label = atsi.label;
       }
-      const { error } = await supabase.from('patients').insert({
+      const { data: inserted, error } = await supabase.from('patients').insert({
         user_id: user!.id,
         patient_identifier: data.patient_identifier,
         gender: data.gender || null,
         language_preference: data.language_preference || null,
         cultural_background: data.cultural_background || null,
+        contact_notes: data.contact_notes || null,
         metadata: metadata as any,
-      });
+      }).select("id").single();
 
       if (error) throw error;
+      if (scan.count > 0 && user) {
+        await supabase.from("audit_events").insert({
+          actor_id: user.id, actor_role: "clinician", action: "pii_detected", outcome: "acknowledged_and_kept",
+          resource_type: "patient", resource_id: inserted?.id ?? null, patient_id: inserted?.id ?? null,
+          description: "Possible identifying information detected in patient fields; clinician acknowledged and kept",
+          metadata: { types: scan.types, spans: scan.count }, source: "PatientForm",
+        });
+      }
 
       toast({
         title: "Success",
@@ -210,6 +230,23 @@ export const PatientForm = ({ onSuccess, onCancel }: PatientFormProps) => {
         </p>
       </div>
 
+      <div>
+        <Label htmlFor="contact_notes">Contact notes (optional)</Label>
+        <Textarea id="contact_notes" rows={2} placeholder="e.g. prefers afternoon sessions, needs Dari interpreter. Do not enter names, phone numbers or addresses."
+          {...register("contact_notes", { onChange: () => { setPiiWarning(null); setPiiAcknowledged(false); } })} />
+      </div>
+
+      {piiWarning && (
+        <Alert variant="destructive">
+          <AlertDescription className="space-y-2">
+            <p className="font-medium">Possible identifying information detected — store only the clinician reference code.</p>
+            <p className="text-xs">Detected: {piiWarning.join(", ")}. Edit the fields to remove it, or confirm below (this is recorded in the audit log).</p>
+            <Button type="button" size="sm" variant="outline" onClick={() => { setPiiAcknowledged(true); setPiiWarning(null); }}>
+              Acknowledge and keep
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>

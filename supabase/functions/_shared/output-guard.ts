@@ -75,6 +75,7 @@ export async function logInference(e: {
   function_name: string; actor_id?: string | null; model_id?: string; prompt_template_id?: string;
   schema_valid: boolean; attempts?: number; injection_patterns?: string[]; dosage_blocked?: boolean;
   cultural_flags?: unknown[]; failure_reason?: string | null; input_chars?: number;
+  pii?: { count: number; types: string[] };
 }) {
   const svc = serviceClient();
   try {
@@ -84,6 +85,7 @@ export async function logInference(e: {
       injection_detected: (e.injection_patterns?.length ?? 0) > 0, injection_patterns: e.injection_patterns ?? [],
       dosage_blocked: e.dosage_blocked ?? false, cultural_flags: e.cultural_flags ?? [],
       failure_reason: e.failure_reason ?? null, input_chars: e.input_chars ?? null,
+      pii_spans_detected: e.pii?.count ?? 0, pii_types: e.pii?.types ?? [],
     });
     if (e.injection_patterns?.length && e.actor_id) {
       await svc.from("audit_events").insert({

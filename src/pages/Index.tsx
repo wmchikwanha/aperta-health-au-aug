@@ -75,6 +75,7 @@ import {
   isAdmin,
   getRoleLabel,
 } from "@/lib/permissions";
+import { AIConsentCard, type AIConsentStatus } from "@/components/AIConsentCard";
 import { determineCrisisPathway, RULES_ENGINE_VERSION, selectMHGAPModule } from "@/lib/clinical-rules-engine";
 
 const Index = () => {
@@ -88,6 +89,7 @@ const Index = () => {
   const [selectedPatientForAssessment, setSelectedPatientForAssessment] = useState<string | null>(null);
   const [currentAssessmentDate, setCurrentAssessmentDate] = useState<string>(new Date().toISOString());
   const [currentPatientData, setCurrentPatientData] = useState<any>(null);
+  const [aiConsent, setAiConsent] = useState<AIConsentStatus>("loading");
   const [showPatientForm, setShowPatientForm] = useState(false);
   const [patientListRefreshKey, setPatientListRefreshKey] = useState(0);
   const [selectedScreeningTool, setSelectedScreeningTool] = useState<string | null>(null);
@@ -205,6 +207,10 @@ const Index = () => {
   }
 
   const processNarrative = async () => {
+    if (aiConsent !== "granted") {
+      toast({ title: aiConsent === "declined" ? "AI declined by patient" : "AI consent needed", description: aiConsent === "declined" ? "This patient opted out of AI processing. Document manually — care is unaffected." : "Record the patient's AI processing consent (card above) before processing the narrative.", variant: "destructive" });
+      return;
+    }
     setIsProcessing(true);
     setProcessingTokens(0);
     try {
@@ -513,6 +519,10 @@ const Index = () => {
                       identifies={!!(currentPatientData?.metadata?.atsi_identifies)}
                       identityLabel={currentPatientData?.metadata?.atsi_identity_label}
                     />
+
+                    {selectedPatientForAssessment && (
+                      <AIConsentCard patientId={selectedPatientForAssessment} languagePreference={currentPatientData?.language_preference} onStatusChange={setAiConsent} />
+                    )}
 
                     {/* Screening Context */}
                     <ScreeningContext

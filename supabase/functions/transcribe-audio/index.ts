@@ -72,8 +72,9 @@ serve(async (req) => {
     const tGuard = guardInput(text, 60000);
     const trGuard = guardInput(translation, 60000);
     const detections = [...new Set([...tGuard.detections, ...trGuard.detections])];
-    if (detections.length) await logInference({ function_name: "transcribe-audio", model_id: config.provenance.model_id, schema_valid: true, injection_patterns: detections });
-    return json({ text: tGuard.text, translation: trGuard.text, detectedLanguage, provenance: config.provenance, safety: { injection_detected: detections.length > 0, injection_patterns: detections } });
+    const pii = { count: tGuard.pii.count + trGuard.pii.count, types: [...new Set([...tGuard.pii.types, ...trGuard.pii.types])] };
+    if (detections.length || pii.count) await logInference({ function_name: "transcribe-audio", model_id: config.provenance.model_id, schema_valid: true, injection_patterns: detections, pii });
+    return json({ text: tGuard.text, translation: trGuard.text, detectedLanguage, provenance: config.provenance, safety: { pii_scrubbed: pii, injection_detected: detections.length > 0, injection_patterns: detections } });
   } catch (error) {
     console.error("Error in transcribe-audio function:", error);
     return json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);

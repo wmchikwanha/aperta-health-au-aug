@@ -22,16 +22,16 @@ const RULES: Array<[PiiType, RegExp]> = [
   ["ID_NUMBER", /\b(?:tazkira|tazkera|تذکره|civil\s*id|national\s*(?:id|number|no\.?)|کد\s*ملی|NIN|NRC|NIC|passport(?:\s*no\.?)?)\s*[:#]?\s*[A-Za-z0-9][A-Za-z0-9\-\/ ]{4,20}\d/gi],
   ["ID_NUMBER", /\b\d{4}-\d{4}-\d{5}\b/g],
   ["ID_NUMBER", /\b\d{3}-\d{6}-\d\b/g],
-  // Medicare: 10 digits (first 2–6), optional IRN, often spaced 4-5-1
-  ["MEDICARE", /\b[2-6]\d{3}\s?\d{5}\s?\d(?:[\s-]?\d)?\b/g],
-  // TFN: 9 digits, 3-3-3
-  ["TFN", /\b\d{3}[\s-]?\d{3}[\s-]?\d{3}\b/g],
   // AU phones: mobile 04xx, +61, landline (0x) xxxx xxxx
   ["PHONE", /(?:\+?61[\s-]?|\b0)4\d{2}[\s-]?\d{3}[\s-]?\d{3}\b/g],
   ["PHONE", /(?:\+?61[\s-]?\(?[2378]\)?|\(?0[2378]\)?)[\s-]?\d{4}[\s-]?\d{4}\b/g],
   ["PHONE", /\+\d{2,3}[\s-]?\d{2,4}[\s-]?\d{3,4}[\s-]?\d{3,4}\b/g],
+  // Medicare: 10 digits (first 2–6), optional IRN, often spaced 4-5-1
+  ["MEDICARE", /\b[2-6]\d{3}\s?\d{5}\s?\d(?:[\s-]?\d)?\b/g],
+  // TFN: 9 digits, 3-3-3
+  ["TFN", /\b\d{3}[\s-]?\d{3}[\s-]?\d{3}\b/g],
   // DOB / dates
-  ["DATE", /\b(?:DOB|D\.O\.B\.?|born(?:\s+on)?|date\s+of\s+birth)\s*[:\-]?\s*[^\n,;]{4,20}/gi],
+  ["DATE", /\b(?:DOB|D\.O\.B\.?|born\s+on|date\s+of\s+birth)\s*[:\-]?\s*[^\n,;]{4,20}/gi],
   ["DATE", /\b\d{1,2}[\/.-]\d{1,2}[\/.-](?:19|20)\d{2}\b/g],
   // Street addresses
   ["ADDRESS", /\b\d{1,5}[A-Za-z]?(?:\/\d{1,5})?\s+(?:[A-Z][a-z]+\s){1,3}(?:Street|St|Road|Rd|Avenue|Ave|Drive|Dr|Court|Ct|Place|Pl|Crescent|Cres|Parade|Pde|Lane|Ln|Way|Highway|Hwy|Close|Terrace|Tce|Boulevard|Blvd)\b\.?/g],
