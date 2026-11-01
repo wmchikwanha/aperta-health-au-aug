@@ -1,4 +1,5 @@
 import type jsPDF from "jspdf";
+import { provenanceFooter, type AIProvenance, type ClinicianApproval } from "@/lib/aiProvenance";
 
 export const PILOT_WATERMARK = "PILOT — SYNTHETIC DATA — NOT A CLINICAL RECORD";
 
@@ -6,7 +7,7 @@ export const PILOT_WATERMARK = "PILOT — SYNTHETIC DATA — NOT A CLINICAL RECO
  * Stamps the pilot watermark into the header and footer of every page of a jsPDF document.
  * Call immediately before doc.save().
  */
-export const applyPilotWatermark = (doc: jsPDF) => {
+export const applyPilotWatermark = (doc: jsPDF, prov?: AIProvenance | null, approval?: ClinicianApproval | null) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const pageCount = doc.getNumberOfPages();
@@ -18,6 +19,10 @@ export const applyPilotWatermark = (doc: jsPDF) => {
     doc.setTextColor(190, 30, 45);
     doc.text(PILOT_WATERMARK, pageWidth / 2, 4, { align: "center" });
     doc.text(PILOT_WATERMARK, pageWidth / 2, pageHeight - 3, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.setTextColor(90, 90, 90);
+    doc.text(provenanceFooter(prov, approval), pageWidth / 2, pageHeight - 6.5, { align: "center", maxWidth: pageWidth - 16 });
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "normal");
   }

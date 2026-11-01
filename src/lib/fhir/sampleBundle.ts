@@ -11,6 +11,7 @@
 import { SCREENING_INSTRUMENTS, LOINC_SYSTEM } from "@/lib/screening/scoringUtils";
 import type { SampleNarrative } from "./sampleNarratives";
 import { PILOT_WATERMARK } from "@/lib/pilot";
+import { applyAIProvenance } from "@/lib/aiProvenance";
 
 const ICD10_AM = "http://terminology.hl7.org.au/CodeSystem/icd-10-am";
 const APERTA_BASE = "https://aperta-health.app/fhir";
@@ -327,10 +328,13 @@ export function buildSampleBundle(narrative: SampleNarrative) {
     riskAssessment,
     composition,
     auditEvent,
-  ].map((resource: any) => ({
-    fullUrl: `urn:uuid:${resource.id}`,
-    resource,
-  }));
+  ].map((resource: any) => {
+    const prov = { model_id: "google/gemini-2.5-pro", model_version: "sandbox", prompt_template_version: "sandbox", generation_timestamp: isoNow() };
+    const approved = ["Condition", "Composition"].includes(resource.resourceType)
+      ? { approver: `Practitioner/${practitionerId}`, approved_at: isoNow() } : null;
+    const tagged = applyAIProvenance(resource, prov, approved);
+    return { fullUrl: `urn:uuid:${tagged.id}`, resource: tagged };
+  });
 
   return {
     resourceType: "Bundle",
