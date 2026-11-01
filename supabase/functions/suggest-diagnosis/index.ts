@@ -125,12 +125,20 @@ serve(async (req) => {
 
     CRITICAL: You must return your response as a valid JSON object with the following structure:
     {
-      "primaryDiagnosis": { "code": "", "name": "", "confidence": 0, "supportingEvidence": [], "reasoning": "" },
-      "differentialDiagnoses": [{ "code": "", "name": "", "confidence": 0, "supportingEvidence": [], "reasoning": "" }],
+      "primaryDiagnosis": { "code": "", "name": "", "icd10am_code": "", "icd11_code": "", "dsm5tr_code": "", "confidence": 0.0, "supportingEvidence": [], "reasoning": "",
+        "evidence": [{ "source": "narrative|screening|cultural_idiom", "quote_or_score": "", "relevance": "" }],
+        "limitations": "" },
+      "differentialDiagnoses": [{ "code": "", "name": "", "confidence": 0.0, "supportingEvidence": [], "reasoning": "", "evidence": [], "limitations": "" }],
+      "differentialConsiderations": [{ "diagnosis": "", "reason_deprioritised": "" }],
+      "conflictingSignals": false,
+      "conflictDescription": "",
+      "insufficientInformation": false,
+      "limitations": "",
       "culturalFormulation": "",
       "clinicalAlerts": [],
       "additionalAssessments": []
-    }`;
+    }
+    confidence values are decimals between 0 and 1. Every evidence item must quote the clinical data or cite a locked score; never invent evidence. Set conflictingSignals true when screening scores and narrative point different ways. Set insufficientInformation true (and give an empty primary code) when data cannot support a suggestion.`;
 
     const clinicalSummary = `${buildClinicalSummary(screeningData, mseFindings, patientContext)}\n### CALCULATED SCORES — LOCKED\n${JSON.stringify(calculatedScores)}\n### EXTRACTED ENTITIES — UNVERIFIED\n${JSON.stringify(extractedEntities ?? {})}`;
 
@@ -154,8 +162,23 @@ serve(async (req) => {
 
     const confidence = typeof suggestions.confidence === 'number' ? suggestions.confidence : suggestions.primaryDiagnosis?.confidence ?? null;
     await logConfidence({ function_name: 'suggest-diagnosis', clinician_id: authResult.userId, raw_confidence: confidence, patient_id: patientId ?? null, language_of_input: languageOfInput ?? null, provenance: config.provenance });
+    const idiomsConsidered = await matchIdioms(clinicalSummary);
+    const toUnit = (c: unknown) => typeof c === 'number' ? (c > 1 ? c / 100 : c) : null;
+    const reasoningTrace = {
+      primary: { code: suggestions.primaryDiagnosis?.code, name: suggestions.primaryDiagnosis?.name, codes: { icd10am: suggestions.primaryDiagnosis?.icd10am_code ?? null, icd11: suggestions.primaryDiagnosis?.icd11_code ?? null, dsm5tr: suggestions.primaryDiagnosis?.dsm5tr_code ?? null }, confidence: toUnit(suggestions.primaryDiagnosis?.confidence), evidence: suggestions.primaryDiagnosis?.evidence ?? [], limitations: suggestions.primaryDiagnosis?.limitations ?? null },
+      differential_considerations: suggestions.differentialConsiderations ?? [],
+      limitations: suggestions.limitations ?? null,
+      conflicting_signals: Boolean(suggestions.conflictingSignals),
+      conflict_description: suggestions.conflictDescription ?? null,
+      insufficient_information: Boolean(suggestions.insufficientInformation) || !suggestions.primaryDiagnosis?.code,
+      idioms_considered: idiomsConsidered,
+      locked_scores: calculatedScores,
+      provenance: config.provenance,
+      generated_at: new Date().toISOString(),
+    };
     const result = {
       ...suggestions,
+      reasoningTrace,
       confidence,
       provenance: config.provenance,
       safety: { pii_scrubbed: guard.pii, injection_detected: guard.detections.length > 0, injection_patterns: guard.detections, cultural_flags: culturalFlags },
@@ -177,6 +200,14 @@ serve(async (req) => {
     );
   }
 });
+
+async function matchIdioms(text: string) {
+  const { data } = await createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+    .from('cultural_idioms').select('id, idiom, language_code, literal_translation, match_terms, do_not_pathologise, guidance');
+  const lower = text.toLowerCase();
+  return (data ?? []).filter((i: any) => [i.idiom, ...(i.match_terms ?? [])].some((t: string) => t && lower.includes(String(t).toLowerCase())))
+    .map((i: any) => ({ id: i.id, term: i.idiom, language: i.language_code, gloss: i.literal_translation, guidance_type: i.do_not_pathologise ? 'do-not-pathologise' : /crisis|suicid|self-harm/i.test(i.guidance ?? '') ? 'crisis-probe' : 'clinical-note', guidance: i.guidance }));
+}
 
 function buildClinicalSummary(screeningData: ScreeningData, mseFindings: MSEFindings, patientContext?: any): string {
   let summary = '## CLINICAL DATA FOR ANALYSIS\n\n';
