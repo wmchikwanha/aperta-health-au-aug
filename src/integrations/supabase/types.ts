@@ -292,6 +292,66 @@ export type Database = {
           },
         ]
       }
+      ai_reviews: {
+        Row: {
+          ai_output_id: string | null
+          created_at: string
+          decision: string
+          final_content: Json | null
+          function_name: string
+          id: string
+          language_of_encounter: string | null
+          model_id: string | null
+          model_version_id: string | null
+          modified_fields: Json
+          original_suggestion: Json | null
+          override_reason: string | null
+          patient_id: string | null
+          prompt_template_id: string | null
+          review_time_ms: number | null
+          reviewer_id: string
+          reviewer_role: string | null
+        }
+        Insert: {
+          ai_output_id?: string | null
+          created_at?: string
+          decision: string
+          final_content?: Json | null
+          function_name: string
+          id?: string
+          language_of_encounter?: string | null
+          model_id?: string | null
+          model_version_id?: string | null
+          modified_fields?: Json
+          original_suggestion?: Json | null
+          override_reason?: string | null
+          patient_id?: string | null
+          prompt_template_id?: string | null
+          review_time_ms?: number | null
+          reviewer_id: string
+          reviewer_role?: string | null
+        }
+        Update: {
+          ai_output_id?: string | null
+          created_at?: string
+          decision?: string
+          final_content?: Json | null
+          function_name?: string
+          id?: string
+          language_of_encounter?: string | null
+          model_id?: string | null
+          model_version_id?: string | null
+          modified_fields?: Json
+          original_suggestion?: Json | null
+          override_reason?: string | null
+          patient_id?: string | null
+          prompt_template_id?: string | null
+          review_time_ms?: number | null
+          reviewer_id?: string
+          reviewer_role?: string | null
+        }
+        Relationships: []
+      }
       ai_safety_preambles: {
         Row: {
           created_at: string
@@ -853,6 +913,7 @@ export type Database = {
           prompt_template_id: string | null
           prompt_template_version: string | null
           provenance: Json | null
+          reasoning_trace: Json | null
           status: string | null
           supporting_evidence: Json | null
           updated_at: string | null
@@ -880,6 +941,7 @@ export type Database = {
           prompt_template_id?: string | null
           prompt_template_version?: string | null
           provenance?: Json | null
+          reasoning_trace?: Json | null
           status?: string | null
           supporting_evidence?: Json | null
           updated_at?: string | null
@@ -907,6 +969,7 @@ export type Database = {
           prompt_template_id?: string | null
           prompt_template_version?: string | null
           provenance?: Json | null
+          reasoning_trace?: Json | null
           status?: string | null
           supporting_evidence?: Json | null
           updated_at?: string | null
