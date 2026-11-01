@@ -1,0 +1,6 @@
+ALTER TABLE public.audit_events DROP CONSTRAINT audit_events_action_check;
+ALTER TABLE public.audit_events ADD CONSTRAINT audit_events_action_check CHECK (action = ANY (ARRAY['create','read','update','delete','execute','ai_output_generated','output_approved','output_rejected','crisis_acknowledged','narrative_submitted','document_uploaded','login','logout','pii_detected','retention_run','ai_consent_granted','ai_consent_declined','injection_pattern_detected']));
+ALTER TABLE public.audit_events DROP CONSTRAINT audit_events_outcome_check;
+ALTER TABLE public.audit_events ADD CONSTRAINT audit_events_outcome_check CHECK (outcome = ANY (ARRAY['success','minor_failure','serious_failure','major_failure','flagged','acknowledged_and_kept']));
+ALTER TABLE public.audit_events DROP CONSTRAINT audit_events_resource_type_check;
+ALTER TABLE public.audit_events ADD CONSTRAINT audit_events_resource_type_check CHECK (resource_type = ANY (ARRAY['Patient','Encounter','Observation','DiagnosticReport','CarePlan','RiskAssessment','Composition','Practitioner','AuditEvent','Appointment','IdiomSubmission','Document','Session','Consent','ai_input','patient','consent','clinical_records','audio','audit','self_assessment']));

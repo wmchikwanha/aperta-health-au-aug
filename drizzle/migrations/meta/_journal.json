@@ -15,6 +15,13 @@
       "when": 1792482176011,
       "tag": "0001_batch4_privacy_compliance",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793545397066,
+      "tag": "0002_audit_events_privacy_actions",
+      "breakpoints": true
     }
   ]
 }
