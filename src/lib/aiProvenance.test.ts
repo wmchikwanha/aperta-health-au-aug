@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { applyAIProvenance, reviewDecision, AI_PROVENANCE_SYSTEM } from "./aiProvenance";
 
 describe("AI provenance", () => {
