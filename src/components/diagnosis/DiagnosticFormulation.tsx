@@ -17,7 +17,10 @@ import {
 } from '@/components/ui/select';
 import { DiagnosisCodeSelector } from './DiagnosisCodeSelector';
 import { DifferentialDiagnosisList, DifferentialDiagnosis } from './DifferentialDiagnosisList';
-import { AIDiagnosticSuggestions } from './AIDiagnosticSuggestions';
+import { AIDiagnosticSuggestions, type SuggestionsResult } from './AIDiagnosticSuggestions';
+import { ReasoningTrace, UncertaintyBanners } from './ReasoningTrace';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { reviewDecision } from '@/lib/aiProvenance';
 import { DiagnosticCode, CONFIDENCE_LEVELS, FORMULATION_STATUS } from '@/lib/diagnosis/diagnosticCodes';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -57,6 +60,11 @@ export function DiagnosticFormulation({
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [existingFormulation, setExistingFormulation] = useState<FormulationData | null>(null);
+  const [aiSuggestion, setAiSuggestion] = useState<SuggestionsResult | null>(null);
+  const [aiShownAt, setAiShownAt] = useState<number | null>(null);
+  const [savedTrace, setSavedTrace] = useState<any>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [overrideReason, setOverrideReason] = useState('');
 
   const [formulation, setFormulation] = useState<FormulationData>({
     primaryDiagnosis: null,
@@ -105,6 +113,7 @@ export function DiagnosticFormulation({
             status: data.status,
             framework: data.diagnostic_framework as 'ICD-10' | 'ICD-11' | 'DSM-5',
           };
+          setSavedTrace((data as any).reasoning_trace ?? null);
           setExistingFormulation(loadedFormulation);
           setFormulation(loadedFormulation);
         }
@@ -117,6 +126,13 @@ export function DiagnosticFormulation({
 
     loadExisting();
   }, [patientId, user]);
+
+  const pendingDecision = aiSuggestion ? reviewDecision(aiSuggestion.primaryDiagnosis?.code, formulation.primaryDiagnosis?.code) : null;
+
+  const handleApprove = () => {
+    if (pendingDecision && pendingDecision !== 'accepted' && overrideReason.trim().length < 3) { setReviewOpen(true); return; }
+    handleSave('approved');
+  };
 
   const handleSave = async (newStatus?: string) => {
     if (!formulation.primaryDiagnosis || !user) {
@@ -149,6 +165,16 @@ export function DiagnosticFormulation({
         status: newStatus || formulation.status,
         approved_by: newStatus === 'approved' ? user.id : null,
         approved_at: newStatus === 'approved' ? new Date().toISOString() : null,
+        ...(aiSuggestion ? {
+          reasoning_trace: JSON.parse(JSON.stringify(aiSuggestion.reasoningTrace ?? null)),
+          ai_suggestions: JSON.parse(JSON.stringify({ primaryDiagnosis: aiSuggestion.primaryDiagnosis, differentialDiagnoses: aiSuggestion.differentialDiagnoses })),
+          ai_generated: true,
+          provenance: JSON.parse(JSON.stringify(aiSuggestion.provenance ?? null)),
+          model_id: aiSuggestion.provenance?.model_id ?? null,
+          model_version: aiSuggestion.provenance?.model_version ?? null,
+          prompt_template_id: aiSuggestion.provenance?.prompt_template_id ?? null,
+          prompt_template_version: aiSuggestion.provenance?.prompt_template_version ?? null,
+        } : {}),
       };
 
       if (formulation.id) {
@@ -166,6 +192,25 @@ export function DiagnosticFormulation({
           .insert(saveData);
 
         if (error) throw error;
+      }
+
+      if (newStatus === 'approved' && aiSuggestion && pendingDecision) {
+        const final = { code: formulation.primaryDiagnosis.code, name: formulation.primaryDiagnosis.name, differentials: formulation.differentialDiagnoses.map((d: any) => d.code ?? d.diagnosis?.code) };
+        const original = { code: aiSuggestion.primaryDiagnosis?.code, name: aiSuggestion.primaryDiagnosis?.name, differentials: (aiSuggestion.differentialDiagnoses ?? []).map((d) => d.code) };
+        const modified = ['code', 'differentials'].filter((k) => JSON.stringify((original as any)[k]) !== JSON.stringify((final as any)[k]));
+        const { data: roleRow } = await supabase.from('user_roles').select('role').eq('user_id', user.id).limit(1).maybeSingle();
+        const { error: revErr } = await supabase.from('ai_reviews').insert({
+          ai_output_id: aiSuggestion.generatedAt ?? null, function_name: 'suggest-diagnosis', patient_id: patientId,
+          reviewer_id: user.id, reviewer_role: roleRow?.role ?? null, decision: pendingDecision,
+          override_reason: pendingDecision === 'accepted' ? null : overrideReason.trim(),
+          modified_fields: modified, original_suggestion: original, final_content: final,
+          review_time_ms: aiShownAt ? Date.now() - aiShownAt : null,
+          language_of_encounter: (screeningData as any)?.language ?? null,
+          model_id: aiSuggestion.provenance?.model_id ?? null, model_version_id: aiSuggestion.provenance?.model_version_id ?? null,
+          prompt_template_id: aiSuggestion.provenance?.prompt_template_id ?? null,
+        });
+        if (revErr) console.error('ai_reviews insert failed', revErr);
+        setReviewOpen(false); setOverrideReason('');
       }
 
       toast({
@@ -444,7 +489,7 @@ export function DiagnosticFormulation({
               Save Draft
             </Button>
             <Button
-              onClick={() => handleSave('approved')}
+              onClick={handleApprove}
               disabled={isSaving || !formulation.primaryDiagnosis}
             >
               {isSaving ? (
@@ -465,9 +510,43 @@ export function DiagnosticFormulation({
             mseFindings={mseFindings}
             onSelectPrimary={handleSelectPrimaryFromAI}
             onAddDifferential={handleAddDifferentialFromAI}
+            onSuggestionsGenerated={(r) => { setAiSuggestion(r); setAiShownAt(Date.now()); }}
           />
+          {!aiSuggestion && savedTrace && (
+            <div className="mt-4 space-y-2">
+              <p className="text-sm font-medium">Saved AI reasoning for this formulation</p>
+              <UncertaintyBanners trace={savedTrace} />
+              <ReasoningTrace trace={savedTrace} />
+            </div>
+          )}
         </div>
       </div>
+      <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Why does your diagnosis differ from the AI suggestion?</DialogTitle>
+            <DialogDescription>Your reason is stored with the review so the team can measure where the AI and clinicians disagree.</DialogDescription>
+          </DialogHeader>
+          <div className="grid md:grid-cols-2 gap-3 text-sm">
+            <div className="rounded-md border border-border p-3 bg-muted/40">
+              <p className="text-xs font-medium text-muted-foreground mb-1">AI suggested</p>
+              <p className="font-mono line-through decoration-destructive">{aiSuggestion?.primaryDiagnosis?.code}</p>
+              <p>{aiSuggestion?.primaryDiagnosis?.name}</p>
+            </div>
+            <div className="rounded-md border border-primary/40 p-3 bg-primary/5">
+              <p className="text-xs font-medium text-muted-foreground mb-1">Your final diagnosis</p>
+              <p className="font-mono font-semibold">{formulation.primaryDiagnosis?.code}</p>
+              <p>{formulation.primaryDiagnosis?.name}</p>
+            </div>
+          </div>
+          <Label htmlFor="override-reason">Reason (required)</Label>
+          <Textarea id="override-reason" rows={3} value={overrideReason} onChange={(e) => setOverrideReason(e.target.value)} placeholder="e.g. Symptoms better explained by culturally normative grief; trauma history not captured by the narrative" />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReviewOpen(false)}>Cancel</Button>
+            <Button disabled={overrideReason.trim().length < 3 || isSaving} onClick={() => handleSave('approved')}>Save reason and approve</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
