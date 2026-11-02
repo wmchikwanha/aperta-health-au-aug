@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { DiagnosticCode } from '@/lib/diagnosis/diagnosticCodes';
 import { RULES_ENGINE_VERSION } from '@/lib/clinical-rules-engine';
 import { AIConfidencePanel } from '@/components/governance/AIConfidencePanel';
+import { ReasoningTrace, UncertaintyBanners, IdiomAttribution, type ReasoningTraceData } from './ReasoningTrace';
 import { AISafetyBanners, ReportAIIssueButton, FailSafeNotice } from '@/components/governance/AISafetyNotices';
 
 interface AISuggestion {
@@ -33,6 +34,7 @@ interface AIDiagnosticSuggestionsProps {
   };
   onSelectPrimary: (code: DiagnosticCode) => void;
   onAddDifferential: (code: DiagnosticCode) => void;
+  onSuggestionsGenerated?: (s: SuggestionsResult) => void;
 }
 
 interface SuggestionsResult {
@@ -45,8 +47,11 @@ interface SuggestionsResult {
   confidence?: number | null;
   provenance?: any;
   safety?: any;
+  reasoningTrace?: ReasoningTraceData;
+  generatedAt?: string;
 }
 
+export type { SuggestionsResult };
 export function AIDiagnosticSuggestions({
   framework,
   screeningData,
@@ -54,6 +59,7 @@ export function AIDiagnosticSuggestions({
   patientContext,
   onSelectPrimary,
   onAddDifferential,
+  onSuggestionsGenerated,
 }: AIDiagnosticSuggestionsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [processingTokens, setProcessingTokens] = useState(0);
@@ -82,6 +88,7 @@ export function AIDiagnosticSuggestions({
       }
 
       setSuggestions(data as SuggestionsResult);
+      onSuggestionsGenerated?.(data as SuggestionsResult);
       toast({
         title: 'Suggestions Generated',
         description: 'AI diagnostic suggestions are ready for review.',
@@ -201,6 +208,7 @@ export function AIDiagnosticSuggestions({
                 </Alert>
               )}
 
+              <UncertaintyBanners trace={suggestions.reasoningTrace} />
               <AISafetyBanners safety={suggestions.safety} />
               <div className="flex justify-end"><ReportAIIssueButton functionName="suggest-diagnosis" patientId={(patientContext as any)?.patientId} /></div>
               <AIConfidencePanel functionName="suggest-diagnosis" confidence={suggestions.confidence ?? suggestions.primaryDiagnosis?.confidence} provenance={suggestions.provenance} patientId={(patientContext as any)?.patientId} language={(patientContext as any)?.language} />
@@ -227,7 +235,7 @@ export function AIDiagnosticSuggestions({
                 <div className="mb-3">
                   <p className="text-xs font-medium mb-1">Supporting Evidence:</p>
                   <ul className="text-xs text-muted-foreground list-disc list-inside">
-                    {suggestions.primaryDiagnosis.supportingEvidence.map((ev, i) => (
+                    {(suggestions.primaryDiagnosis.supportingEvidence ?? []).map((ev, i) => (
                       <li key={i}>{ev}</li>
                     ))}
                   </ul>
@@ -240,7 +248,9 @@ export function AIDiagnosticSuggestions({
                   <CheckCircle2 className="h-3 w-3" />
                   Use as Primary
                 </Button>
+                <div className="mt-3"><ReasoningTrace trace={suggestions.reasoningTrace} /></div>
               </div>
+              <IdiomAttribution trace={suggestions.reasoningTrace} />
 
               <Separator />
 
@@ -259,7 +269,7 @@ export function AIDiagnosticSuggestions({
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-sm font-medium">{diff.code}</span>
                           <Badge variant="outline" className={getConfidenceColor(diff.confidence)}>
-                            {diff.confidence}%
+                            {Math.round((diff.confidence ?? 0) <= 1 ? (diff.confidence ?? 0) * 100 : diff.confidence)}%
                           </Badge>
                         </div>
                         <Button
