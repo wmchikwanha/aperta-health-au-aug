@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Users, Activity, Shield, RefreshCw, UserX, UserCheck, Trash2, Mail, Building2, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { TeamInvitations } from "@/components/TeamInvitations";
+import { ConcordancePanel } from "@/components/governance/ConcordancePanel";
 import { PrivacyCompliance } from "@/components/governance/PrivacyCompliance";
 import { ModelGovernance } from "@/components/governance/ModelGovernance";
 import { AIIncidents } from "@/components/governance/AIIncidents";
@@ -383,6 +384,7 @@ export const AdminDashboard = () => {
           </TabsTrigger>
           <TabsTrigger value="ai-governance">AI Governance</TabsTrigger>
           <TabsTrigger value="ai-incidents">AI Safety Incidents</TabsTrigger>
+          <TabsTrigger value="concordance">Concordance</TabsTrigger>
           <TabsTrigger value="privacy">Privacy &amp; Data</TabsTrigger>
           <TabsTrigger value="facilities">
             <Building2 className="h-4 w-4 mr-2" />
@@ -394,6 +396,10 @@ export const AdminDashboard = () => {
             )}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="concordance">
+          <ConcordancePanel />
+        </TabsContent>
 
         <TabsContent value="privacy">
           <PrivacyCompliance />
