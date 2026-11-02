@@ -1,9 +1,10 @@
-import { describe, it, expect } from "vitest";
+// @ts-ignore bun runtime module
+import { describe, it, expect } from "bun:test";
 import { applyAIProvenance, reviewDecision, AI_PROVENANCE_SYSTEM } from "./aiProvenance";
 
 describe("AI provenance", () => {
   it("adds ai-generated-draft tag and keeps it when approved", () => {
-    const r = applyAIProvenance({ resourceType: "Condition", id: "1" }, { model_id: "m" }, { approver: "Dr A", approved_at: "t" });
+    const r = applyAIProvenance({ resourceType: "Condition", id: "1" } as Record<string, any>, { model_id: "m" }, { approver: "Dr A", approved_at: "t" });
     const codes = r.meta.tag.filter((t: any) => t.system === AI_PROVENANCE_SYSTEM).map((t: any) => t.code);
     expect(codes).toEqual(["ai-generated-draft", "clinician-approved"]);
   });
