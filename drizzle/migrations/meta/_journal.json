@@ -29,6 +29,13 @@
       "when": 1793545913566,
       "tag": "0003_batch5_ai_reviews_reasoning",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793702082485,
+      "tag": "0004_batch6_safety_telemetry",
+      "breakpoints": true
     }
   ]
 }
