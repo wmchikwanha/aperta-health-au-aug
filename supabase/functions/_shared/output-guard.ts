@@ -39,6 +39,7 @@ export interface ValidationOutcome<T> {
   reason?: string;
   dosageBlocked: boolean;
   gatewayStatus?: number;
+  latencyMs?: number;
 }
 
 /**
@@ -53,11 +54,13 @@ export async function callWithValidation<T>(
 ): Promise<ValidationOutcome<T>> {
   let reason = "";
   let dosageBlocked = false;
+  const started = Date.now();
+  const ms = () => Date.now() - started;
   for (let attempt = 1; attempt <= 2; attempt++) {
     const r = await call();
     if (!r.ok) {
       await r.text();
-      if ([402, 403, 429].includes(r.status)) return { ok: false, attempts: attempt, reason: `gateway ${r.status}`, dosageBlocked, gatewayStatus: r.status };
+      if ([402, 403, 429].includes(r.status)) return { ok: false, attempts: attempt, reason: `gateway ${r.status}`, dosageBlocked, gatewayStatus: r.status, latencyMs: ms() };
       reason = `gateway ${r.status}`;
       continue;
     }
@@ -66,16 +69,16 @@ export async function callWithValidation<T>(
     const shapeError = validateShape(value, spec);
     if (shapeError) { reason = shapeError; continue; }
     if (containsMedicationDosage(value)) { dosageBlocked = true; reason = "medication dosage detected"; continue; }
-    return { ok: true, value: value as T, attempts: attempt, dosageBlocked };
+    return { ok: true, value: value as T, attempts: attempt, dosageBlocked, latencyMs: ms() };
   }
-  return { ok: false, attempts: 2, reason, dosageBlocked };
+  return { ok: false, attempts: 2, reason, dosageBlocked, latencyMs: ms() };
 }
 
 export async function logInference(e: {
   function_name: string; actor_id?: string | null; model_id?: string; prompt_template_id?: string;
   schema_valid: boolean; attempts?: number; injection_patterns?: string[]; dosage_blocked?: boolean;
   cultural_flags?: unknown[]; failure_reason?: string | null; input_chars?: number;
-  pii?: { count: number; types: string[] };
+  pii?: { count: number; types: string[] }; latency_ms?: number;
 }) {
   const svc = serviceClient();
   try {
@@ -85,8 +88,16 @@ export async function logInference(e: {
       injection_detected: (e.injection_patterns?.length ?? 0) > 0, injection_patterns: e.injection_patterns ?? [],
       dosage_blocked: e.dosage_blocked ?? false, cultural_flags: e.cultural_flags ?? [],
       failure_reason: e.failure_reason ?? null, input_chars: e.input_chars ?? null,
-      pii_spans_detected: e.pii?.count ?? 0, pii_types: e.pii?.types ?? [],
+      pii_spans_detected: e.pii?.count ?? 0, pii_types: e.pii?.types ?? [], latency_ms: e.latency_ms ?? null,
     });
+    if (!e.schema_valid) {
+      await svc.from("system_alerts").insert({
+        alert_type: e.function_name === "transcribe-audio" ? "translation_failure" : "ai_inference_failure",
+        severity: "warning", source_function: e.function_name,
+        message: `${e.function_name} failed after ${e.attempts ?? 1} attempt(s): ${e.failure_reason ?? "unknown"}. Fail-safe shown to clinician.`,
+        metadata: { model_id: e.model_id ?? null, latency_ms: e.latency_ms ?? null },
+      });
+    }
     if (e.injection_patterns?.length && e.actor_id) {
       await svc.from("audit_events").insert({
         actor_id: e.actor_id, actor_role: "system", action: "injection_pattern_detected", outcome: "flagged",

@@ -186,6 +186,7 @@ export type Database = {
           injection_detected: boolean
           injection_patterns: Json
           input_chars: number | null
+          latency_ms: number | null
           model_id: string | null
           pii_spans_detected: number
           pii_types: Json
@@ -204,6 +205,7 @@ export type Database = {
           injection_detected?: boolean
           injection_patterns?: Json
           input_chars?: number | null
+          latency_ms?: number | null
           model_id?: string | null
           pii_spans_detected?: number
           pii_types?: Json
@@ -222,6 +224,7 @@ export type Database = {
           injection_detected?: boolean
           injection_patterns?: Json
           input_chars?: number | null
+          latency_ms?: number | null
           model_id?: string | null
           pii_spans_detected?: number
           pii_types?: Json
@@ -991,6 +994,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      error_log: {
+        Row: {
+          created_at: string
+          error_type: string
+          id: string
+          message: string
+          source: string
+          stack_trace: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_type: string
+          id?: string
+          message: string
+          source?: string
+          stack_trace?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_type?: string
+          id?: string
+          message?: string
+          source?: string
+          stack_trace?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       eval_results: {
         Row: {
@@ -2092,6 +2131,57 @@ export type Database = {
         }
         Relationships: []
       }
+      system_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          acknowledgement_note: string | null
+          alert_type: string
+          created_at: string
+          dedupe_key: string | null
+          id: string
+          message: string
+          metadata: Json
+          patient_id: string | null
+          recipient_id: string | null
+          resolved_at: string | null
+          severity: string
+          source_function: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          acknowledgement_note?: string | null
+          alert_type: string
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          message: string
+          metadata?: Json
+          patient_id?: string | null
+          recipient_id?: string | null
+          resolved_at?: string | null
+          severity: string
+          source_function?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          acknowledgement_note?: string | null
+          alert_type?: string
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          message?: string
+          metadata?: Json
+          patient_id?: string | null
+          recipient_id?: string | null
+          resolved_at?: string | null
+          severity?: string
+          source_function?: string | null
+        }
+        Relationships: []
+      }
       team_invitations: {
         Row: {
           accepted_at: string | null
@@ -2220,6 +2310,7 @@ export type Database = {
         Args: { _referral_id: string }
         Returns: string
       }
+      check_crisis_pathway_failures: { Args: never; Returns: number }
       check_rate_limit: {
         Args: {
           _bucket: string
@@ -2251,6 +2342,7 @@ export type Database = {
       }
       reset_demo_data: { Args: never; Returns: number }
       run_data_retention: { Args: never; Returns: number }
+      safety_monitor_metrics: { Args: { _days?: number }; Returns: Json }
     }
     Enums: {
       app_role:

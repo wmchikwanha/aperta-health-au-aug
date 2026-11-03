@@ -152,13 +152,13 @@ serve(async (req) => {
     const base = { function_name: 'suggest-diagnosis', actor_id: authResult.userId, model_id: config.provenance.model_id, prompt_template_id: config.provenance.prompt_template_id, attempts: outcome.attempts, injection_patterns: guard.detections, pii: guard.pii, input_chars: clinicalSummary.length };
     if (outcome.gatewayStatus) return new Response(JSON.stringify({ error: `AI Gateway error: ${outcome.gatewayStatus}` }), { status: outcome.gatewayStatus, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     if (!outcome.ok) {
-      await logInference({ ...base, schema_valid: false, dosage_blocked: outcome.dosageBlocked, failure_reason: outcome.reason });
+      await logInference({ ...base, schema_valid: false, latency_ms: outcome.latencyMs, dosage_blocked: outcome.dosageBlocked, failure_reason: outcome.reason });
       await logConfidence({ function_name: 'suggest-diagnosis', clinician_id: authResult.userId, raw_confidence: null, patient_id: patientId ?? null, language_of_input: languageOfInput ?? null, provenance: config.provenance, error: true });
       return new Response(JSON.stringify({ error: FAIL_SAFE_MESSAGE, failSafe: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
     const suggestions = outcome.value;
     const culturalFlags = findCulturalFlags(clinicalSummary, JSON.stringify(suggestions), await loadDoNotPathologise());
-    await logInference({ ...base, schema_valid: true, cultural_flags: culturalFlags });
+    await logInference({ ...base, schema_valid: true, latency_ms: outcome.latencyMs, cultural_flags: culturalFlags });
 
     const confidence = typeof suggestions.confidence === 'number' ? suggestions.confidence : suggestions.primaryDiagnosis?.confidence ?? null;
     await logConfidence({ function_name: 'suggest-diagnosis', clinician_id: authResult.userId, raw_confidence: confidence, patient_id: patientId ?? null, language_of_input: languageOfInput ?? null, provenance: config.provenance });

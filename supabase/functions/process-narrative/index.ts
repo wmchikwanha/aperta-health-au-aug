@@ -38,13 +38,13 @@ serve(async req => {
     const base = { function_name: "process-narrative", actor_id: auth.userId, model_id: config.provenance.model_id, prompt_template_id: config.provenance.prompt_template_id, attempts: outcome.attempts, injection_patterns: guard.detections, pii: guard.pii, input_chars: narrative.length };
     if (outcome.gatewayStatus) return jsonResponse({ error: `AI service error: ${outcome.gatewayStatus}` }, outcome.gatewayStatus);
     if (!outcome.ok) {
-      await logInference({ ...base, schema_valid: false, dosage_blocked: outcome.dosageBlocked, failure_reason: outcome.reason });
+      await logInference({ ...base, schema_valid: false, latency_ms: outcome.latencyMs, dosage_blocked: outcome.dosageBlocked, failure_reason: outcome.reason });
       return jsonResponse({ error: FAIL_SAFE_MESSAGE, failSafe: true }, 422);
     }
     const result = outcome.value;
     delete result.hasRedAlert; delete result.risk_level; delete result.clinical_impressions;
     const culturalFlags = findCulturalFlags(narrative, JSON.stringify(result), await loadDoNotPathologise());
-    await logInference({ ...base, schema_valid: true, cultural_flags: culturalFlags });
+    await logInference({ ...base, schema_valid: true, latency_ms: outcome.latencyMs, cultural_flags: culturalFlags });
     const output = { ...result, ai_generated: true, ...config.provenance, safety: { pii_scrubbed: guard.pii, injection_detected: guard.detections.length > 0, injection_patterns: guard.detections, cultural_flags: culturalFlags } };
     return new Response(`data: ${JSON.stringify({ result: output })}\n\ndata: [DONE]\n\n`, { headers: { ...corsHeaders, "Content-Type": "text/event-stream", "Cache-Control": "no-cache" } });
   } catch (error) {
