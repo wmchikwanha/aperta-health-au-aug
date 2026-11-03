@@ -36,6 +36,13 @@
       "when": 1793702082485,
       "tag": "0004_batch6_safety_telemetry",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793702100045,
+      "tag": "0005_batch6_crisis_check_schedule",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+SELECT cron.schedule('aperta-crisis-pathway-check','5 * * * *', $$select public.check_crisis_pathway_failures()$$);
