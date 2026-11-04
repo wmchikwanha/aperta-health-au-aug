@@ -893,6 +893,8 @@ export const PatientProfile = ({ patientId, onBack }: PatientProfileProps) => {
         </CardContent>
       </Card>
 
+      <ScoreTrajectory patientId={patientId} screenings={screeningAssessments} />
+
       {/* Screening Assessment History with Trends */}
       <Card>
         <CardHeader>

@@ -20,12 +20,14 @@ import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
 import { bindOutboxAutoSync } from "./lib/offline/sync";
 import { PilotBanner } from "./components/PilotBanner";
+import { ErrorBoundary, bindGlobalErrorReporting } from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  useEffect(() => { bindOutboxAutoSync(); }, []);
+  useEffect(() => { bindOutboxAutoSync(); bindGlobalErrorReporting(); }, []);
   return (
+  <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -52,6 +54,7 @@ const App = () => {
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
   );
 };
 
