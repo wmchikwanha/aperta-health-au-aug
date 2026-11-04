@@ -1,3 +1,4 @@
+import { ScoreTrajectory } from "@/components/patient/ScoreTrajectory";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -892,6 +893,8 @@ export const PatientProfile = ({ patientId, onBack }: PatientProfileProps) => {
           )}
         </CardContent>
       </Card>
+
+      <ScoreTrajectory patientId={patientId} screenings={screeningAssessments} />
 
       {/* Screening Assessment History with Trends */}
       <Card>

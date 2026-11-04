@@ -24,6 +24,9 @@ import {
 import { Users, Activity, Shield, RefreshCw, UserX, UserCheck, Trash2, Mail, Building2, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { TeamInvitations } from "@/components/TeamInvitations";
 import { ConcordancePanel } from "@/components/governance/ConcordancePanel";
+import { SystemHealth } from "@/components/governance/SystemHealth";
+import { SafetyMonitor } from "@/components/governance/SafetyMonitor";
+import { AuditAnalytics } from "@/components/governance/AuditAnalytics";
 import { PrivacyCompliance } from "@/components/governance/PrivacyCompliance";
 import { ModelGovernance } from "@/components/governance/ModelGovernance";
 import { AIIncidents } from "@/components/governance/AIIncidents";
@@ -369,7 +372,7 @@ export const AdminDashboard = () => {
       </Card>
 
       <Tabs defaultValue="team">
-        <TabsList>
+        <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="team">
             <Users className="h-4 w-4 mr-2" />
             Team Members
@@ -385,6 +388,9 @@ export const AdminDashboard = () => {
           <TabsTrigger value="ai-governance">AI Governance</TabsTrigger>
           <TabsTrigger value="ai-incidents">AI Safety Incidents</TabsTrigger>
           <TabsTrigger value="concordance">Concordance</TabsTrigger>
+          <TabsTrigger value="system-health">System Health</TabsTrigger>
+          <TabsTrigger value="safety-monitor">Safety Monitor</TabsTrigger>
+          <TabsTrigger value="audit-analytics">Audit Analytics</TabsTrigger>
           <TabsTrigger value="privacy">Privacy &amp; Data</TabsTrigger>
           <TabsTrigger value="facilities">
             <Building2 className="h-4 w-4 mr-2" />
@@ -400,6 +406,9 @@ export const AdminDashboard = () => {
         <TabsContent value="concordance">
           <ConcordancePanel />
         </TabsContent>
+        <TabsContent value="system-health"><SystemHealth /></TabsContent>
+        <TabsContent value="safety-monitor"><SafetyMonitor /></TabsContent>
+        <TabsContent value="audit-analytics"><AuditAnalytics /></TabsContent>
 
         <TabsContent value="privacy">
           <PrivacyCompliance />

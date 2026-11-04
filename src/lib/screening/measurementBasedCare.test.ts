@@ -1,3 +1,4 @@
+// @ts-ignore bun runtime module
 import { describe, expect, it } from "bun:test";
 import { reliableChange } from "./measurementBasedCare";
 
