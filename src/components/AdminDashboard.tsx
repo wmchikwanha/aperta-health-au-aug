@@ -372,7 +372,7 @@ export const AdminDashboard = () => {
       </Card>
 
       <Tabs defaultValue="team">
-        <TabsList>
+        <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="team">
             <Users className="h-4 w-4 mr-2" />
             Team Members
