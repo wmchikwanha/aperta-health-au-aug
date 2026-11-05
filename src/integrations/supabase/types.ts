@@ -893,6 +893,48 @@ export type Database = {
         }
         Relationships: []
       }
+      diagnosis_crosswalk: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          crosswalk_version: string
+          dsm5tr_disorder_name: string | null
+          dsm5tr_icd10cm_code: string | null
+          icd10am_code: string
+          icd10am_title: string
+          icd11_code: string | null
+          icd11_uri: string | null
+          id: string
+          mapping_status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          crosswalk_version?: string
+          dsm5tr_disorder_name?: string | null
+          dsm5tr_icd10cm_code?: string | null
+          icd10am_code: string
+          icd10am_title: string
+          icd11_code?: string | null
+          icd11_uri?: string | null
+          id?: string
+          mapping_status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          crosswalk_version?: string
+          dsm5tr_disorder_name?: string | null
+          dsm5tr_icd10cm_code?: string | null
+          icd10am_code?: string
+          icd10am_title?: string
+          icd11_code?: string | null
+          icd11_uri?: string | null
+          id?: string
+          mapping_status?: string
+        }
+        Relationships: []
+      }
       diagnostic_formulations: {
         Row: {
           ai_generated: boolean
@@ -906,7 +948,9 @@ export type Database = {
           diagnostic_framework: string
           diagnostic_reasoning: string | null
           differential_diagnoses: Json | null
+          dsm_version: string
           formulated_at: string | null
+          icd10am_release_version: string | null
           id: string
           model_id: string | null
           model_version: string | null
@@ -917,8 +961,10 @@ export type Database = {
           prompt_template_version: string | null
           provenance: Json | null
           reasoning_trace: Json | null
+          snomed_concept_id: string | null
           status: string | null
           supporting_evidence: Json | null
+          terminology_version: string | null
           updated_at: string | null
           user_id: string
         }
@@ -934,7 +980,9 @@ export type Database = {
           diagnostic_framework: string
           diagnostic_reasoning?: string | null
           differential_diagnoses?: Json | null
+          dsm_version?: string
           formulated_at?: string | null
+          icd10am_release_version?: string | null
           id?: string
           model_id?: string | null
           model_version?: string | null
@@ -945,8 +993,10 @@ export type Database = {
           prompt_template_version?: string | null
           provenance?: Json | null
           reasoning_trace?: Json | null
+          snomed_concept_id?: string | null
           status?: string | null
           supporting_evidence?: Json | null
+          terminology_version?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -962,7 +1012,9 @@ export type Database = {
           diagnostic_framework?: string
           diagnostic_reasoning?: string | null
           differential_diagnoses?: Json | null
+          dsm_version?: string
           formulated_at?: string | null
+          icd10am_release_version?: string | null
           id?: string
           model_id?: string | null
           model_version?: string | null
@@ -973,8 +1025,10 @@ export type Database = {
           prompt_template_version?: string | null
           provenance?: Json | null
           reasoning_trace?: Json | null
+          snomed_concept_id?: string | null
           status?: string | null
           supporting_evidence?: Json | null
+          terminology_version?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -2131,6 +2185,63 @@ export type Database = {
         }
         Relationships: []
       }
+      snomed_mappings: {
+        Row: {
+          cultural_idiom_links: string[]
+          diagnostic_category: string
+          dsm5tr_code: string | null
+          icd10am_code: string | null
+          icd11_code: string | null
+          id: string
+          is_active: boolean
+          mapped_at: string
+          mapped_by: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity_qualifier: string
+          snomed_concept_id: string
+          snomed_fsn: string
+          snomed_preferred_term: string
+          source_edition: string
+        }
+        Insert: {
+          cultural_idiom_links?: string[]
+          diagnostic_category: string
+          dsm5tr_code?: string | null
+          icd10am_code?: string | null
+          icd11_code?: string | null
+          id?: string
+          is_active?: boolean
+          mapped_at?: string
+          mapped_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity_qualifier?: string
+          snomed_concept_id: string
+          snomed_fsn: string
+          snomed_preferred_term: string
+          source_edition?: string
+        }
+        Update: {
+          cultural_idiom_links?: string[]
+          diagnostic_category?: string
+          dsm5tr_code?: string | null
+          icd10am_code?: string | null
+          icd11_code?: string | null
+          id?: string
+          is_active?: boolean
+          mapped_at?: string
+          mapped_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity_qualifier?: string
+          snomed_concept_id?: string
+          snomed_fsn?: string
+          snomed_preferred_term?: string
+          source_edition?: string
+        }
+        Relationships: []
+      }
       system_alerts: {
         Row: {
           acknowledged_at: string | null
@@ -2217,6 +2328,59 @@ export type Database = {
           token?: string
         }
         Relationships: []
+      }
+      terminology_submissions: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          idiom: string | null
+          language_code: string | null
+          proposed_snomed_concept_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          snomed_mapping_id: string | null
+          status: string
+          submission_type: string
+          submitted_by: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          idiom?: string | null
+          language_code?: string | null
+          proposed_snomed_concept_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          snomed_mapping_id?: string | null
+          status?: string
+          submission_type: string
+          submitted_by?: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          idiom?: string | null
+          language_code?: string | null
+          proposed_snomed_concept_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          snomed_mapping_id?: string | null
+          status?: string
+          submission_type?: string
+          submitted_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terminology_submissions_snomed_mapping_id_fkey"
+            columns: ["snomed_mapping_id"]
+            isOneToOne: false
+            referencedRelation: "snomed_mappings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       treatment_notes: {
         Row: {

@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { normalizeCalculatedScores } from "../_shared/clinical-rules.ts";
 import { loadAIConfig, AIConfigError, logConfidence } from "../_shared/ai-registry.ts";
 import { guardInput, wrapUserContent } from "../_shared/input-guard.ts";
+import { resolveCandidate, SNOMED_EDITION, ICD10AM_EDITION, DSM_VERSION, type SnomedRow } from "../_shared/terminology.ts";
 import { callWithValidation, logInference, SCHEMAS, FAIL_SAFE_MESSAGE, findCulturalFlags, loadDoNotPathologise } from "../_shared/output-guard.ts";
 
 const corsHeaders = {
@@ -106,7 +107,7 @@ serve(async (req) => {
     const calculatedScores = normalizeCalculatedScores(submittedScores);
 
     const frameworkInstructions = framework === 'ICD-10'
-      ? `Use ICD-10-AM (Australian Modification) Chapter V codes exclusively.`
+      ? `Use ICD-10-AM 12th Edition (2024, Australian Modification) Chapter V codes exclusively.`
       : framework === 'ICD-11'
       ? `Use ICD-11 diagnostic codes exclusively (e.g., 6A70 MDD, 6B41 Complex PTSD).`
       : `Use DSM-5-TR diagnostic codes exclusively.`;
@@ -176,8 +177,15 @@ serve(async (req) => {
       provenance: config.provenance,
       generated_at: new Date().toISOString(),
     };
+    // Resolve every candidate against curated SNOMED CT-AU mappings — never trust LLM codes alone.
+    const { data: snomedRows } = await createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+      .from('snomed_mappings').select('snomed_concept_id, snomed_fsn, snomed_preferred_term, icd10am_code, icd11_code, dsm5tr_code, cultural_idiom_links, severity_qualifier, diagnostic_category').eq('is_active', true);
+    const rows = (snomedRows ?? []) as SnomedRow[];
+    if (suggestions.primaryDiagnosis?.code) suggestions.primaryDiagnosis = resolveCandidate(suggestions.primaryDiagnosis, rows, clinicalSummary);
+    if (Array.isArray(suggestions.differentialDiagnoses)) suggestions.differentialDiagnoses = suggestions.differentialDiagnoses.map((d: any) => resolveCandidate(d, rows, clinicalSummary));
     const result = {
       ...suggestions,
+      terminology: { snomed_edition: SNOMED_EDITION, icd10am_edition: ICD10AM_EDITION, dsm_version: DSM_VERSION },
       reasoningTrace,
       confidence,
       provenance: config.provenance,
