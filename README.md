@@ -1,70 +1,39 @@
-# Welcome to your Lovable project
+# Aperta Health — clinician-governed AI documentation-support prototype
 
-## Project info
+Aperta Health is a research prototype for multilingual and refugee mental health care in Australia. It keeps the speaker's original words beside every AI draft, logs each draft against the clinician's edits, and keeps risk decisions out of the language model.
 
-**URL**: https://lovable.dev/projects/77452c5c-3eba-4623-b6a7-6b5c16119e6a
+**Status:** research prototype on synthetic data only. Never used with patients. Not a medical device and not production software.
 
-## How can I edit this code?
+**Design paper:** Chikwanha WM. *Keeping the patient's words: design of Aperta Health.* Working paper, Zenodo, 2026. doi:[10.5281/zenodo.23423486](https://doi.org/10.5281/zenodo.23423486)
 
-There are several ways of editing your application.
+## Safety design
 
-**Use Lovable**
+- **Deterministic rules engine** for screening scores and crisis triggers, versioned and kept separate from the language model.
+- **Clinician sign-off** required on every AI output; overrides need a reason and are stored with a diff.
+- **Cultural-safety flags:** idioms of distress carry "do-not-pathologise" flags. The idiom library is drawn from published refugee mental health guidance and is provisional; no panel has reviewed it yet.
+- **Guards** on input (multilingual prompt-injection checks, identifier scrubbing before any AI call) and output (schema validation with a fail-safe message).
+- **Append-only audit trail** of AI generations, approvals and data changes.
+- **Monitoring:** per-language drift metrics, a regression and red-team suite, and system alerts for crisis-pathway or AI failures.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/77452c5c-3eba-4623-b6a7-6b5c16119e6a) and start prompting.
+## Build status
 
-Changes made via Lovable will be committed automatically to this repo.
+Batches 0–6 complete; Batch 7 (terminology curation) and a research-prototype wording pass are open. See `roadmap.md`.
 
-**Use your preferred IDE**
+## Security note
 
-You can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+The Supabase publishable (anon) key in `netlify.toml` is intentionally public, as Supabase designs it to be. Service-role keys are read from the server environment only.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Development
 
-Follow these steps:
+Built with [Lovable](https://lovable.dev) (Vite, React, TypeScript, Supabase edge functions).
 
 ```sh
-git clone <YOUR_GIT_URL>
-cd <YOUR_PROJECT_NAME>
+git clone https://github.com/wmchikwanha/aperta-health-au-aug.git
+cd aperta-health-au-aug
 npm i
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Author
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the **Code** button near the top right.
-- Select the **Codespaces** tab.
-- Click on **New codespace** to launch a Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/77452c5c-3eba-4623-b6a7-6b5c16119e6a) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
-
-## Attribution
-
-Developed by [Walter C.]( https://walter-m-chikwanha-au-professional-resume-portfolio.ai.studio/ )
+Walter M. Chikwanha · ORCID [0000-0002-1822-2168](https://orcid.org/0000-0002-1822-2168)
